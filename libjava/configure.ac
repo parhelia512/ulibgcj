@@ -392,6 +392,18 @@ if test "$enable_main_args" = no; then
    AC_DEFINE(DISABLE_MAIN_ARGS, 1, [Define if we should ignore arguments to main().])
 fi
 
+AC_ARG_ENABLE(micro-libgcj,
+  AS_HELP_STRING([--enable-micro-libgcj],
+                 [build lightweight version of libgcj]))
+
+if test -z "$enable_micro_libgcj"; then
+   enable_micro_libgcj=no
+fi
+
+if test "$enable_micro_libgcj" = yes; then
+  AC_CONFIG_SUBDIRS(ulibgcj)
+fi
+AM_CONDITIONAL(ULIBGCJ, test "$enable_micro_libgcj" = yes)
 
 # Should we use hashtable-based synchronization?
 # Currently works only for Linux X86/ia64
@@ -1453,6 +1465,20 @@ AC_SUBST(here)
 
 # We get this from the environment.
 AC_SUBST(GCJFLAGS)
+
+if test "$enable_micro_libgcj" = yes; then
+  ac_configure_args="$ac_configure_args --with-ulibgcj-platform=${PLATFORM}"
+  ac_configure_args="$ac_configure_args --with-ulibgcj-platform-h=${PLATFORMH}"
+  ac_configure_args="$ac_configure_args --with-ulibgcj-thread-h=${THREADH}"
+  ac_configure_args="$ac_configure_args --with-ulibgcj-thread-libs=\"${THREADLIBS}\""
+  ac_configure_args="$ac_configure_args --with-ulibgcj-gc=${GC}"
+  ac_configure_args="$ac_configure_args --with-ulibgcj-gc-h=${GCHDR}"
+  ac_configure_args="$ac_configure_args --with-ulibgcj-gc-libs=\"${GCLIBS}\""
+  ac_configure_args="$ac_configure_args --with-ulibgcj-gc-incs=\"${GCINCS}\""
+  ac_configure_args="$ac_configure_args --with-ulibgcj-signal-h=${SIGNAL_HANDLER}"
+  ac_configure_args="$ac_configure_args --with-ulibgcj-signal-aux-h=${SIGNAL_HANDLER_AUX}"
+  ac_configure_args="$ac_configure_args --with-ulibgcj-hash-synchronization=${enable_hash_synchronization}"
+fi
 
 AC_CONFIG_FILES([
 Makefile

@@ -12,6 +12,10 @@ if TESTSUBDIR
 SUBDIRS += testsuite
 endif
 
+if ULIBGCJ
+SUBDIRS += ulibgcj
+endif
+
 # write_entries_to_file - writes each entry in a list
 # to the specified file. Each entry is written individually
 # to accomodate systems with severe command-line-length
