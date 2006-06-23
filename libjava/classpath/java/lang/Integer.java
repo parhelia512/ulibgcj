@@ -406,6 +406,7 @@ public final class Integer extends Number implements Comparable
     return obj instanceof Integer && value == ((Integer) obj).value;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Get the specified system property as an <code>Integer</code>. The
    * <code>decode()</code> method will be used to interpret the value of
@@ -471,6 +472,7 @@ public final class Integer extends Number implements Comparable
         return def;
       }
   }
+/*#endif*/
 
   /**
    * Convert the specified <code>String</code> into an <code>Integer</code>.
@@ -541,6 +543,7 @@ public final class Integer extends Number implements Comparable
     return compareTo((Integer) o);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Return the number of bits set in x.
    * @param x value to examine
@@ -671,6 +674,7 @@ public final class Integer extends Number implements Comparable
     val = ((val >> 8) & 0x00ff00ff) + ((val << 8) & ~0x00ff00ff);
     return ((val >> 16) & 0x0000ffff) + ((val << 16) & ~0x0000ffff);
   }
+/*#endif*/
 
   /**
    * Helper for converting unsigned numbers to String.

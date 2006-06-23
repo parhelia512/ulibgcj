@@ -39,6 +39,7 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import gnu.classpath.SystemProperties;
 
 import java.io.BufferedInputStream;
@@ -50,6 +51,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Properties;
 import java.util.PropertyPermission;
+/*#endif*/
 
 /**
  * System represents system-wide resources; things that represent the
@@ -65,6 +67,7 @@ public final class System
   // WARNING: System is a CORE class in the bootstrap cycle. See the comments
   // in vm/reference/java/lang/Runtime for implications of this fact.
 
+/*#if not ULIBGCJ*/
   /**
    * The standard InputStream. This is assigned at startup and starts its
    * life perfectly valid. Although it is marked final, you can change it
@@ -101,6 +104,7 @@ public final class System
    */
   public static final PrintStream err
     = new PrintStream(new BufferedOutputStream(new FileOutputStream(FileDescriptor.err)), true);
+/*#endif*/
 
   /**
    * This class is uninstantiable.
@@ -109,6 +113,7 @@ public final class System
   {
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Set {@link #in} to a new InputStream. This uses some VM magic to change
    * a "final" variable, so naturally there is a security check,
@@ -196,6 +201,7 @@ public final class System
   {
     return SecurityManager.current;
   }
+/*#endif*/
 
   /**
    * Get the current time, measured in the number of milliseconds from the
@@ -246,6 +252,7 @@ public final class System
    */
   public static native int identityHashCode(Object o);
 
+/*#if not ULIBGCJ*/
   /**
    * Get all the system properties at once. A security check may be performed,
    * <code>checkPropertiesAccess</code>. Note that a security manager may
@@ -553,4 +560,23 @@ public final class System
    * @see #getenv(String)
    */
   static native String getenv0(String name);
+/*#endif*/
+
+/*#if ULIBGCJ
+  public static final class Output {
+    /**
+     * Prints the specified String to standard output.
+     #eoc
+    public static native void print(String s);
+
+    /**
+     * Prints the specified String to standard output, followed by a
+     * newline, and finally flushes the buffer.
+     #eoc
+    public static native void println(String s);
+  }
+
+  public static final Output out = new Output();
+#endif*/
+
 } // class System

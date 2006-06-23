@@ -390,7 +390,11 @@ public final class Double extends Number implements Comparable
    */
   public int hashCode()
   {
+    /*#if ULIBGCJ
+      long v = (long) value;
+      #else*/
     long v = doubleToLongBits(value);
+    /*#endif*/
     return (int) (v ^ (v >>> 32));
   }
 
@@ -423,6 +427,7 @@ public final class Double extends Number implements Comparable
     return isNaN(value) && isNaN(d);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Convert the double to the IEEE 754 floating-point "double format" bit
    * layout. Bit 63 (the most significant) is the sign bit, bits 62-52
@@ -475,6 +480,7 @@ public final class Double extends Number implements Comparable
   // GCJ LOCAL: We diverge from Classpath for efficiency.
   public static native double longBitsToDouble(long bits);
   // END GCJ LOCAL
+/*#endif*/
 
   /**
    * Compare two Doubles numerically by comparing their <code>double</code>

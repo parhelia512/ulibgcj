@@ -38,17 +38,23 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import java.io.InputStream;
 import java.io.Serializable;
+/*#endif*/
+/*#if not ULIBGCJ or ULIBGCJ_JNI*/
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+/*#endif*/
+/*#if not ULIBGCJ*/
 import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+/*#endif*/
 
 /**
  * A Class represents a Java type.  There will never be multiple Class
@@ -79,7 +85,10 @@ import java.util.HashSet;
  * @since 1.0
  * @see ClassLoader
  */
-public final class Class implements Serializable
+public final class Class
+/*#if not ULIBGCJ*/
+  implements Serializable
+/*#endif*/
 {
   /**
    * Class is non-instantiable from Java code; only the VM can create
@@ -92,6 +101,7 @@ public final class Class implements Serializable
   // Initialize the class.
   private native void initializeClass ();
 
+/*#if not ULIBGCJ*/
   // finalization
   protected native void finalize () throws Throwable;
 
@@ -554,6 +564,7 @@ public final class Class implements Serializable
    * @since 1.1
    */
   public native int getModifiers ();
+/*#endif*/
   
   /**
    * Get the name of this class, separated by dots for package separators.
@@ -584,6 +595,7 @@ public final class Class implements Serializable
    */
   public native String getName ();
 
+/*#if not ULIBGCJ*/
   /**
    * Get a resource URL using this class's package using the
    * getClassLoader().getResource() method.  If this class was loaded using
@@ -908,4 +920,5 @@ public final class Class implements Serializable
 	  sm.checkPackageAccess(pkg.getName());
       }
   }
+/*#endif*/
 }

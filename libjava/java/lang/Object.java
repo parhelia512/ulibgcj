@@ -262,7 +262,10 @@ public class Object
    * @see Thread
    */
   public final native void wait(long timeout, int nanos)
-    throws InterruptedException;
+/*#if not ULIBGCJ*/
+    throws InterruptedException
+/*#endif*/
+           ;
 
   /**
    * Determine whether this Object is semantically equal
@@ -399,7 +402,10 @@ public class Object
    * @see #wait(long, int)
    * @see Thread
    */
-  public final void wait() throws InterruptedException
+  public final void wait()
+/*#if not ULIBGCJ*/
+    throws InterruptedException
+/*#endif*/
   {
     wait(0, 0);
   }
@@ -444,7 +450,10 @@ public class Object
    * @see #wait(long, int)
    * @see Thread
    */
-  public final void wait(long timeout) throws InterruptedException
+  public final void wait(long timeout)
+/*#if not ULIBGCJ*/
+    throws InterruptedException
+/*#endif*/
   {
     wait(timeout, 0);
   }
@@ -500,8 +509,15 @@ public class Object
    *         out of memory
    * @see Cloneable
    */
+/*#if ULIBGCJ
+  protected Object clone() throws CloneNotSupportedException {
+    throw new CloneNotSupportedException();
+  }
+#else*/
   protected native Object clone() throws CloneNotSupportedException;
+/*#endif*/
 
+/*#if not ULIBGCJ*/
   // This initializes the sync_info member.  It is here for
   // completeness (some day we'll be able to auto-generate Object.h).
   private final native void sync_init();
@@ -513,6 +529,7 @@ public class Object
   {
     throw new NoSuchMethodError("in " + getClass());
   }
+/*#endif*/
 
   // Note that we don't mention the sync_info field here.  If we do,
   // jc1 will not work correctly.

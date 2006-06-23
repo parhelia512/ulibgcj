@@ -403,7 +403,11 @@ public final class Float extends Number implements Comparable
    */
   public int hashCode()
   {
+    /*#if ULIBGCJ
+      return (int) value;
+      #else*/
     return floatToIntBits(value);
+    /*#endif*/
   }
 
   /**
@@ -435,6 +439,7 @@ public final class Float extends Number implements Comparable
     return isNaN(value) && isNaN(f);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Convert the float to the IEEE 754 floating-point "single format" bit
    * layout. Bit 31 (the most significant) is the sign bit, bits 30-23
@@ -485,6 +490,7 @@ public final class Float extends Number implements Comparable
   // GCJ LOCAL: We diverge from Classpath for efficiency.
   public static native float intBitsToFloat(int bits);
   // END GCJ LOCAL
+/*#endif*/
 
   /**
    * Compare two Floats numerically by comparing their <code>float</code>

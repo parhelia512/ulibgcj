@@ -38,7 +38,9 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import java.io.Serializable;
+/*#endif*/
 
 /**
  * <code>StringBuffer</code> represents a changeable <code>String</code>.
@@ -72,12 +74,17 @@ import java.io.Serializable;
  * @since 1.0
  * @status updated to 1.4
  */
-public final class StringBuffer implements Serializable, CharSequence
+public final class StringBuffer
+/*#if not ULIBGCJ*/
+ implements Serializable, CharSequence
+/*#endif*/
 {
+/*#if not ULIBGCJ*/
   /**
    * Compatible with JDK 1.0+.
    */
   private static final long serialVersionUID = 3388685877147921107L;
+/*#endif*/
 
   /**
    * Index of next available character (and thus the size of the current
@@ -147,6 +154,7 @@ public final class StringBuffer implements Serializable, CharSequence
     str.getChars(0, count, value, 0);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Create a new <code>StringBuffer</code> with the characters from the
    * specified <code>CharSequence</code>. Initial capacity will be the
@@ -164,6 +172,7 @@ public final class StringBuffer implements Serializable, CharSequence
     for (int i = 0; i < count; ++i)
       value[i] = sequence.charAt(i);
   }
+/*#endif*/
 
   /**
    * Get the length of the <code>String</code> this <code>StringBuffer</code>
@@ -260,6 +269,7 @@ public final class StringBuffer implements Serializable, CharSequence
     return value[index];
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Get the code point at the specified index.  This is like #charAt(int),
    * but if the character is the start of a surrogate pair, and the
@@ -292,6 +302,7 @@ public final class StringBuffer implements Serializable, CharSequence
       throw new IndexOutOfBoundsException();
     return Character.codePointBefore(value, index, 1);
   }
+/*#endif*/
 
   /**
    * Get the specified array of characters. <code>srcOffset - srcEnd</code>
@@ -390,6 +401,7 @@ public final class StringBuffer implements Serializable, CharSequence
     return this;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Append the <code>CharSequence</code> value of the argument to this
    * <code>StringBuffer</code>.
@@ -429,6 +441,7 @@ public final class StringBuffer implements Serializable, CharSequence
       value[count++] = sequence.charAt(i);
     return this;
   }
+/*#endif*/
 
   /**
    * Append the <code>char</code> array to this <code>StringBuffer</code>.
@@ -496,6 +509,7 @@ public final class StringBuffer implements Serializable, CharSequence
     return this;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Append the code point to this <code>StringBuffer</code>.
    * This is like #append(char), but will append two characters
@@ -514,6 +528,7 @@ public final class StringBuffer implements Serializable, CharSequence
     count += len;
     return this;
   }
+/*#endif*/
 
   /**
    * Append the <code>String</code> value of the argument to this
@@ -654,6 +669,7 @@ public final class StringBuffer implements Serializable, CharSequence
     return substring(beginIndex, count);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Creates a substring of this StringBuffer, starting at a specified index
    * and ending at one character before a specified index. This is implemented
@@ -672,6 +688,7 @@ public final class StringBuffer implements Serializable, CharSequence
   {
     return substring(beginIndex, endIndex);
   }
+/*#endif*/
 
   /**
    * Creates a substring of this StringBuffer, starting at a specified index
@@ -765,6 +782,7 @@ public final class StringBuffer implements Serializable, CharSequence
     return this;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Insert the <code>CharSequence</code> argument into this
    * <code>StringBuffer</code>.  If the sequence is null, the String
@@ -812,6 +830,7 @@ public final class StringBuffer implements Serializable, CharSequence
     count += len;
     return this;
   }
+/*#endif*/
 
   /**
    * Insert the <code>char[]</code> argument into this
@@ -1033,6 +1052,7 @@ public final class StringBuffer implements Serializable, CharSequence
     return new String(this);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * This may reduce the amount of memory used by the StringBuffer,
    * by resizing the internal array to remove unused space.  However,
@@ -1132,6 +1152,7 @@ public final class StringBuffer implements Serializable, CharSequence
       }
     return start;
   }
+/*#endif*/
 
   /**
    * An unsynchronized version of ensureCapacity, used internally to avoid

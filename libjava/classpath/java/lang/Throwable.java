@@ -37,11 +37,13 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import gnu.classpath.SystemProperties;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+/*#endif*/
 
 /**
  * Throwable is the superclass of all exceptions that can be raised.
@@ -104,7 +106,10 @@ import java.io.Serializable;
  * @since 1.0
  * @status updated to 1.4
  */
-public class Throwable implements Serializable
+public class Throwable
+/*#if not ULIBGCJ*/
+  implements Serializable
+/*#endif*/
 {
   /**
    * Compatible with JDK 1.0+.
@@ -128,6 +133,7 @@ public class Throwable implements Serializable
    */
   private Throwable cause = this;
 
+/*#if not ULIBGCJ*/
   /**
    * The stack trace, in a serialized form.
    *
@@ -136,6 +142,7 @@ public class Throwable implements Serializable
    * @since 1.4
    */
   private StackTraceElement[] stackTrace;
+/*#endif*/
 
   /**
    * Instantiate this Throwable with an empty message. The cause remains
@@ -156,7 +163,9 @@ public class Throwable implements Serializable
    */
   public Throwable(String message)
   {
+/*#if not ULIBGCJ*/
     fillInStackTrace();
+/*#endif*/
     detailMessage = message;
   }
 
@@ -262,6 +271,7 @@ public class Throwable implements Serializable
     return getClass().getName() + (msg == null ? "" : ": " + msg);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Print a stack trace to the standard error stream. This stream is the
    * current contents of <code>System.err</code>. The first line of output
@@ -560,4 +570,5 @@ public class Throwable implements Serializable
    * Cleared when no longer needed.
    */
   private transient VMThrowable vmState;
+/*#endif*/
 }

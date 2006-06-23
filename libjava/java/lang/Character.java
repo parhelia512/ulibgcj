@@ -47,9 +47,11 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import java.io.Serializable;
 import java.text.Collator;
 import java.util.Locale;
+/*#endif*/
 
 /**
  * Wrapper class for the primitive char data type.  In addition, this class
@@ -75,8 +77,14 @@ import java.util.Locale;
  * @since 1.0
  * @status updated to 1.4
  */
-public final class Character implements Serializable, Comparable
+public final class Character
+/*#if ULIBGCJ
+  implements Comparable
+#else*/
+  implements Serializable, Comparable
+/*#endif*/
 {
+/*#if not ULIBGCJ*/
   /**
    * A subset of Unicode blocks.
    *
@@ -1653,6 +1661,7 @@ public final class Character implements Serializable, Comparable
       SUPPLEMENTARY_PRIVATE_USE_AREA_B,
     };
   } // class UnicodeBlock
+/*#endif*/
 
   /**
    * The immutable value of this Character.
@@ -1927,6 +1936,7 @@ public final class Character implements Serializable, Comparable
    */
   public static final byte OTHER_SYMBOL = 28;
 
+/*#if not ULIBGCJ*/
   /**
    * Undefined bidirectional character type. Undefined char values have
    * undefined directionality in the Unicode specification.
@@ -2067,6 +2077,7 @@ public final class Character implements Serializable, Comparable
    * @since 1.4
    */
   public static final byte DIRECTIONALITY_POP_DIRECTIONAL_FORMAT = 18;
+/*#endif*/
 
   /**
    * Mask for grabbing the type out of the result of readChar.
@@ -2088,6 +2099,7 @@ public final class Character implements Serializable, Comparable
    */
   private static final int MIRROR_MASK = 0x40;
 
+/*#if not ULIBGCJ*/
   /**
    * Min value for supplementary code point.
    *
@@ -2152,6 +2164,7 @@ public final class Character implements Serializable, Comparable
    * @since 1.5
    */
   public static final char MAX_SURROGATE = MAX_LOW_SURROGATE;
+/*#endif*/
 
   /**
    * Grabs an attribute offset from the Unicode attribute database. The lower
@@ -2238,6 +2251,7 @@ public final class Character implements Serializable, Comparable
     return String.valueOf(ch);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Determines if a character is a Unicode lowercase letter. For example,
    * <code>'a'</code> is lowercase.
@@ -2576,6 +2590,7 @@ public final class Character implements Serializable, Comparable
                                || (ch <= '\u001B' && ch >= '\u000E')))
       || getType(ch) == FORMAT;
   }
+/*#endif*/
 
   /**
    * Converts a Unicode character into its lowercase equivalent mapping.
@@ -2607,6 +2622,7 @@ public final class Character implements Serializable, Comparable
    */
   public static native char toUpperCase(char ch);
 
+/*#if not ULIBGCJ*/
   /**
    * Converts a Unicode character into its titlecase equivalent mapping.
    * If a mapping does not exist, then the character passed is returned.
@@ -2620,6 +2636,7 @@ public final class Character implements Serializable, Comparable
    * @see #toUpperCase(char)
    */
   public static native char toTitleCase(char ch);
+/*#endif*/
 
   /**
    * Converts a character into a digit of the specified radix. If the radix
@@ -2641,6 +2658,7 @@ public final class Character implements Serializable, Comparable
    */
   public static native int digit(char ch, int radix);
 
+/*#if not ULIBGCJ*/
   /**
    * Returns the Unicode numeric value property of a character. For example,
    * <code>'\\u216C'</code> (the Roman numeral fifty) returns 50.
@@ -2669,6 +2687,7 @@ public final class Character implements Serializable, Comparable
    * @since 1.1
    */
   public static native int getNumericValue(char ch);
+/*#endif*/
 
   /**
    * Determines if a character is a ISO-LATIN-1 space. This is only the five
@@ -2694,6 +2713,7 @@ public final class Character implements Serializable, Comparable
                               | (1 << ('\f' - 1)))) != 0;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Determines if a character is a Unicode space character. This includes
    * SPACE_SEPARATOR, LINE_SEPARATOR, and PARAGRAPH_SEPARATOR.
@@ -2712,6 +2732,7 @@ public final class Character implements Serializable, Comparable
                | (1 << LINE_SEPARATOR)
                | (1 << PARAGRAPH_SEPARATOR))) != 0;
   }
+/*#endif*/
 
   /**
    * Determines if a character is Java whitespace. This includes Unicode
@@ -2750,6 +2771,7 @@ public final class Character implements Serializable, Comparable
                                 | (1 << '\u001F'))) != 0);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Determines if a character has the ISO Control property.
    * <br>
@@ -2804,6 +2826,7 @@ public final class Character implements Serializable, Comparable
    * @since 1.1
    */
   public static native int getType(char ch);
+/*#endif*/
 
   /**
    * Converts a digit into a character which represents that digit
@@ -2828,6 +2851,7 @@ public final class Character implements Serializable, Comparable
     return (char) (digit < 10 ? ('0' + digit) : ('a' - 10 + digit));
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Returns the Unicode directionality property of the character. This
    * is used in the visual ordering of text.
@@ -2871,6 +2895,7 @@ public final class Character implements Serializable, Comparable
   {
     return (readChar(ch) & MIRROR_MASK) != 0;
   }
+/*#endif*/
 
   /**
    * Compares another Character to this Character, numerically.
@@ -2935,6 +2960,7 @@ public final class Character implements Serializable, Comparable
     return (char) (((val >> 8) & 0xff) | ((val << 8) & 0xff00));
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Converts a unicode code point to a UTF-16 representation of that
    * code point.
@@ -3255,4 +3281,5 @@ public final class Character implements Serializable, Comparable
       return low;
     return toCodePoint(high, low);
   }
+/*#endif*/
 } // class Character
