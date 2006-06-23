@@ -4,8 +4,7 @@
 
 # The following directives are supported:
 
-#   #ifdef <symbol>  - enables the following code iff <symbol> is defined
-#   #ifndef <symbol> - enables the following code iff <symbol> is not defined
+#   #if <expression> - enables the following code iff <expression> is true
 #   #else            - enables or disables the following code per the reverse
 #                      logic of the corresponding #ifdef or #ifndef
 #   #endif           - indicates the end of the area affected by the
@@ -13,10 +12,113 @@
 #   #eoc             - flag to replace '*/' when disabling code containing
 #                      comments
 
+# "if" expressions have the following grammar:
+
+#     expression ::= symbol | negation | combination
+#         symbol ::= '[a-zA-Z_]+'
+#       negation ::= 'not' expression
+#    combination ::= and | or
+#            and ::= expression 'and' expression
+#             or ::= expression 'or' expression
+
 # Symbols may be defined via -D<symbol> arguments to this script.
 
 use strict;
 use subs 'write';
+
+use constant {
+  SymbolType => 0,
+  NegationType => 1,
+  AndType => 2,
+  OrType => 3,
+};
+
+sub parseExpression;
+
+sub parseSymbol {
+    my $text = shift;
+
+    if ($text =~ /^\s*(\w+)\s*$/) {
+        if ($1 ne "not" && $1 ne "or" && $1 ne "and") {
+            return { type => SymbolType, value => $1 };
+        }
+    }
+
+    return 0;
+}
+
+sub parseNegation {
+    my $text = shift;
+
+    if ($text =~ /^\s*not\s*(.+)\s*$/) {
+        my $exp = $1;
+        my $result = parseExpression $exp;
+        if ($result) {
+            return { type => NegationType, value => $result };
+        }
+    }
+    
+    return 0;
+}
+
+sub parseAnd {
+    my $text = shift;
+
+    if ($text =~ /^\s*(.+)\s+and\s+(.+)\s*$/) {
+        my $a_exp = $1;
+        my $b_exp = $2;
+        my $a = parseExpression $a_exp;
+        if ($a) {
+            my $b = parseExpression $b_exp;
+            if ($b) {
+                return { type => AndType, first => $a, second => $b };
+            }
+        }
+    }
+    
+    return 0;
+}
+
+sub parseOr {
+    my $text = shift;
+
+    if ($text =~ /^\s*(.+)\s+or\s+(.+)\s*$/) {
+        my $a_exp = $1;
+        my $b_exp = $2;
+        my $a = parseExpression $a_exp;
+        if ($a) {
+            my $b = parseExpression $b_exp;
+            if ($b) {
+                return { type => OrType, first => $a, second => $b };
+            }
+        }
+    }
+    
+    return 0;
+}
+
+sub parseCombination {
+    my $text = shift;
+
+    my $result = parseAnd $text;
+    return $result if $result;
+
+    $result = parseOr $text;
+    return $result if $result;
+}
+
+sub parseExpression {
+    my $text = shift;
+
+    my $result = parseCombination $text;
+    return $result if $result;
+
+    $result = parseNegation $text;
+    return $result if $result;
+
+    $result = parseSymbol $text;
+    return $result if $result;
+}
 
 sub replaceEOC {
     my $text = shift;
@@ -91,6 +193,21 @@ sub main {
         }
     }
 
+    my $evaluate;
+    $evaluate = sub {
+        my $exp = shift;
+        
+        if ($exp->{type} == SymbolType) {
+            return defined($definitions{$exp->{value}});
+        } elsif ($exp->{type} == NegationType) {
+            return (! &$evaluate($exp->{value}));
+        } elsif ($exp->{type} == AndType) {
+            return &$evaluate($exp->{first}) && &$evaluate($exp->{second});
+        } elsif ($exp->{type} == OrType) {
+            return &$evaluate($exp->{first}) || &$evaluate($exp->{second});
+        }
+    };
+
     my @stack;
     $stack[++$#stack] = 1;
 
@@ -105,12 +222,12 @@ sub main {
                      positive => $positive };
         };
 
-        if ($text =~ /^\s*#ifdef\s*(\w+)\s*$/) {
-            $positive = $stack[$#stack] && defined($definitions{$1});
-            $stack[++$#stack] = $positive;
-            return &$make;
-        } elsif ($text =~ /^\s*#ifndef\s*(\w+)\s*$/) {
-            $positive = $stack[$#stack] && (! defined($definitions{$1}));
+        if ($text =~ /^\s*#if\s*(.+)\s*$/) {
+            my $expression = $1;
+            my $exp = parseExpression $expression;
+            die "invalid expression: $expression" unless $exp;
+
+            $positive = $stack[$#stack] && &$evaluate($exp);
             $stack[++$#stack] = $positive;
             return &$make;
         } elsif ($text =~ /^\s*#else\s*$/) {
