@@ -18,7 +18,6 @@ ulibgcj_LIBRARIES = libulibgcj.a
 java_sources = \
 gnu/gcj/RawData.java \
 gnu/gcj/RawDataManaged.java \
-gnu/gcj/runtime/NameFinder.java \
 gnu/gcj/runtime/StringBuffer.java \
 java/lang/AbstractMethodError.java \
 java/lang/ArithmeticException.java \
@@ -63,7 +62,6 @@ java/lang/reflect/Modifier.java \
 java/lang/Runnable.java \
 java/lang/RuntimeException.java \
 java/lang/Short.java \
-java/lang/StackTraceElement.java \
 java/lang/StringBuffer.java \
 java/lang/StringIndexOutOfBoundsException.java \
 java/lang/String.java \
@@ -133,9 +131,11 @@ $(processed_java_sources): processed/%.java: %.java
 
 java_headers = $(filter-out $(omitted_headers),$(java_sources:.java=.h))
 
+GCJH = @GCJH@
+
 $(java_headers): %.h: %.class
 	@mkdir -p $(dir $(@))
-	$(GCJH) -d . -classpath '' -bootclasspath processed $(@:.class=)
+	$(GCJH) -d . -classpath '' -bootclasspath processed $(<:.class=)
 
 $(libulibgcj_a_OBJECTS): $(java_headers)
 

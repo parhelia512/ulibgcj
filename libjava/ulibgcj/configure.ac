@@ -48,6 +48,24 @@ if test "x${with_ulibgcj_hash_synchronization}" = "xyes"; then
             [Define if hash synchronization is in use])
 fi
 
+if test "x${with_ulibgcj_which_gcj}" = x; then
+  AC_MSG_ERROR([with_ulibgcj_which_gcj not set])
+fi
+
+GCJH=gcjh
+case "${with_ulibgcj_which_gcj}" in
+  built)
+   GCJH='../../../$(host_subdir)/gcc/gcjh'
+   ;;
+ cross)
+   GCJH='$(target_noncanonical)-gcjh'
+   ;;
+ path)
+   GCJH=gcjh
+   ;;
+esac
+AC_SUBST(GCJH)
+
 AC_DEFINE(JV_ULIBGCJ, 1, [Define if micro-libgcj is to be built])
 
 echo > gcj/libgcj-config.h

@@ -287,8 +287,8 @@ fi
 case "${which_gcj}" in
    built)
       GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
-      GCJH='$(top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/gcc/gcjh'
-      ZIP='$(top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/fastjar/fastjar'
+      GCJH='$(abs_top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/gcc/gcjh'
+      ZIP='$(abs_top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/fastjar/fastjar'
    ;;
    cross)
       if test "x${with_newlib}" = "xyes"; then
@@ -1478,6 +1478,7 @@ if test "$enable_micro_libgcj" = yes; then
   ac_configure_args="$ac_configure_args --with-ulibgcj-signal-h=${SIGNAL_HANDLER}"
   ac_configure_args="$ac_configure_args --with-ulibgcj-signal-aux-h=${SIGNAL_HANDLER_AUX}"
   ac_configure_args="$ac_configure_args --with-ulibgcj-hash-synchronization=${enable_hash_synchronization}"
+  ac_configure_args="$ac_configure_args --with-ulibgcj-which-gcj=${which_gcj}"
 fi
 
 AC_CONFIG_FILES([
