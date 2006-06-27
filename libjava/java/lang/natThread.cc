@@ -18,18 +18,26 @@ details.  */
 
 #include <gnu/gcj/RawDataManaged.h>
 #include <java/lang/Thread.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/ThreadGroup.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/IllegalArgumentException.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/UnsupportedOperationException.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/IllegalThreadStateException.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/InterruptedException.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/NullPointerException.h>
 
+#ifndef JV_ULIBGCJ
 #include <jni.h>
 
 #ifdef ENABLE_JVMPI
 #include <jvmpi.h>
 #endif
+#endif//JV_ULIBGCJ
 
 
 
@@ -47,8 +55,10 @@ struct natThread
   // This is private data for the thread system layer.
   _Jv_Thread_t *thread;
 
+#ifndef JV_ULIBGCJ
   // Each thread has its own JNI object.
   JNIEnv *jni_env;
+#endif//JV_ULIBGCJ
 };
 
 static void finalize_native (jobject ptr);
@@ -68,9 +78,11 @@ java::lang::Thread::initialize_native (void)
   _Jv_MutexInit (&nt->join_mutex);
   _Jv_CondInit (&nt->join_cond);
   nt->thread = _Jv_ThreadInitData (this);
+#ifndef JV_ULIBGCJ
   // FIXME: if JNI_ENV is set we will want to free it.  It is
   // malloc()d.
   nt->jni_env = NULL;
+#endif//JV_ULIBGCJ
 }
 
 static void
@@ -84,9 +96,12 @@ finalize_native (jobject ptr)
 #ifdef _Jv_HaveMutexDestroy
   _Jv_MutexDestroy (&nt->join_mutex);
 #endif
+#ifndef JV_ULIBGCJ
   _Jv_FreeJNIEnv(nt->jni_env);
+#endif//JV_ULIBGCJ
 }
 
+#ifndef JV_ULIBGCJ
 jint
 java::lang::Thread::countStackFrames (void)
 {
@@ -95,6 +110,7 @@ java::lang::Thread::countStackFrames (void)
     (JvNewStringLatin1 ("Thread.countStackFrames unimplemented"));
   return 0;
 }
+#endif//JV_ULIBGCJ
 
 java::lang::Thread *
 java::lang::Thread::currentThread (void)
@@ -102,6 +118,7 @@ java::lang::Thread::currentThread (void)
   return _Jv_ThreadCurrent ();
 }
 
+#ifndef JV_ULIBGCJ
 jboolean
 java::lang::Thread::holdsLock (jobject obj)
 {
@@ -153,17 +170,22 @@ java::lang::Thread::resume (void)
   throw new UnsupportedOperationException
     (JvNewStringLatin1 ("Thread.resume unimplemented"));
 }
+#endif//JV_ULIBGCJ
 
 void
 java::lang::Thread::setPriority (jint newPriority)
 {
+#ifndef JV_ULIBGCJ
   checkAccess ();
+#endif//JV_ULIBGCJ
   if (newPriority < MIN_PRIORITY || newPriority > MAX_PRIORITY)
     throw new IllegalArgumentException;
 
+#ifndef JV_ULIBGCJ
   jint gmax = group->getMaxPriority();
   if (newPriority > gmax)
     newPriority = gmax;
+#endif//JV_ULIBGCJ
 
   priority = newPriority;
   natThread *nt = (natThread *) data;
@@ -182,14 +204,19 @@ java::lang::Thread::sleep (jlong millis, jint nanos)
   Thread *current = currentThread ();
 
   // We use a condition variable to implement sleeping so that an
-  // interrupt can wake us up. 
+  // interrupt can wake us up.
+
+  // TODO: no need to do this when JV_ULIBGCJ is defined, since thread
+  // interruption is not supported.
   natThread *nt = (natThread *) current->data;
   _Jv_MutexLock (&nt->join_mutex);
   _Jv_CondWait (&nt->join_cond, &nt->join_mutex, millis, nanos);
   _Jv_MutexUnlock (&nt->join_mutex);
 
+#ifndef JV_ULIBGCJ
   if (current->isInterrupted (true))
     throw new InterruptedException;
+#endif//JV_ULIBGCJ
 }
 
 void
@@ -197,6 +224,7 @@ java::lang::Thread::finish_ ()
 {
   natThread *nt = (natThread *) data;
   
+#ifndef JV_ULIBGCJ
   group->removeThread (this);
 
 #ifdef ENABLE_JVMPI  
@@ -212,6 +240,7 @@ java::lang::Thread::finish_ ()
       _Jv_EnableGC ();
     }
 #endif
+#endif//JV_ULIBGCJ
 
   // If a method cache was created, free it.
   _Jv_FreeMethodCache();
@@ -298,6 +327,7 @@ _Jv_ThreadRun (java::lang::Thread* thread)
     }
   catch (java::lang::Throwable *t)
     {
+#ifndef JV_ULIBGCJ
       // Uncaught exceptions are forwarded to the ThreadGroup.  If
       // this results in an uncaught exception, that is ignored.
       try
@@ -308,6 +338,7 @@ _Jv_ThreadRun (java::lang::Thread* thread)
 	{
 	  // Nothing.
 	}
+#endif//JV_ULIBGCJ
     }
 
   thread->finish_ ();
@@ -328,6 +359,7 @@ java::lang::Thread::start (void)
   _Jv_ThreadStart (this, nt->thread, (_Jv_ThreadStartFunc *) &_Jv_ThreadRun);
 }
 
+#ifndef JV_ULIBGCJ
 void
 java::lang::Thread::stop (java::lang::Throwable *)
 {
@@ -343,6 +375,7 @@ java::lang::Thread::suspend (void)
   throw new UnsupportedOperationException 
     (JvNewStringLatin1 ("Thread.suspend unimplemented"));
 }
+#endif//JV_ULIBGCJ
 
 static int nextThreadNumber = 0;
 
@@ -378,6 +411,7 @@ java::lang::Thread::yield (void)
   _Jv_ThreadYield ();
 }
 
+#ifndef JV_ULIBGCJ
 JNIEnv *
 _Jv_GetCurrentJNIEnv ()
 {
@@ -394,6 +428,7 @@ _Jv_SetCurrentJNIEnv (JNIEnv *env)
   JvAssert (t != NULL);
   ((natThread *) t->data)->jni_env = env;
 }
+#endif//JV_ULIBGCJ
 
 // Attach the current native thread to an existing (but unstarted) Thread 
 // object. Returns -1 on failure, 0 upon success.
@@ -418,12 +453,17 @@ _Jv_AttachCurrentThread(jstring name, java::lang::ThreadGroup* group)
     return thread;
   if (name == NULL)
     name = java::lang::Thread::gen_name ();
+#ifdef JV_ULIBGCJ
+  thread = new java::lang::Thread (NULL, NULL, name);
+#else
   thread = new java::lang::Thread (NULL, group, NULL, name);
+#endif
   _Jv_AttachCurrentThread (thread);
   _Jv_NotifyThreadStart (thread);
   return thread;
 }
 
+#ifndef JV_ULIBGCJ
 java::lang::Thread*
 _Jv_AttachCurrentThreadAsDaemon(jstring name, java::lang::ThreadGroup* group)
 {
@@ -438,6 +478,7 @@ _Jv_AttachCurrentThreadAsDaemon(jstring name, java::lang::ThreadGroup* group)
   _Jv_NotifyThreadStart (thread);
   return thread;
 }
+#endif//JV_ULIBGCJ
 
 jint
 _Jv_DetachCurrentThread (void)

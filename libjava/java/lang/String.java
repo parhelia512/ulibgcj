@@ -228,7 +228,6 @@ public final class String
     init(data, offset, count, false);
   }
 
-/*#if not ULIBGCJ*/
   /**
    * Creates a new String using an 8-bit array of integer values, starting at
    * an offset, and copying up to the count. Each character c, using
@@ -283,6 +282,7 @@ public final class String
     init(ascii, hibyte, 0, ascii.length);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Creates a new String using the portion of the byte array starting at the
    * offset and ending at offset + count. Uses the specified encoding type
@@ -332,6 +332,7 @@ public final class String
   {
     this(data, 0, data.length, encoding);
   }
+/*#endif*/
 
   /**
    * Creates a new String using the portion of the byte array starting at the
@@ -353,6 +354,9 @@ public final class String
    */
   public String(byte[] data, int offset, int count)
   {
+/*#if ULIBGCJ
+    init (data, offset, count, null);
+  #else*/
     try
       {
 	init (data, offset, count,
@@ -370,6 +374,7 @@ public final class String
 	    // We know this can't happen.
 	  }
       }
+/*#endif*/
   }
 
   /**
@@ -391,7 +396,6 @@ public final class String
   {
     this(data, 0, data.length);
   }
-/*#endif*/
 
   /**
    * Creates a new String using the character sequence represented by
@@ -1426,9 +1430,10 @@ public final class String
   private native void init(char[] chars, int offset, int count,
 			   boolean dont_copy);
   private native void init(byte[] chars, int hibyte, int offset, int count);
-/*#if not ULIBGCJ*/
   private native void init(byte[] chars, int offset, int count, String enc)
-    throws UnsupportedEncodingException;
+/*#if not ULIBGCJ*/
+    throws UnsupportedEncodingException
 /*#endif*/
+           ;
   private native void init(gnu.gcj.runtime.StringBuffer buffer);
 }

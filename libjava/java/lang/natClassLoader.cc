@@ -21,7 +21,9 @@ details.  */
 #include <execution.h>
 
 #include <java-threads.h>
+#ifndef JV_ULIBGCJ
 #include <java-interp.h>
+#endif//JV_ULIBGCJ
 
 #include <java/lang/Character.h>
 #include <java/lang/Thread.h>
@@ -31,20 +33,27 @@ details.  */
 #include <java/lang/LinkageError.h>
 #include <java/lang/NoClassDefFoundError.h>
 #include <java/lang/ClassNotFoundException.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/ClassCircularityError.h>
 #include <java/lang/IncompatibleClassChangeError.h>
 #include <java/lang/ClassFormatError.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/VirtualMachineError.h>
 #include <java/lang/VMClassLoader.h>
 #include <java/lang/reflect/Modifier.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/Runtime.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/StringBuffer.h>
+#ifndef JV_ULIBGCJ
 #include <java/io/Serializable.h>
 #include <java/lang/Cloneable.h>
 #include <java/util/HashMap.h>
 #include <gnu/gcj/runtime/BootClassLoader.h>
 #include <gnu/gcj/runtime/SystemClassLoader.h>
+#endif//JV_ULIBGCJ
 
+#ifndef JV_ULIBGCJ
 // Size of local hash table.
 #define HASH_LEN 1013
 
@@ -61,10 +70,12 @@ static jclass system_class_list;
 // initialized the system class loader; it lets us know that we should
 // no longer pay attention to the system abi flag.
 #define SYSTEM_LOADER_INITIALIZED ((jclass) -1)
+#endif//JV_ULIBGCJ
 
 // This is the root of a linked list of classes
 static jclass stack_head;
 
+#ifndef JV_ULIBGCJ
 // While bootstrapping we keep a list of classes we found, so that we
 // can register their packages.  There aren't many of these so we
 // just keep a small buffer here and abort if we overflow.
@@ -346,6 +357,7 @@ _Jv_RegisterBootstrapPackages ()
   for (int i = 0; i < bootstrap_index; ++i)
     java::lang::VMClassLoader::definePackageForNative(bootstrap_class_list[i]->getName());
 }
+#endif//JV_ULIBGCJ
 
 jclass
 _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
@@ -356,7 +368,9 @@ _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
   ret->superclass = superclass;
   ret->loader = loader;
 
+#ifndef JV_ULIBGCJ
   _Jv_RegisterInitiatingLoader (ret, loader);
+#endif//JV_ULIBGCJ
 
   return ret;
 }
@@ -439,6 +453,10 @@ _Jv_NewArrayClass (jclass element, java::lang::ClassLoader *loader,
   // Stash the pointer to the element type.
   array_class->methods = (_Jv_Method *) element;
 
+#ifdef JV_ULIBGCJ
+  array_class->interfaces = 0;
+  array_class->interface_count = 0;
+#else
   // Register our interfaces.
   static jclass interfaces[] =
     {
@@ -447,6 +465,7 @@ _Jv_NewArrayClass (jclass element, java::lang::ClassLoader *loader,
     };
   array_class->interfaces = interfaces;
   array_class->interface_count = sizeof interfaces / sizeof interfaces[0];
+#endif//JV_ULIBGCJ
 
   // Since all array classes have the same interface dispatch table, we can 
   // cache one and reuse it. It is not necessary to synchronize this.
@@ -481,9 +500,11 @@ _Jv_NewArrayClass (jclass element, java::lang::ClassLoader *loader,
   // Say this class is initialized and ready to go!
   array_class->state = JV_STATE_DONE;
 
+#ifndef JV_ULIBGCJ
   // vmspec, section 5.3.3 describes this
   if (element->loader != loader)
     _Jv_RegisterInitiatingLoader (array_class, loader);
+#endif//JV_ULIBGCJ
 
   element->arrayclass = array_class;
 }

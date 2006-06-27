@@ -52,12 +52,14 @@ java::lang::Character::readChar(jchar ch)
   return data[(jchar) (blocks[ch >> SHIFT] + ch)];
 }
 
+#ifndef JV_ULIBGCJ
 jint
 java::lang::Character::getType(jchar ch)
 {
   // Perform 16-bit addition to find the correct entry in data.
   return (jint) (data[(jchar) (blocks[ch >> SHIFT] + ch)] & TYPE_MASK);
 }
+#endif//JV_ULIBGCJ
 
 jchar
 java::lang::Character::toLowerCase(jchar ch)
@@ -71,6 +73,7 @@ java::lang::Character::toUpperCase(jchar ch)
   return (jchar) (ch + upper[readChar(ch) >> 7]);
 }
 
+#ifndef JV_ULIBGCJ
 jchar
 java::lang::Character::toTitleCase(jchar ch)
 {
@@ -80,6 +83,7 @@ java::lang::Character::toTitleCase(jchar ch)
       return title[i + 1];
   return toUpperCase(ch);
 }
+#endif//JV_ULIBGCJ
 
 jint
 java::lang::Character::digit(jchar ch, jint radix)
@@ -99,6 +103,7 @@ java::lang::Character::digit(jchar ch, jint radix)
   return (jint) -1;
 }
 
+#ifndef JV_ULIBGCJ
 jint
 java::lang::Character::getNumericValue(jchar ch)
 {
@@ -111,3 +116,4 @@ java::lang::Character::getDirectionality(jchar ch)
 {
   return direction[readChar(ch) >> 7];
 }
+#endif//JV_ULIBGCJ

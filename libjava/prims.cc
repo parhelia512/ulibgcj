@@ -25,12 +25,18 @@ details.  */
 #include <jvm.h>
 #include <java-signal.h>
 #include <java-threads.h>
+#ifndef JV_ULIBGCJ
 #include <java-interp.h>
+#endif//JV_ULIBGCJ
+#include <java-cpool.h>
+#include <gcj/field.h>
 
+#ifndef JV_ULIBGCJ
 #ifdef ENABLE_JVMPI
 #include <jvmpi.h>
 #include <java/lang/ThreadGroup.h>
 #endif
+#endif//JV_ULIBGCJ
 
 #ifndef DISABLE_GETENV_PROPERTIES
 #include <ctype.h>
@@ -42,13 +48,22 @@ details.  */
 
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
+#ifdef JV_ULIBGCJ
+#include <java/lang/ClassNotFoundException.h>
+#endif
+#ifndef JV_ULIBGCJ
 #include <java/lang/Runtime.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/String.h>
 #include <java/lang/Thread.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/ThreadGroup.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/ArithmeticException.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/ClassFormatError.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/InternalError.h>
 #include <java/lang/NegativeArraySizeException.h>
 #include <java/lang/NullPointerException.h>
@@ -57,13 +72,19 @@ details.  */
 #include <java/lang/VMThrowable.h>
 #include <java/lang/VMClassLoader.h>
 #include <java/lang/reflect/Modifier.h>
+#ifndef JV_ULIBGCJ
 #include <java/io/PrintStream.h>
 #include <java/lang/UnsatisfiedLinkError.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/VirtualMachineError.h>
+#ifndef JV_ULIBGCJ
 #include <gnu/gcj/runtime/ExtensionClassLoader.h>
 #include <gnu/gcj/runtime/FinalizerThread.h>
+#endif//JV_ULIBGCJ
 #include <execution.h>
+#ifndef JV_ULIBGCJ
 #include <gnu/java/lang/MainThread.h>
+#endif//JV_ULIBGCJ
 
 #ifdef USE_LTDL
 #include <ltdl.h>
@@ -359,6 +380,7 @@ _Jv_ThrowNullPointerException ()
   throw new java::lang::NullPointerException;
 }
 
+#ifndef JV_ULIBGCJ
 // Resolve an entry in the constant pool and return the target
 // address.
 void *
@@ -373,6 +395,7 @@ _Jv_ResolvePoolEntry (jclass this_class, jint index)
   return (_Jv_Linker::resolve_pool_entry (this_class, index))
     .field->u.addr;
 }
+#endif//JV_ULIBGCJ
 
 
 // Explicitly throw a no memory exception.
@@ -446,7 +469,8 @@ jobject
 _Jv_AllocObject (jclass klass)
 {
   jobject obj = _Jv_AllocObjectNoFinalizer (klass);
-  
+
+#ifndef JV_ULIBGCJ
   // We assume that the compiler only generates calls to this routine
   // if there really is an interesting finalizer.
   // Unfortunately, we still have to the dynamic test, since there may
@@ -456,6 +480,7 @@ _Jv_AllocObject (jclass klass)
   if (klass->vtable->get_finalizer ()
       != java::lang::Object::class$.vtable->get_finalizer ())
     _Jv_RegisterFinalizer (obj, _Jv_FinalizeObject);
+#endif//JV_ULIBGCJ
   return obj;
 }
 
@@ -734,6 +759,9 @@ _Jv_FindClassFromSignature (char *sig, java::lang::ClassLoader *loader,
       break;
     case 'L':
       {
+#ifdef JV_ULIBGCJ
+        throw new java::lang::ClassNotFoundException();
+#else
 	char *save = ++sig;
 	while (*sig && *sig != ';')
 	  ++sig;
@@ -744,6 +772,7 @@ _Jv_FindClassFromSignature (char *sig, java::lang::ClassLoader *loader,
 	    result = _Jv_FindClass (name, loader);
 	  }
 	break;
+#endif
       }
     default:
       // Do nothing -- bad signature.
@@ -1266,9 +1295,11 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
   _Jv_InitGC ();
   _Jv_InitializeSyncMutex ();
   
+#ifndef JV_ULIBGCJ
 #ifdef INTERPRETER
   _Jv_InitInterpreter ();
-#endif  
+#endif 
+#endif//JV_ULIBGCJ 
 
 #ifdef HANDLE_SEGV
   INIT_SEGV;
@@ -1297,7 +1328,9 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
 
   // Turn stack trace generation off while creating exception objects.
   _Jv_InitClass (&java::lang::VMThrowable::class$);
+#ifndef JV_ULIBGCJ
   java::lang::VMThrowable::trace_enabled = 0;
+#endif//JV_ULIBGCJ
   
   // We have to initialize this fairly early, to avoid circular class
   // initialization.  In particular we want to start the
@@ -1305,15 +1338,19 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
   // of VMClassLoader.
   _Jv_InitClass (&java::lang::ClassLoader::class$);
 
+#ifndef JV_ULIBGCJ
   // Set up the system class loader and the bootstrap class loader.
   gnu::gcj::runtime::ExtensionClassLoader::initialize();
   java::lang::VMClassLoader::initialize(JvNewStringLatin1(TOOLEXECLIBDIR));
 
   _Jv_RegisterBootstrapPackages();
+#endif//JV_ULIBGCJ
 
   no_memory = new java::lang::OutOfMemoryError;
 
+#ifndef JV_ULIBGCJ
   java::lang::VMThrowable::trace_enabled = 1;
+#endif//JV_ULIBGCJ
 
 #ifdef USE_LTDL
   LTDL_SET_PRELOADED_SYMBOLS ();
@@ -1321,6 +1358,7 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
 
   _Jv_platform_initialize ();
 
+#ifndef JV_ULIBGCJ
   _Jv_JNI_Init ();
 
   _Jv_GCInitializeFinalizers (&::gnu::gcj::runtime::FinalizerThread::finalizerReady);
@@ -1336,10 +1374,12 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
   catch (java::lang::VirtualMachineError *ignore)
     {
     }
+#endif//JV_ULIBGCJ
 
   return 0;
 }
 
+#ifndef JV_ULIBGCJ
 void
 _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
              const char **argv, bool is_jar)
@@ -1379,7 +1419,9 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
     {
       java::lang::System::err->println (JvNewStringLatin1 
         ("Exception during runtime initialization"));
+#ifndef JV_ULIBGCJ
       t->printStackTrace();
+#endif//JV_ULIBGCJ
       if (runtime)
 	java::lang::Runtime::exitNoChecksAccessor (1);
       // In case the runtime creation failed.
@@ -1406,6 +1448,7 @@ JvRunMain (jclass klass, int argc, const char **argv)
 {
   _Jv_RunMain (klass, NULL, argc, argv, false);
 }
+#endif//JV_ULIBGCJ
 
 
 

@@ -25,6 +25,13 @@ details.  */
 #include <java/lang/Math.h>
 #include <gcj/array.h>
 
+#ifdef JV_ULIBGCJ
+# ifdef HAVE_MATH_H
+#  include <math.h>
+# else
+#  error "you need math.h!"
+# endif
+#else
 #include "fdlibm.h"
 
 jdouble java::lang::Math::cos(jdouble x)
@@ -90,13 +97,15 @@ jdouble java::lang::Math::IEEEremainder(jdouble y, jdouble x)
 jdouble java::lang::Math::rint(jdouble x)
 {
   return (jdouble)::rint((double)x);
-}  
+}
+#endif//JV_ULIBGCJ
 
 jdouble java::lang::Math::floor(jdouble x)
 {
   return (jdouble)::floor((double)x);
 }  
 
+#ifndef JV_ULIBGCJ
 jdouble java::lang::Math::ceil(jdouble x)
 {
   return (jdouble)::ceil((double)x);
@@ -141,4 +150,5 @@ isNaN (jlong bits)
   
   return e == 0x7ff0000000000000LL && f != 0LL;
 }
+#endif//JV_ULIBGCJ
 

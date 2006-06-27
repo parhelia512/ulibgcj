@@ -12,9 +12,12 @@ details.  */
 #define __GCJ_METHOD_H__
 
 #include <java/lang/Class.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/reflect/Constructor.h>
 #include <java/lang/reflect/Method.h>
+#endif//JV_ULIBGCJ
 
+#ifndef JV_ULIBGCJ
 extern inline jmethodID
 _Jv_FromReflectedMethod (java::lang::reflect::Method *method)
 {
@@ -28,6 +31,7 @@ _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *constructor)
   return (jmethodID)
     ((char *) constructor->declaringClass->methods + constructor->offset);
 }
+#endif//JV_ULIBGCJ
 
 extern inline jint
 JvNumMethods (jclass klass)

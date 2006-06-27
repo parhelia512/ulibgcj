@@ -42,13 +42,11 @@ package java.lang;
 import java.io.InputStream;
 import java.io.Serializable;
 /*#endif*/
-/*#if not ULIBGCJ or ULIBGCJ_JNI*/
+/*#if not ULIBGCJ*/
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-/*#endif*/
-/*#if not ULIBGCJ*/
 import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;

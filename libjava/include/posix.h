@@ -38,7 +38,9 @@ details.  */
 #include <fcntl.h>
 
 #include <gcj/cni.h>
+#ifndef JV_ULIBGCJ
 #include <java/util/Properties.h>
+#endif//JV_ULIBGCJ
 
 // Prefix and suffix for shared libraries.
 #define _Jv_platform_solib_prefix "lib"
@@ -73,14 +75,16 @@ details.  */
 // with the JNICALL definition in jni.h
 #define _Jv_platform_ffi_abi FFI_DEFAULT_ABI
 
-#ifndef DISABLE_JAVA_NET
+#if !defined DISABLE_JAVA_NET && !defined JV_ULIBGCJ
 #include <java/net/InetAddress.h>
 #endif
 
 extern int _Jv_select (int n, fd_set *, fd_set *, fd_set *, struct timeval *);
 extern jlong _Jv_platform_gettimeofday ();
 extern void _Jv_platform_initialize (void);
+#ifndef JV_ULIBGCJ
 extern void _Jv_platform_initProperties (java::util::Properties*);
+#endif//JV_ULIBGCJ
 
 inline void
 _Jv_platform_close_on_exec (jint fd)
@@ -102,6 +106,8 @@ _Jv_platform_usleep (unsigned long usecs)
   usleep (usecs);
 }
 #endif /* JV_HASH_SYNCHRONIZATION */
+
+#ifndef JV_ULIBGCJ
 
 #ifndef DISABLE_JAVA_NET
 
@@ -184,5 +190,6 @@ _Jv_pipe (int filedes[2])
 {
   return ::pipe (filedes);
 }
+#endif//JV_ULIBGCJ
 
 #endif /* __JV_POSIX_H__ */

@@ -287,8 +287,8 @@ fi
 case "${which_gcj}" in
    built)
       GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
-      GCJH='$(abs_top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/gcc/gcjh'
-      ZIP='$(abs_top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/fastjar/fastjar'
+      GCJH='$(top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/gcc/gcjh'
+      ZIP='$(top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/fastjar/fastjar'
    ;;
    cross)
       if test "x${with_newlib}" = "xyes"; then
@@ -1469,12 +1469,11 @@ AC_SUBST(GCJFLAGS)
 if test "$enable_micro_libgcj" = yes; then
   ac_configure_args="$ac_configure_args --with-ulibgcj-platform=${PLATFORM}"
   ac_configure_args="$ac_configure_args --with-ulibgcj-platform-h=${PLATFORMH}"
+  ac_configure_args="$ac_configure_args --with-ulibgcj-threads=${THREADS}"
   ac_configure_args="$ac_configure_args --with-ulibgcj-thread-h=${THREADH}"
   ac_configure_args="$ac_configure_args --with-ulibgcj-thread-libs=\"${THREADLIBS}\""
   ac_configure_args="$ac_configure_args --with-ulibgcj-gc=${GC}"
   ac_configure_args="$ac_configure_args --with-ulibgcj-gc-h=${GCHDR}"
-  ac_configure_args="$ac_configure_args --with-ulibgcj-gc-libs=\"${GCLIBS}\""
-  ac_configure_args="$ac_configure_args --with-ulibgcj-gc-incs=\"${GCINCS}\""
   ac_configure_args="$ac_configure_args --with-ulibgcj-signal-h=${SIGNAL_HANDLER}"
   ac_configure_args="$ac_configure_args --with-ulibgcj-signal-aux-h=${SIGNAL_HANDLER_AUX}"
   ac_configure_args="$ac_configure_args --with-ulibgcj-hash-synchronization=${enable_hash_synchronization}"

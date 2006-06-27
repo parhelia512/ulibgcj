@@ -252,7 +252,13 @@ public final class Double extends Number implements Comparable
    * @see #NEGATIVE_INFINITY
    * @since 1.2
    */
+  /*#if ULIBGCJ
+  public static double parseDouble(String str) {
+    return 0.0;
+  }
+  #else*/
   public static native double parseDouble(String str);
+  /*#endif*/
 
   /**
    * Return <code>true</code> if the <code>double</code> has the same
@@ -548,5 +554,11 @@ public final class Double extends Number implements Comparable
    *        fewer digits)
    */
   // Package visible for use by Float.
+  /*#if ULIBGCJ
+  static String toString(double d, boolean isFloat) {
+    return "<not implemented>";
+  }
+  #else*/
   static native String toString(double d, boolean isFloat);
+  /*#endif*/
 }

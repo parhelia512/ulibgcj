@@ -85,7 +85,9 @@ private:
     void sync_init (void);
 
 public:
+#ifndef JV_ULIBGCJ
   virtual void throwNoSuchMethodError (void);
+#endif//JV_ULIBGCJ
 };
 
 #endif /* __JAVA_LANG_OBJECT_H__ */

@@ -240,7 +240,7 @@ public class Object
    * is guaranteed.
    *
    * <p>The waiting period is nowhere near as precise as
-   * nanoseconds; considering that even wait(int) is inaccurate,
+   * nanoseconds; considering that even wait(long) is inaccurate,
    * how much can you expect?  But on supporting
    * implementations, this offers somewhat more granularity
    * than milliseconds.

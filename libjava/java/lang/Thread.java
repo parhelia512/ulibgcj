@@ -338,8 +338,10 @@ public class Thread implements Runnable
   private Thread (Thread current, ThreadGroup g, Runnable r, String n)
 /*#endif*/
   {
+/*#if not ULIBGCJ*/
     // Make sure the current thread may create a new thread.
     checkAccess();
+/*#endif*/
     
     // The Class Libraries book says ``threadName cannot be null''.  I
     // take this to mean NullPointerException.
@@ -440,7 +442,6 @@ public class Thread implements Runnable
   public native int countStackFrames();
 /*#endif*/
 
-/*#if not ULIBGCJ*/
   /**
    * Get the currently executing Thread.
    *
@@ -448,6 +449,7 @@ public class Thread implements Runnable
    */
   public static native Thread currentThread();
 
+/*#if not ULIBGCJ*/
   /**
    * Originally intended to destroy this thread, this method was never
    * implemented by Sun, and is hence a no-op.
@@ -654,9 +656,11 @@ public class Thread implements Runnable
    * @deprecated pointless, since suspend is deprecated
    */
   public final native void resume();
+/*#endif*/
 
   private final native void finish_();
 
+/*#if not ULIBGCJ*/
   /**
    * Determine whether the given Thread has been interrupted, but leave
    * the <i>interrupted status</i> alone in the process.

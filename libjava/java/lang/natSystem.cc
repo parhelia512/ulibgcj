@@ -18,15 +18,21 @@ details.  */
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <java/lang/System.h>
+#ifdef JV_ULIBGCJ
+#include <java/lang/System$Output.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/Class.h>
 #include <java/lang/ArrayStoreException.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/NullPointerException.h>
+#ifndef JV_ULIBGCJ
 #include <java/io/PrintStream.h>
 #include <java/io/InputStream.h>
+#endif//JV_ULIBGCJ
 
 
 
+#ifndef JV_ULIBGCJ
 void
 java::lang::System::setErr0 (java::io::PrintStream *newErr)
 {
@@ -44,6 +50,7 @@ java::lang::System::setOut0 (java::io::PrintStream *newOut)
 {
   out = newOut;
 }
+#endif//JV_ULIBGCJ
 
 void
 java::lang::System::arraycopy (jobject src, jint src_offset,
@@ -130,6 +137,7 @@ java::lang::System::identityHashCode (jobject obj)
   return _Jv_HashCode (obj);
 }
 
+#ifndef JV_ULIBGCJ
 jstring
 java::lang::System::getenv0 (jstring name)
 {
@@ -142,3 +150,23 @@ java::lang::System::getenv0 (jstring name)
     return NULL;
   return JvNewStringUTF (value);
 }
+#endif//JV_ULIBGCJ
+
+#ifdef JV_ULIBGCJ
+void
+java::lang::System$Output::print (jstring s)
+{
+  jchar* chars = _Jv_GetStringChars (s);
+  for (jsize i = 0; i < s->length(); ++i) {
+    putchar((char) chars[i]);
+  }
+}
+
+void
+java::lang::System$Output::println (jstring s)
+{
+  java::lang::System$Output::print (s);
+  putchar('\n');
+  fflush(stdout);
+}
+#endif//JV_ULIBGCJ

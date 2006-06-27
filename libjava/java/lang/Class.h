@@ -17,10 +17,14 @@ details.  */
 #include <stddef.h>
 #include <java/lang/Object.h>
 #include <java/lang/String.h>
+#ifndef JV_ULIBGCJ
 #include <java/net/URL.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/reflect/Modifier.h>
+#ifndef JV_ULIBGCJ
 #include <java/security/ProtectionDomain.h>
 #include <java/lang/Package.h>
+#endif//JV_ULIBGCJ
 
 // Avoid including SystemClassLoader.h.
 extern "Java"
@@ -308,19 +312,27 @@ private:
 		    jint offset);
   java::lang::reflect::Field *getPrivateField (jstring);
   java::lang::reflect::Method *getPrivateMethod (jstring, JArray<jclass> *);
+#ifndef JV_ULIBGCJ
   java::security::ProtectionDomain *getProtectionDomain0 ();
+#endif//JV_ULIBGCJ
 
+#ifndef JV_ULIBGCJ
   java::lang::reflect::Method *_getMethod (jstring, JArray<jclass> *);
   java::lang::reflect::Method *_getDeclaredMethod (jstring, JArray<jclass> *);
+#endif//JV_ULIBGCJ
 
 public:
+#ifndef JV_ULIBGCJ
   JArray<java::lang::reflect::Field *> *getFields (void);
+#endif//JV_ULIBGCJ
 
   JArray<jclass> *getInterfaces (void);
 
   void getSignature (java::lang::StringBuffer *buffer);
   static jstring getSignature (JArray<jclass> *, jboolean is_constructor);
+#ifndef JV_ULIBGCJ
   JArray<java::lang::reflect::Method *> *getMethods (void);
+#endif//JV_ULIBGCJ
 
   inline jint getModifiers (void)
   {
@@ -329,10 +341,12 @@ public:
 
   jstring getName (void);
 
+#ifndef JV_ULIBGCJ
   java::net::URL        *getResource (jstring resourceName);
   java::io::InputStream *getResourceAsStream (jstring resourceName);
   JArray<jobject> *getSigners (void);
   void setSigners(JArray<jobject> *);
+#endif//JV_ULIBGCJ
 
   inline jclass getSuperclass (void)
   {
@@ -368,8 +382,10 @@ public:
     }
 
   jobject newInstance (void);
+#ifndef JV_ULIBGCJ
   java::security::ProtectionDomain *getProtectionDomain (void);
   java::lang::Package *getPackage (void);
+#endif//JV_ULIBGCJ
   jstring toString (void);
   jboolean desiredAssertionStatus (void);
 
@@ -436,10 +452,12 @@ private:
 					       jboolean);
   friend jobject (::_Jv_JNI_ToReflectedMethod) (_Jv_JNIEnv *, jclass, jmethodID,
 						jboolean);
+#ifndef JV_ULIBGCJ
   friend jfieldID (::_Jv_FromReflectedField) (java::lang::reflect::Field *);
 
   friend jmethodID (::_Jv_FromReflectedMethod) (java::lang::reflect::Method *);
   friend jmethodID (::_Jv_FromReflectedConstructor) (java::lang::reflect::Constructor *);
+#endif//JV_ULIBGCJ
   friend jint (::JvNumMethods) (jclass);
   friend jmethodID (::JvGetFirstMethod) (jclass);
 
@@ -488,6 +506,7 @@ private:
   friend jboolean (::_Jv_IsInterpretedClass) (jclass);
   friend jboolean (::_Jv_IsBinaryCompatibilityABI) (jclass);
 
+#ifndef JV_ULIBGCJ
 #ifdef INTERPRETER
   friend void ::_Jv_InitField (jobject, jclass, int);
 
@@ -496,6 +515,7 @@ private:
   friend class ::_Jv_InterpMethod;
 #endif
   friend class ::_Jv_StackTrace;
+#endif//JV_ULIBGCJ
 
 #ifdef JV_MARKOBJ_DECL
   friend JV_MARKOBJ_DECL;
@@ -575,8 +595,10 @@ private:
   _Jv_IDispatchTable *idt;
   // Pointer to the class that represents an array of this class.
   jclass arrayclass;
+#ifndef JV_ULIBGCJ
   // Security Domain to which this class belongs (or null).
   java::security::ProtectionDomain *protectionDomain;
+#endif//JV_ULIBGCJ
   // Pointer to the type assertion table for this class.
   _Jv_TypeAssertion *assertion_table;
   // Signers of this class (or null).

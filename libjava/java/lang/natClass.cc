@@ -26,16 +26,20 @@ details.  */
 #include <java/lang/ClassLoader.h>
 #include <java/lang/String.h>
 #include <java/lang/reflect/Modifier.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/reflect/Member.h>
 #include <java/lang/reflect/Method.h>
 #include <java/lang/reflect/Field.h>
 #include <java/lang/reflect/Constructor.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/AbstractMethodError.h>
 #include <java/lang/ArrayStoreException.h>
 #include <java/lang/ClassCastException.h>
 #include <java/lang/ClassNotFoundException.h>
 #include <java/lang/ExceptionInInitializerError.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/IllegalAccessException.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/IllegalAccessError.h>
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/IncompatibleClassChangeError.h>
@@ -43,30 +47,45 @@ details.  */
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/InstantiationException.h>
 #include <java/lang/NoClassDefFoundError.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/NoSuchFieldException.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/NoSuchMethodError.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/NoSuchMethodException.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/Thread.h>
 #include <java/lang/NullPointerException.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/RuntimePermission.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/System.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/SecurityManager.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/StringBuffer.h>
 #include <java/lang/VMClassLoader.h>
 #include <gcj/method.h>
 #include <gnu/gcj/RawData.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/VerifyError.h>
+#endif//JV_ULIBGCJ
 
 #include <java-cpool.h>
+#ifndef JV_ULIBGCJ
 #include <java-interp.h>
+#endif//JV_ULIBGCJ
 #include <java-assert.h>
+#ifndef JV_ULIBGCJ
 #include <java-stack.h>
+#endif//JV_ULIBGCJ
 #include <execution.h>
 
 
 
 using namespace gcj;
 
+#ifndef JV_ULIBGCJ
 jclass
 java::lang::Class::forName (jstring className, jboolean initialize,
                             java::lang::ClassLoader *loader)
@@ -107,10 +126,12 @@ java::lang::Class::forName (jstring className)
 
   return forName (className, true, loader);
 }
+#endif//JV_ULIBGCJ
 
 java::lang::ClassLoader *
 java::lang::Class::getClassLoader (void)
 {
+#ifndef JV_ULIBGCJ
   java::lang::SecurityManager *s = java::lang::System::getSecurityManager();
   if (s != NULL)
     {
@@ -125,10 +146,12 @@ java::lang::Class::getClassLoader (void)
       if (caller_loader != NULL && ! caller_loader->isAncestorOf(loader))
 	s->checkPermission (new RuntimePermission (JvNewStringLatin1 ("getClassLoader")));
     }
+#endif//JV_ULIBGCJ
 
   return loader;
 }
 
+#ifndef JV_ULIBGCJ
 java::lang::reflect::Constructor *
 java::lang::Class::getConstructor (JArray<jclass> *param_types)
 {
@@ -302,6 +325,7 @@ java::lang::Class::getDeclaredFields (jboolean public_only)
     }
   return result;
 }
+#endif//JV_ULIBGCJ
 
 void
 java::lang::Class::getSignature (java::lang::StringBuffer *buffer)
@@ -340,6 +364,7 @@ java::lang::Class::getSignature (JArray<jclass> *param_types,
   return buf->toString();
 }
 
+#ifndef JV_ULIBGCJ
 java::lang::reflect::Method *
 java::lang::Class::_getDeclaredMethod (jstring name,
 				       JArray<jclass> *param_types)
@@ -408,6 +433,7 @@ java::lang::Class::getDeclaredMethods (void)
     }
   return result;
 }
+#endif//JV_ULIBGCJ
 
 jstring
 java::lang::Class::getName (void)
@@ -449,6 +475,7 @@ java::lang::Class::getInterfaces (void)
   return reinterpret_cast<JArray<jclass> *> (r);
 }
 
+#ifndef JV_ULIBGCJ
 java::lang::reflect::Method *
 java::lang::Class::_getMethod (jstring name, JArray<jclass> *param_types)
 {
@@ -616,6 +643,7 @@ java::lang::Class::getMethods (void)
 
   return result;
 }
+#endif//JV_ULIBGCJ
 
 jboolean
 java::lang::Class::isAssignableFrom (jclass klass)
@@ -638,7 +666,9 @@ java::lang::Class::isInstance (jobject obj)
 jobject
 java::lang::Class::newInstance (void)
 {
+#ifndef JV_ULIBGCJ
   memberAccessCheck(java::lang::reflect::Member::PUBLIC);
+#endif//JV_ULIBGCJ
 
   if (isPrimitive ()
       || isInterface ()
@@ -763,6 +793,7 @@ java::lang::Class::initializeClass (void)
   notifyAll ();
 }
 
+#ifndef JV_ULIBGCJ
 // Only used by serialization
 java::lang::reflect::Field *
 java::lang::Class::getPrivateField (jstring name)
@@ -837,6 +868,7 @@ java::lang::Class::setSigners(JArray<jobject> *s)
 {
   hack_signers = s;
 }
+#endif//JV_ULIBGCJ
 
 
 
