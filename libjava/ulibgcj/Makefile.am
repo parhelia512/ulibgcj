@@ -105,6 +105,8 @@ exception.cc \
 defineclass.cc \
 link.cc
 
+libulibgcj_a_LIBADD = $(objects) $(native_objects)
+
 if USING_BOEHMGC
 libulibgcj_a_SOURCES += boehm.cc
 endif
@@ -237,10 +239,6 @@ $(native_objects): %.o: %.cc
 	@mkdir -p $(dir $(@))
 	$(CXXCOMPILE) -o $(@) -c $(<)
 
-classes.a: $(objects) $(native_objects)
-	@rm $(@)
-	$(AR) cru $(@) $(^)
-
 clean:
 	-rm -f $$(find -name '*.o' -o -name '*.class')
 
@@ -250,11 +248,10 @@ hello: \
 		Hello.o \
 		Hello-cpp.o \
 		libulibgcj.a \
-		classes.a \
 		$(GCLIBS)
 	$(CXX) $(LDFLAGS) -lm -ldl $(THREADLDFLAGS) $(THREADLIBS) $(^) -o $(@)
 
-Hello.o: $(srcdir)/test/Hello.java classes.a
+Hello.o: $(srcdir)/test/Hello.java libulibgcj.a
 	$(GCJ) -I. -I$(srcdir)/.. $(GCJFLAGS) -o $(@) -c $(<)
 
 Hello-cpp.o: $(srcdir)/test/Hello.cpp Hello.h
@@ -263,7 +260,7 @@ Hello-cpp.o: $(srcdir)/test/Hello.cpp Hello.h
 Hello.h: Hello.class
 	$(GCJH) -classpath '' -bootclasspath processed $(<:.class=)
 
-Hello.class: $(srcdir)/test/Hello.java classes.a
+Hello.class: $(srcdir)/test/Hello.java libulibgcj.a
 	$(GCJ) -d . --classpath '' --bootclasspath processed -C $(<)
 
 test: \
@@ -271,14 +268,13 @@ test: \
 		CoreTest-cpp.o \
 		Thrower.o \
 		libulibgcj.a \
-		classes.a \
 		$(GCLIBS)
 	$(CXX) $(LDFLAGS) -lm -ldl $(THREADLDFLAGS) $(THREADLIBS) $(^) -o $(@)
 
-CoreTest.o: $(srcdir)/test/CoreTest.java classes.a
+CoreTest.o: $(srcdir)/test/CoreTest.java libulibgcj.a
 	$(GCJ) -I. -I$(srcdir)/.. -I$(srcdir)/test $(GCJFLAGS) -o $(@) -c $(<)
 
-Thrower.o: $(srcdir)/test/Thrower.java classes.a
+Thrower.o: $(srcdir)/test/Thrower.java libulibgcj.a
 	$(GCJ) -I. -I$(srcdir)/.. $(GCJFLAGS) -o $(@) -c $(<)
 
 CoreTest-cpp.o: $(srcdir)/test/CoreTest.cpp CoreTest.h
@@ -287,5 +283,5 @@ CoreTest-cpp.o: $(srcdir)/test/CoreTest.cpp CoreTest.h
 CoreTest.h: CoreTest.class
 	$(GCJH) -classpath .:$(srcdir)/test -bootclasspath processed $(<:.class=)
 
-CoreTest.class: $(srcdir)/test/CoreTest.java classes.a
+CoreTest.class: $(srcdir)/test/CoreTest.java libulibgcj.a
 	$(GCJ) -d . --classpath $(srcdir)/test --bootclasspath processed -C $(<)
