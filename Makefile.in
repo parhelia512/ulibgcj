@@ -622,6 +622,7 @@ configure-target:  \
     maybe-configure-target-examples \
     maybe-configure-target-libffi \
     maybe-configure-target-libjava \
+    maybe-configure-target-ulibgcj \
     maybe-configure-target-zlib \
     maybe-configure-target-boehm-gc \
     maybe-configure-target-qthreads \
@@ -741,6 +742,7 @@ all-target:  \
     maybe-all-target-examples \
     maybe-all-target-libffi \
     maybe-all-target-libjava \
+    maybe-all-target-ulibgcj \
     maybe-all-target-zlib \
     maybe-all-target-boehm-gc \
     maybe-all-target-qthreads \
@@ -848,6 +850,7 @@ info-target:  \
     maybe-info-target-examples \
     maybe-info-target-libffi \
     maybe-info-target-libjava \
+    maybe-info-target-ulibgcj \
     maybe-info-target-zlib \
     maybe-info-target-boehm-gc \
     maybe-info-target-qthreads \
@@ -950,6 +953,7 @@ dvi-target:  \
     maybe-dvi-target-examples \
     maybe-dvi-target-libffi \
     maybe-dvi-target-libjava \
+    maybe-dvi-target-ulibgcj \
     maybe-dvi-target-zlib \
     maybe-dvi-target-boehm-gc \
     maybe-dvi-target-qthreads \
@@ -1052,6 +1056,7 @@ html-target:  \
     maybe-html-target-examples \
     maybe-html-target-libffi \
     maybe-html-target-libjava \
+    maybe-html-target-ulibgcj \
     maybe-html-target-zlib \
     maybe-html-target-boehm-gc \
     maybe-html-target-qthreads \
@@ -1154,6 +1159,7 @@ TAGS-target:  \
     maybe-TAGS-target-examples \
     maybe-TAGS-target-libffi \
     maybe-TAGS-target-libjava \
+    maybe-TAGS-target-ulibgcj \
     maybe-TAGS-target-zlib \
     maybe-TAGS-target-boehm-gc \
     maybe-TAGS-target-qthreads \
@@ -1256,6 +1262,7 @@ install-info-target:  \
     maybe-install-info-target-examples \
     maybe-install-info-target-libffi \
     maybe-install-info-target-libjava \
+    maybe-install-info-target-ulibgcj \
     maybe-install-info-target-zlib \
     maybe-install-info-target-boehm-gc \
     maybe-install-info-target-qthreads \
@@ -1358,6 +1365,7 @@ installcheck-target:  \
     maybe-installcheck-target-examples \
     maybe-installcheck-target-libffi \
     maybe-installcheck-target-libjava \
+    maybe-installcheck-target-ulibgcj \
     maybe-installcheck-target-zlib \
     maybe-installcheck-target-boehm-gc \
     maybe-installcheck-target-qthreads \
@@ -1460,6 +1468,7 @@ mostlyclean-target:  \
     maybe-mostlyclean-target-examples \
     maybe-mostlyclean-target-libffi \
     maybe-mostlyclean-target-libjava \
+    maybe-mostlyclean-target-ulibgcj \
     maybe-mostlyclean-target-zlib \
     maybe-mostlyclean-target-boehm-gc \
     maybe-mostlyclean-target-qthreads \
@@ -1562,6 +1571,7 @@ clean-target:  \
     maybe-clean-target-examples \
     maybe-clean-target-libffi \
     maybe-clean-target-libjava \
+    maybe-clean-target-ulibgcj \
     maybe-clean-target-zlib \
     maybe-clean-target-boehm-gc \
     maybe-clean-target-qthreads \
@@ -1664,6 +1674,7 @@ distclean-target:  \
     maybe-distclean-target-examples \
     maybe-distclean-target-libffi \
     maybe-distclean-target-libjava \
+    maybe-distclean-target-ulibgcj \
     maybe-distclean-target-zlib \
     maybe-distclean-target-boehm-gc \
     maybe-distclean-target-qthreads \
@@ -1766,6 +1777,7 @@ maintainer-clean-target:  \
     maybe-maintainer-clean-target-examples \
     maybe-maintainer-clean-target-libffi \
     maybe-maintainer-clean-target-libjava \
+    maybe-maintainer-clean-target-ulibgcj \
     maybe-maintainer-clean-target-zlib \
     maybe-maintainer-clean-target-boehm-gc \
     maybe-maintainer-clean-target-qthreads \
@@ -1924,6 +1936,7 @@ check-target:  \
     maybe-check-target-examples \
     maybe-check-target-libffi \
     maybe-check-target-libjava \
+    maybe-check-target-ulibgcj \
     maybe-check-target-zlib \
     maybe-check-target-boehm-gc \
     maybe-check-target-qthreads \
@@ -2123,6 +2136,7 @@ install-target:  \
     maybe-install-target-examples \
     maybe-install-target-libffi \
     maybe-install-target-libjava \
+    maybe-install-target-ulibgcj \
     maybe-install-target-zlib \
     maybe-install-target-boehm-gc \
     maybe-install-target-qthreads \
@@ -32999,6 +33013,355 @@ maintainer-clean-target-libjava:
 
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-ulibgcj
+$(TARGET_SUBDIR)/ulibgcj/multilib.out: multilib.out
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/ulibgcj ; \
+	rm -f $(TARGET_SUBDIR)/ulibgcj/Makefile || : ; \
+	cp multilib.out $(TARGET_SUBDIR)/ulibgcj/multilib.out
+@endif target-ulibgcj
+
+
+
+.PHONY: configure-target-ulibgcj maybe-configure-target-ulibgcj
+maybe-configure-target-ulibgcj:
+@if target-ulibgcj
+maybe-configure-target-ulibgcj: configure-target-ulibgcj
+configure-target-ulibgcj: $(TARGET_SUBDIR)/ulibgcj/multilib.out
+	@$(unstage)
+	@test ! -f $(TARGET_SUBDIR)/ulibgcj/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/ulibgcj ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo Configuring in $(TARGET_SUBDIR)/ulibgcj; \
+	cd "$(TARGET_SUBDIR)/ulibgcj" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/ulibgcj/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/ulibgcj"; \
+	libsrcdir="$$s/ulibgcj"; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  || exit 1
+@endif target-ulibgcj
+
+
+
+
+
+.PHONY: all-target-ulibgcj maybe-all-target-ulibgcj
+maybe-all-target-ulibgcj:
+@if target-ulibgcj
+TARGET-target-ulibgcj=all
+maybe-all-target-ulibgcj: all-target-ulibgcj
+all-target-ulibgcj: configure-target-ulibgcj
+	@$(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/ulibgcj && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-ulibgcj))
+@endif target-ulibgcj
+
+
+
+
+
+.PHONY: check-target-ulibgcj maybe-check-target-ulibgcj
+maybe-check-target-ulibgcj:
+@if target-ulibgcj
+maybe-check-target-ulibgcj: check-target-ulibgcj
+
+check-target-ulibgcj:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/ulibgcj && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
+
+@endif target-ulibgcj
+
+.PHONY: install-target-ulibgcj maybe-install-target-ulibgcj
+maybe-install-target-ulibgcj:
+@if target-ulibgcj
+maybe-install-target-ulibgcj: install-target-ulibgcj
+
+install-target-ulibgcj: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/ulibgcj && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-ulibgcj
+
+# Other targets (info, dvi, etc.)
+
+.PHONY: maybe-info-target-ulibgcj info-target-ulibgcj
+maybe-info-target-ulibgcj:
+@if target-ulibgcj
+maybe-info-target-ulibgcj: info-target-ulibgcj
+
+info-target-ulibgcj: \
+    configure-target-ulibgcj 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing info in $(TARGET_SUBDIR)/ulibgcj" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/ulibgcj && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           info) \
+	  || exit 1
+
+@endif target-ulibgcj
+
+.PHONY: maybe-dvi-target-ulibgcj dvi-target-ulibgcj
+maybe-dvi-target-ulibgcj:
+@if target-ulibgcj
+maybe-dvi-target-ulibgcj: dvi-target-ulibgcj
+
+dvi-target-ulibgcj: \
+    configure-target-ulibgcj 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/ulibgcj" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/ulibgcj && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           dvi) \
+	  || exit 1
+
+@endif target-ulibgcj
+
+.PHONY: maybe-html-target-ulibgcj html-target-ulibgcj
+maybe-html-target-ulibgcj:
+@if target-ulibgcj
+maybe-html-target-ulibgcj: html-target-ulibgcj
+
+html-target-ulibgcj: \
+    configure-target-ulibgcj 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing html in $(TARGET_SUBDIR)/ulibgcj" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/ulibgcj && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           html) \
+	  || exit 1
+
+@endif target-ulibgcj
+
+.PHONY: maybe-TAGS-target-ulibgcj TAGS-target-ulibgcj
+maybe-TAGS-target-ulibgcj:
+@if target-ulibgcj
+maybe-TAGS-target-ulibgcj: TAGS-target-ulibgcj
+
+TAGS-target-ulibgcj: \
+    configure-target-ulibgcj 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/ulibgcj" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/ulibgcj && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           TAGS) \
+	  || exit 1
+
+@endif target-ulibgcj
+
+.PHONY: maybe-install-info-target-ulibgcj install-info-target-ulibgcj
+maybe-install-info-target-ulibgcj:
+@if target-ulibgcj
+maybe-install-info-target-ulibgcj: install-info-target-ulibgcj
+
+install-info-target-ulibgcj: \
+    configure-target-ulibgcj \
+    info-target-ulibgcj 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/ulibgcj" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/ulibgcj && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-info) \
+	  || exit 1
+
+@endif target-ulibgcj
+
+.PHONY: maybe-installcheck-target-ulibgcj installcheck-target-ulibgcj
+maybe-installcheck-target-ulibgcj:
+@if target-ulibgcj
+maybe-installcheck-target-ulibgcj: installcheck-target-ulibgcj
+
+installcheck-target-ulibgcj: \
+    configure-target-ulibgcj 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/ulibgcj" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/ulibgcj && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           installcheck) \
+	  || exit 1
+
+@endif target-ulibgcj
+
+.PHONY: maybe-mostlyclean-target-ulibgcj mostlyclean-target-ulibgcj
+maybe-mostlyclean-target-ulibgcj:
+@if target-ulibgcj
+maybe-mostlyclean-target-ulibgcj: mostlyclean-target-ulibgcj
+
+mostlyclean-target-ulibgcj: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/ulibgcj" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/ulibgcj && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           mostlyclean) \
+	  || exit 1
+
+@endif target-ulibgcj
+
+.PHONY: maybe-clean-target-ulibgcj clean-target-ulibgcj
+maybe-clean-target-ulibgcj:
+@if target-ulibgcj
+maybe-clean-target-ulibgcj: clean-target-ulibgcj
+
+clean-target-ulibgcj: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing clean in $(TARGET_SUBDIR)/ulibgcj" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/ulibgcj && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           clean) \
+	  || exit 1
+
+@endif target-ulibgcj
+
+.PHONY: maybe-distclean-target-ulibgcj distclean-target-ulibgcj
+maybe-distclean-target-ulibgcj:
+@if target-ulibgcj
+maybe-distclean-target-ulibgcj: distclean-target-ulibgcj
+
+distclean-target-ulibgcj: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/ulibgcj" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/ulibgcj && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           distclean) \
+	  || exit 1
+
+@endif target-ulibgcj
+
+.PHONY: maybe-maintainer-clean-target-ulibgcj maintainer-clean-target-ulibgcj
+maybe-maintainer-clean-target-ulibgcj:
+@if target-ulibgcj
+maybe-maintainer-clean-target-ulibgcj: maintainer-clean-target-ulibgcj
+
+maintainer-clean-target-ulibgcj: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/ulibgcj" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/ulibgcj && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           maintainer-clean) \
+	  || exit 1
+
+@endif target-ulibgcj
+
+
+
+# There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 @if target-zlib
 $(TARGET_SUBDIR)/zlib/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/zlib ; \
@@ -36172,6 +36535,8 @@ configure-target-libffi: maybe-all-gcc
 
 configure-target-libjava: maybe-all-gcc
 
+configure-target-ulibgcj: maybe-all-gcc
+
 configure-target-zlib: maybe-all-gcc
 
 configure-target-boehm-gc: maybe-all-gcc
@@ -36197,6 +36562,9 @@ configure-target-libffi: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libjava: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libjava: maybe-all-target-libstdc++-v3
+
+configure-target-ulibgcj: maybe-all-target-newlib maybe-all-target-libgloss
+configure-target-ulibgcj: maybe-all-target-libstdc++-v3
 
 configure-target-libmudflap: maybe-all-target-newlib maybe-all-target-libgloss
 
@@ -36691,6 +37059,8 @@ all-target-libjava: maybe-all-target-zlib
 all-target-libjava: maybe-all-target-boehm-gc
 all-target-libjava: maybe-all-target-qthreads
 all-target-libjava: maybe-all-target-libffi
+configure-target-ulibgcj: maybe-configure-target-boehm-gc
+all-target-ulibgcj: maybe-all-target-boehm-gc
 all-target-libobjc: maybe-all-target-libiberty
 all-target-libstdc++-v3: maybe-all-target-libiberty
 all-target-libgloss: maybe-configure-target-newlib

@@ -3,14 +3,12 @@ AC_PREREQ(2.59)
 AC_INIT(ulibgcj, 0.1)
 
 AC_CANONICAL_SYSTEM
-_GCC_TOPLEV_NONCANONICAL_BUILD
-_GCC_TOPLEV_NONCANONICAL_TARGET
 
 AC_SUBST(target_noncanonical)
 
 AM_INIT_AUTOMAKE(1.9.0)
 
-AC_CONFIG_SRCDIR([../java/lang/System.java])
+AC_CONFIG_SRCDIR([../libjava/java/lang/System.java])
 
 AC_CONFIG_HEADERS([include/config.h])
 
@@ -27,7 +25,7 @@ libgcj_cflags=
 libgcj_cxxflags=
 libgcj_javaflags=
 
-. ${srcdir}/../configure.host
+. ${srcdir}/../libjava/configure.host
 
 LIBGCJ_CFLAGS="${libgcj_cflags}"
 LIBGCJ_CXXFLAGS="${libgcj_cxxflags}"
@@ -38,14 +36,27 @@ AC_SUBST(LIBGCJ_CXXFLAGS)
 AC_SUBST(LIBGCJ_JAVAFLAGS)
 AC_SUBST(LIBGCJ_LD_SYMBOLIC)
 
-if test "x${with_ulibgcj_platform}" = x; then
-  AC_MSG_ERROR(
-    [micro-libgcj must be configured via the top-level GCC configure script])
-fi
+libjava=../libjava
 
-AC_CONFIG_LINKS(include/platform.h:../include/${with_ulibgcj_platform_h})
-AM_CONDITIONAL(USING_WIN32_PLATFORM, test "${with_ulibgcj_platform}" = Win32)
-AM_CONDITIONAL(USING_POSIX_PLATFORM, test "${with_ulibgcj_platform}" = Posix)
+## platform ###################################################################
+
+case "$host" in
+  *mingw*)
+    PLATFORM=Win32
+    PLATFORMNET=Win32
+    PLATFORMH=win32.h
+    CHECK_FOR_BROKEN_MINGW_LD
+    ;;
+  *)
+    PLATFORM=Posix
+    PLATFORMNET=Posix
+    PLATFORMH=posix.h
+    ;;
+esac
+
+AC_CONFIG_LINKS(include/platform.h:${libjava}/include/${PLATFORMH})
+AM_CONDITIONAL(USING_WIN32_PLATFORM, test "${PLATFORM}" = Win32)
+AM_CONDITIONAL(USING_POSIX_PLATFORM, test "${PLATFORM}" = Posix)
 
 case "$host" in
   *-darwin*) DARWIN_CRT=true ;;
@@ -53,82 +64,152 @@ case "$host" in
 esac
 AM_CONDITIONAL(USING_DARWIN_CRT, $DARWIN_CRT)
 
-AC_CONFIG_LINKS(include/java-threads.h:../include/${with_ulibgcj_thread_h})
-THREADLIBS=${with_ulibgcj_thread_libs}
-AC_SUBST(THREADLIBS)
-AM_CONDITIONAL(USING_POSIX_THREADS, test "${with_ulibgcj_threads}" = posix)
-AM_CONDITIONAL(USING_WIN32_THREADS, test "${with_ulibgcj_threads}" = win32)
-AM_CONDITIONAL(USING_NO_THREADS, test "${with_ulibgcj_threads}" = none)
+## gc #########################################################################
+
+AC_MSG_CHECKING([for garbage collector to use])
+AC_ARG_ENABLE(java-gc,
+  AS_HELP_STRING([--enable-java-gc=TYPE],
+                 [choose garbage collector (default is boehm)]),
+  [GC=$enableval],
+  [GC=boehm])
 
 GCLIBS=
 GCINCS=
-if test "x${with_ulibgcj_gc}" = "xboehm"; then
-  AC_DEFINE(HAVE_BOEHM_GC, 1, [Define if Boehm GC in use.])
-  GCLIBS=../../boehm-gc/.libs/libgcjgc_convenience.a
-  GCINCS='-I$(top_srcdir)/../../boehm-gc/include -I../../boehm-gc/include'
-fi
+case "$GC" in
+ boehm)
+    AC_MSG_RESULT(boehm)
+    GCLIBS=../boehm-gc/.libs/libgcjgc_convenience.a
+    GCINCS='-I$(top_srcdir)/../boehm-gc/include -I../boehm-gc/include'
+    GCHDR=boehm-gc.h
+    # The POSIX thread support needs to know this.
+    AC_DEFINE(HAVE_BOEHM_GC, 1, [Define if Boehm GC in use.])
+    ;;
+ no)
+    AC_MSG_RESULT(none)
+    GCHDR=no-gc.h
+    ;;
+ *)
+    AC_MSG_ERROR([unrecognized collector "$GC"])
+    ;;
+esac
 
-AC_CONFIG_LINKS(include/java-gc.h:../include/${with_ulibgcj_gc_h})
+AC_CONFIG_LINKS(include/java-gc.h:${libjava}/include/${GCHDR})
 AC_SUBST(GCLIBS)
 AC_SUBST(GCINCS)
-AM_CONDITIONAL(USING_BOEHMGC, test "${with_ulibgcj_gc}" = boehm)
-AM_CONDITIONAL(USING_NOGC, test "${with_ulibgcj_gc}" = no)
+AM_CONDITIONAL(USING_BOEHMGC, test "${GC}" = boehm)
+AM_CONDITIONAL(USING_NOGC, test "${GC}" = no)
 
-AC_CONFIG_LINKS(include/java-signal.h:../${with_ulibgcj_signal_h}
-  include/java-signal-aux.h:../${with_ulibgcj_signal_aux_h})
+## threads ####################################################################
 
-if test "x${with_ulibgcj_hash_synchronization}" = "xyes"; then
-  AC_DEFINE(JV_HASH_SYNCHRONIZATION, 1,
-            [Define if hash synchronization is in use])
-fi
+AC_MSG_CHECKING([for thread model used by GCC])
+THREADS=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+AC_MSG_RESULT([$THREADS])
 
-if test "x${with_ulibgcj_which_gcj}" = x; then
-  AC_MSG_ERROR([with_ulibgcj_which_gcj not set])
-fi
-
-GCJ=gcj
-GCJH=gcjh
-case "${with_ulibgcj_which_gcj}" in
-  built)
-   GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
-   GCJH='../../../$(host_subdir)/gcc/gcjh'
-   ;;
- cross)
-   GCJ="${target_noncanonical}-gcj"
-   GCJH='$(target_noncanonical)-gcjh'
-   ;;
+case "$THREADS" in
+ no | none | single)
+    THREADS=none
+    ;;
+ posix | posix95 | pthreads)
+    THREADS=posix
+    case "$host" in
+     *-*-linux*)
+	AC_DEFINE(LINUX_THREADS, 1, [Define if using POSIX threads on Linux.])
+	;;
+    esac
+    ;;
+ win32)
+    ;;
+ *)
+    AC_MSG_ERROR($THREADS is an unknown thread package)
+    ;;
 esac
+
+THREADLIBS=
+THREADH=
+case "$THREADS" in
+ posix)
+    THREADLIBS=-lpthread
+    THREADH=posix-threads.h
+    AC_DEFINE(HAVE_PTHREAD_MUTEXATTR_INIT, 1,
+      [Define if using POSIX threads that have the mutexattr functions.])
+    AC_DEFINE(_POSIX_PTHREAD_SEMANTICS, 1,
+      [Required define if using POSIX threads])
+    ;;
+
+ win32)
+    THREADH=win32-threads.h
+    ;;
+
+ none)
+    THREADH=no-threads.h
+    ;;
+esac
+
+AC_CONFIG_LINKS(include/java-threads.h:${libjava}/include/${THREADH})
+AC_SUBST(THREADLIBS)
+AM_CONDITIONAL(USING_POSIX_THREADS, test "${THREADS}" = posix)
+AM_CONDITIONAL(USING_WIN32_THREADS, test "${THREADS}" = win32)
+AM_CONDITIONAL(USING_NO_THREADS, test "${THREADS}" = none)
+
+## signals ####################################################################
+
+SIGNAL_HANDLER_AUX=
+case "${host}" in
+ i?86-*-linux*)
+    SIGNAL_HANDLER=include/i386-signal.h
+    ;;
+ powerpc*-*-linux*)
+    SIGNAL_HANDLER=include/powerpc-signal.h
+    ;;
+ x86_64*-*-linux*)
+    SIGNAL_HANDLER=include/x86_64-signal.h
+    SIGNAL_HANDLER_AUX=include/i386-signal.h
+    ;;
+ *mingw*)
+    SIGNAL_HANDLER=include/win32-signal.h
+    ;;
+ *-*-darwin*)
+    SIGNAL_HANDLER=include/darwin-signal.h
+    ;;
+ *)
+    SIGNAL_HANDLER=include/default-signal.h
+    ;;
+esac
+
+# If we're using sjlj exceptions, forget what we just learned.
+if test "$enable_sjlj_exceptions" = yes; then
+   SIGNAL_HANDLER=include/default-signal.h
+   SIGNAL_HANDLER_AUX=
+fi
+
+AC_CONFIG_LINKS(include/java-signal.h:${libjava}/${SIGNAL_HANDLER}
+                include/java-signal-aux.h:${libjava}/${SIGNAL_HANDLER_AUX})
+
+###############################################################################
+
+AC_DEFINE(JV_HASH_SYNCHRONIZATION, 1,
+          [Define if hash synchronization is in use])
+
+built_gcc_dir="`cd ../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
+GCJ="${built_gcc_dir}/gcj -B${built_gcc_dir}/"
+GCJH="${built_gcc_dir}/gcjh"
 AC_SUBST(GCJ)
 AC_SUBST(GCJH)
 AC_SUBST(GCJFLAGS)
 
 if test -d sysdep; then true; else mkdir sysdep; fi
-AC_CONFIG_LINKS(sysdep/locks.h:../sysdep/$sysdeps_dir/locks.h)
+AC_CONFIG_LINKS(sysdep/locks.h:${libjava}/sysdep/$sysdeps_dir/locks.h)
 
 AC_DEFINE(JV_ULIBGCJ, 1, [Define if micro-libgcj is to be built])
+
+AC_DEFINE(HAVE_MEMMOVE, 1, [Define if memmove is available])
 
 mkdir -p gcj
 echo > gcj/libgcj-config.h
 
-AC_ARG_ENABLE(micro-libgcj-jni,
-  AS_HELP_STRING([--enable-micro-libgcj-jni],
-                 [provide JNI support in micro-libgcj build]))
-
-if test -z "$enable_micro_libgcj_jni"; then
-   enable_micro_libgcj_jni=no
-fi
-
-if test "$enable_micro_libgcj_jni" = yes; then
-   AC_DEFINE(JV_ULIBGCJ_JNI, 1,
-             [Define if micro-libgcj is to be built with JNI enabled])
-fi
-AM_CONDITIONAL(ULIBGCJ_JNI, test "$enable_micro_libgcj_jni" = yes)
-
-AC_CHECK_HEADERS([unistd.h bstring.h sys/time.h sys/types.h \
+AC_CHECK_HEADERS([unistd.h bstring.h sys/time.h string.h sys/types.h \
 		  pwd.h sys/config.h stdint.h langinfo.h locale.h \
 		  dirent.h math.h])
-
-AC_CHECK_FUNCS(memmove)
 
 AC_CONFIG_FILES([Makefile])
 

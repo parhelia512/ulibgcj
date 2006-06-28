@@ -12,10 +12,6 @@ if TESTSUBDIR
 SUBDIRS += testsuite
 endif
 
-if ULIBGCJ
-SUBDIRS += ulibgcj
-endif
-
 # write_entries_to_file - writes each entry in a list
 # to the specified file. Each entry is written individually
 # to accomodate systems with severe command-line-length
@@ -1035,4 +1031,3 @@ distclean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean
 maintainer-clean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean
-

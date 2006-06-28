@@ -2,16 +2,22 @@
 
 AUTOMAKE_OPTIONS = foreign subdir-objects
 
-ACLOCAL_AMFLAGS = -I ../.. -I ../../config
+ACLOCAL_AMFLAGS = -I .. -I ../config
 
 SUFFIXES = .class .java .h
 
 srcdir = @srcdir@
-VPATH = @srcdir@/..:@srcdir@/../classpath
+VPATH = @srcdir@/../libjava:@srcdir@/../libjava/classpath
 
-AM_CPPFLAGS = -I$(srcdir)/.. -I. -Iinclude -I$(srcdir)/../include \
-	-I$(srcdir)/../classpath/include -I$(srcdir)/../../gcc \
-	$(GCINCS) $(THREADINCS)
+AM_CPPFLAGS = \
+	-I$(srcdir)/../libjava \
+	-I. \
+	-Iinclude \
+	-I$(srcdir)/../libjava/include \
+	-I$(srcdir)/../libjava/classpath/include \
+	-I$(srcdir)/../gcc \
+	$(GCINCS) \
+	$(THREADINCS)
 
 AM_CXXFLAGS = \
 	-fno-rtti \
@@ -24,7 +30,7 @@ AM_CXXFLAGS = \
 	$(WARNINGS) \
 	-D_GNU_SOURCE
 
-ulibgcjdir = $(libdir)/ulibgcj
+ulibgcjdir = ulibgcj
 ulibgcj_LIBRARIES = libulibgcj.a
 
 java_sources = \
@@ -148,10 +154,6 @@ processed_java_sources = \
 
 process_flags = -DULIBGCJ
 
-if ULIBGCJ_JNI
-  process_flags += -DULIBGCJ_JNI
-endif
-
 $(processed_java_sources): processed/%.java: %.java
 	@mkdir -p $(dir $(@))
 	@PERL@ $(srcdir)/scripts/process.pl $(process_flags) < $(<) > $(@)
@@ -231,8 +233,10 @@ AM_LDFLAGS = -lm
 
 ## the only reason we need this is that libgc needs libdl on linux for
 ## some obscure reason related to pthread_create:
-if USING_POSIX_PLATFORM && USING_BOEHMGC
+if USING_POSIX_PLATFORM
+if USING_BOEHMGC
 AM_LDFLAGS += -ldl
+endif
 endif
 
 AM_GCJFLAGS = @LIBGCJ_JAVAFLAGS@ --classpath '' --bootclasspath processed
@@ -250,19 +254,21 @@ $(native_objects): %.o: %.cc
 	$(CXXCOMPILE) -o $(@) -c $(<)
 
 clean:
-	-rm -f $$(find -name '*.o' -o -name '*.class')
+	rm -f $$(find -name '*.o' -o -name '*.class')
 
 ## test #######################################################################
+
+linkflags = $(AM_LDFLAGS) $(LDFLAGS) $(THREADLDFLAGS) $(THREADLIBS)
 
 hello: \
 		Hello.o \
 		Hello-cpp.o \
 		libulibgcj.a \
 		$(GCLIBS)
-	$(CXX) $(LDFLAGS) $(THREADLDFLAGS) $(THREADLIBS) $(^) -o $(@)
+	$(CXX) $(linkflags) $(^) -o $(@)
 
 Hello.o: $(srcdir)/test/Hello.java libulibgcj.a
-	$(GCJ) -I. -I$(srcdir)/.. $(GCJFLAGS) -o $(@) -c $(<)
+	$(GCJ) $(CPPFLAGS) $(GCJFLAGS) -o $(@) -c $(<)
 
 Hello-cpp.o: $(srcdir)/test/Hello.cpp Hello.h
 	$(CXXCOMPILE) -o $(@) -c $(<)
@@ -279,16 +285,16 @@ test: \
 		Thrower.o \
 		libulibgcj.a \
 		$(GCLIBS)
-	$(CXX) $(LDFLAGS) $(THREADLDFLAGS) $(THREADLIBS) $(^) -o $(@)
+	$(CXX) $(linkflags) $(^) -o $(@)
 
 CoreTest.o: $(srcdir)/test/CoreTest.java libulibgcj.a
-	$(GCJ) -I. -I$(srcdir)/.. -I$(srcdir)/test $(GCJFLAGS) -o $(@) -c $(<)
+	$(GCJ) $(CPPFLAGS) -I$(srcdir)/test $(GCJFLAGS) -o $(@) -c $(<)
 
 Thrower.o: $(srcdir)/test/Thrower.java libulibgcj.a
-	$(GCJ) -I. -I$(srcdir)/.. $(GCJFLAGS) -o $(@) -c $(<)
+	$(GCJ) $(CPPFLAGS) $(GCJFLAGS) -o $(@) -c $(<)
 
 CoreTest-cpp.o: $(srcdir)/test/CoreTest.cpp CoreTest.h
-	$(CXXCOMPILE) -I. -I$(srcdir)/.. -o $(@) -c $(<)
+	$(CXXCOMPILE) $(CPPFLAGS) -o $(@) -c $(<)
 
 CoreTest.h: CoreTest.class
 	$(GCJH) -classpath .:$(srcdir)/test -bootclasspath processed $(<:.class=)
