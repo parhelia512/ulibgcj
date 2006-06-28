@@ -99,6 +99,8 @@ java/lang/natSystem.cc \
 java/lang/natThread.cc \
 java/lang/natVMClassLoader.cc
 
+BUILT_SOURCES = $(java_headers)
+
 libulibgcj_a_SOURCES = \
 prims.cc \
 exception.cc \
@@ -225,6 +227,14 @@ java/lang/String.h: java/lang/String.class
 	    -friend 'jstring (::_Jv_AllocString) (jsize);' \
 	    java/lang/String
 
+AM_LDFLAGS = -lm
+
+## the only reason we need this is that libgc needs libdl on linux for
+## some obscure reason related to pthread_create:
+if USING_POSIX_PLATFORM && USING_BOEHMGC
+AM_LDFLAGS += -ldl
+endif
+
 AM_GCJFLAGS = @LIBGCJ_JAVAFLAGS@ --classpath '' --bootclasspath processed
 
 objects = $(java_sources:.java=.o)
@@ -249,7 +259,7 @@ hello: \
 		Hello-cpp.o \
 		libulibgcj.a \
 		$(GCLIBS)
-	$(CXX) $(LDFLAGS) -lm -ldl $(THREADLDFLAGS) $(THREADLIBS) $(^) -o $(@)
+	$(CXX) $(LDFLAGS) $(THREADLDFLAGS) $(THREADLIBS) $(^) -o $(@)
 
 Hello.o: $(srcdir)/test/Hello.java libulibgcj.a
 	$(GCJ) -I. -I$(srcdir)/.. $(GCJFLAGS) -o $(@) -c $(<)
@@ -269,7 +279,7 @@ test: \
 		Thrower.o \
 		libulibgcj.a \
 		$(GCLIBS)
-	$(CXX) $(LDFLAGS) -lm -ldl $(THREADLDFLAGS) $(THREADLIBS) $(^) -o $(@)
+	$(CXX) $(LDFLAGS) $(THREADLDFLAGS) $(THREADLIBS) $(^) -o $(@)
 
 CoreTest.o: $(srcdir)/test/CoreTest.java libulibgcj.a
 	$(GCJ) -I. -I$(srcdir)/.. -I$(srcdir)/test $(GCJFLAGS) -o $(@) -c $(<)

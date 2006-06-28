@@ -2,6 +2,12 @@ dnl # Process this with autoconf to create configure
 AC_PREREQ(2.59)
 AC_INIT(ulibgcj, 0.1)
 
+AC_CANONICAL_SYSTEM
+_GCC_TOPLEV_NONCANONICAL_BUILD
+_GCC_TOPLEV_NONCANONICAL_TARGET
+
+AC_SUBST(target_noncanonical)
+
 AM_INIT_AUTOMAKE(1.9.0)
 
 AC_CONFIG_SRCDIR([../java/lang/System.java])
@@ -16,8 +22,6 @@ AM_PROG_GCJ
 AM_PROG_CC_C_O
 
 AC_CHECK_PROGS(PERL, perl, false)
-
-AC_CANONICAL_HOST
 
 libgcj_cflags=
 libgcj_cxxflags=
@@ -82,19 +86,21 @@ if test "x${with_ulibgcj_which_gcj}" = x; then
   AC_MSG_ERROR([with_ulibgcj_which_gcj not set])
 fi
 
+GCJ=gcj
 GCJH=gcjh
 case "${with_ulibgcj_which_gcj}" in
   built)
+   GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
    GCJH='../../../$(host_subdir)/gcc/gcjh'
    ;;
  cross)
+   GCJ="${target_noncanonical}-gcj"
    GCJH='$(target_noncanonical)-gcjh'
    ;;
- path)
-   GCJH=gcjh
-   ;;
 esac
+AC_SUBST(GCJ)
 AC_SUBST(GCJH)
+AC_SUBST(GCJFLAGS)
 
 if test -d sysdep; then true; else mkdir sysdep; fi
 AC_CONFIG_LINKS(sysdep/locks.h:../sysdep/$sysdeps_dir/locks.h)
@@ -121,6 +127,8 @@ AM_CONDITIONAL(ULIBGCJ_JNI, test "$enable_micro_libgcj_jni" = yes)
 AC_CHECK_HEADERS([unistd.h bstring.h sys/time.h sys/types.h \
 		  pwd.h sys/config.h stdint.h langinfo.h locale.h \
 		  dirent.h math.h])
+
+AC_CHECK_FUNCS(memmove)
 
 AC_CONFIG_FILES([Makefile])
 
