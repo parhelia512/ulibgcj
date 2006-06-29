@@ -21,6 +21,8 @@ AM_PROG_CC_C_O
 
 AC_CHECK_PROGS(PERL, perl, false)
 
+# most of the following was taken from libjava/configure.ac.
+
 libgcj_cflags=
 libgcj_cxxflags=
 libgcj_javaflags=
@@ -98,6 +100,62 @@ AC_SUBST(GCLIBS)
 AC_SUBST(GCINCS)
 AM_CONDITIONAL(USING_BOEHMGC, test "${GC}" = boehm)
 AM_CONDITIONAL(USING_NOGC, test "${GC}" = no)
+
+## exceptions #################################################################
+
+AC_MSG_CHECKING([for exception model to use])
+AC_LANG_PUSH(C++)
+AC_ARG_ENABLE(sjlj-exceptions,
+  AS_HELP_STRING([--enable-sjlj-exceptions],
+                 [force use of builtin_setjmp for exceptions]),
+[:],
+[dnl Botheration.  Now we've got to detect the exception model.
+dnl Link tests against libgcc.a are problematic since -- at least
+dnl as of this writing -- we've not been given proper -L bits for
+dnl single-tree newlib and libgloss.
+dnl
+dnl This is what AC_TRY_COMPILE would do if it didn't delete the
+dnl conftest files before we got a change to grep them first.
+cat > conftest.$ac_ext << EOF
+[#]line __oline__ "configure"
+struct S { ~S(); };
+void bar();
+void foo()
+{
+  S s;
+  bar();
+}
+EOF
+old_CXXFLAGS="$CXXFLAGS"  
+CXXFLAGS=-S
+if AC_TRY_EVAL(ac_compile); then
+  if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1 ; then
+    enable_sjlj_exceptions=yes
+  elif grep _Unwind_Resume conftest.s >/dev/null 2>&1 ; then
+    enable_sjlj_exceptions=no
+  fi
+fi
+CXXFLAGS="$old_CXXFLAGS"
+rm -f conftest*])
+if test x$enable_sjlj_exceptions = xyes; then
+  AC_DEFINE(SJLJ_EXCEPTIONS, 1,
+	[Define if the compiler is configured for setjmp/longjmp exceptions.])
+  ac_exception_model_name=sjlj
+elif test x$enable_sjlj_exceptions = xno; then
+  ac_exception_model_name="call frame"
+else
+  AC_MSG_ERROR([unable to detect exception model])
+fi
+AC_LANG_POP(C++)
+AC_MSG_RESULT($ac_exception_model_name)
+
+# If we are non using SJLJ exceptions, and this host does not have support 
+# for unwinding from a signal handler, enable checked dereferences and divides.
+if test $can_unwind_signal = no && test $enable_sjlj_exceptions = no; then
+  CHECKREFSPEC=-fcheck-references
+  DIVIDESPEC=-fuse-divide-subroutine
+  EXCEPTIONSPEC=
+fi
 
 ## threads ####################################################################
 

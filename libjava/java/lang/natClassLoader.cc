@@ -255,7 +255,15 @@ _Jv_RegisterClassHookDefault (jclass klass)
 // Should synchronize on Class:class$ while setting/restore this variable.
 
 void (*_Jv_RegisterClassHook) (jclass cl) = _Jv_RegisterClassHookDefault;
+#endif//JV_ULIBGCJ
 
+#ifdef JV_ULIBGCJ
+void
+_Jv_RegisterClass (jclass klass)
+{
+  // do nothing
+}
+#else
 void
 _Jv_RegisterClass (jclass klass)
 {
@@ -264,7 +272,9 @@ _Jv_RegisterClass (jclass klass)
   classes[1] = NULL;
   _Jv_RegisterClasses (classes);
 }
+#endif
 
+#ifndef JV_ULIBGCJ
 // This is used during initialization to register all compiled-in
 // classes that are not part of the core with the system class loader.
 void

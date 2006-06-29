@@ -339,7 +339,10 @@ yes)
 no)
   # Make sure we get it printed in the list of not supported target libs.
   if test "x${ENABLE_ULIBGCJ}" = "xyes" ; then
+    # micro-libgcj is enabled so we still want to build boehm-gc and
+    # ulibgcj.
     noconfigdirs="$noconfigdirs ${libgcj_exclusive}"
+    libgcj=
   else
     noconfigdirs="$noconfigdirs ${libgcj}"
   fi

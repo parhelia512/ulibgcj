@@ -144,6 +144,7 @@ _Jv_Win32TempString::~_Jv_Win32TempString()
     _Jv_Free (buf_);
 }
 
+#ifndef JV_ULIBGCJ
 // class WSAEventWrapper
 WSAEventWrapper::WSAEventWrapper ():
   m_hEvent(0),
@@ -184,6 +185,7 @@ WSAEventWrapper::~WSAEventWrapper ()
   }
   WSACloseEvent (m_hEvent);
 }
+#endif//JV_ULIBGCJ
 
 // Error string text.
 jstring
