@@ -249,7 +249,7 @@ AC_DEFINE(JV_HASH_SYNCHRONIZATION, 1,
           [Define if hash synchronization is in use])
 
 built_gcc_dir="`cd ../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
-GCJ="${built_gcc_dir}/gcj -B${built_gcc_dir}/ -B${PWDCMD-pwd}/"
+GCJ="${built_gcc_dir}/gcj -B${built_gcc_dir}/"
 GCJH="${built_gcc_dir}/gcjh"
 AC_SUBST(GCJ)
 AC_SUBST(GCJH)
