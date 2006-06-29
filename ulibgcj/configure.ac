@@ -249,7 +249,7 @@ AC_DEFINE(JV_HASH_SYNCHRONIZATION, 1,
           [Define if hash synchronization is in use])
 
 built_gcc_dir="`cd ../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
-GCJ="${built_gcc_dir}/gcj -B${built_gcc_dir}/"
+GCJ="${built_gcc_dir}/gcj -B${built_gcc_dir}/ -B${PWDCMD-pwd}/"
 GCJH="${built_gcc_dir}/gcjh"
 AC_SUBST(GCJ)
 AC_SUBST(GCJH)
@@ -263,7 +263,8 @@ AC_DEFINE(JV_ULIBGCJ, 1, [Define if micro-libgcj is to be built])
 AC_DEFINE(HAVE_MEMMOVE, 1, [Define if memmove is available])
 
 mkdir -p gcj
-echo > gcj/libgcj-config.h
+test -f gcj/libgcj-config.h || echo > gcj/libgcj-config.h
+test -f libgcj.spec || echo > libgcj.spec
 
 AC_CHECK_HEADERS([unistd.h bstring.h sys/time.h string.h sys/types.h \
 		  pwd.h sys/config.h stdint.h langinfo.h locale.h \
