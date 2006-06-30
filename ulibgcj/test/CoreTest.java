@@ -28,7 +28,14 @@ public class CoreTest implements Runnable {
       }
       System.out.println(" *** you should never see this *** ");
     } catch (ArrayIndexOutOfBoundsException e) {
-      System.out.println("as expected, caught: " + e);      
+      System.out.println("as expected, caught: " + e);
+    }
+
+    try {
+      Object o = null;
+      o.toString();
+    } catch (NullPointerException e) {
+      System.out.println("as expected, caught: " + e);
     }
 
     Object o = new Object();
