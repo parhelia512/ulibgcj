@@ -30,7 +30,7 @@ AM_CXXFLAGS = \
 	$(WARNINGS) \
 	-D_GNU_SOURCE
 
-ulibgcjdir = ulibgcj
+ulibgcjdir = $(libdir)
 ulibgcj_LIBRARIES = libulibgcj.a
 
 java_sources = \
