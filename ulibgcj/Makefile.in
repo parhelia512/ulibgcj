@@ -291,7 +291,7 @@ AM_CXXFLAGS = \
 	-D_GNU_SOURCE
 
 jardir = $(datadir)/java
-jar_DATA = libulibgcj-$(gcc_version).jar
+jar_DATA = libulibgcj.jar
 specdir = $(libdir)
 spec_DATA = libgcj.spec
 ulibgcjdir = $(libdir)
@@ -866,6 +866,7 @@ headers/java/lang/ClassLoader.h: classes/java/lang/ClassLoader.class
 		java/lang/ClassLoader
 
 headers/java/lang/Thread.h: classes/java/lang/Thread.class
+	@mkdir -p $(dir $(@))
 	$(GCJH) $(headerflags) \
 		-prepend 'class _Jv_JNIEnv;' \
 		-prepend '#define _JV_NOT_OWNER 1' \
@@ -887,6 +888,7 @@ headers/java/lang/Thread.h: classes/java/lang/Thread.class
 		java/lang/Thread
 
 headers/java/lang/String.h: classes/java/lang/String.class
+	@mkdir -p $(dir $(@))
 	$(GCJH) $(headerflags) \
 	    -prepend 'jchar* _Jv_GetStringChars (jstring str);' \
 	    -prepend 'jstring* _Jv_StringFindSlot (jchar*, jint, jint);' \
@@ -910,12 +912,12 @@ $(native_objects): objects/%.o: %.cc
 	@mkdir -p $(dir $(@))
 	$(CXXCOMPILE) -o $(@) -c $(<)
 
-libulibgcj-$(gcc_version).jar: $(classes)
-	cd classes; $(ZIP) -cfM ../libulibgcj-$(gcc_version).jar gnu java
+libulibgcj.jar: $(classes)
+	cd classes; $(ZIP) -cfM ../libulibgcj.jar gnu java
 
 clean:
 	rm -rf $(libulibgcj_a_OBJECTS) objects classes headers processed \
-		libulibgcj.a libulibgcj-$(gcc_version).jar hello core-test
+		libulibgcj.a libulibgcj.jar hello core-test
 
 objects/%.o: $(srcdir)/test/%.java libulibgcj.a
 	$(GCJ) $(javaflags) -o $(@) -c $(<)

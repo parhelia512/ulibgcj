@@ -205,6 +205,7 @@ headers/java/lang/ClassLoader.h: classes/java/lang/ClassLoader.class
 		java/lang/ClassLoader
 
 headers/java/lang/Thread.h: classes/java/lang/Thread.class
+	@mkdir -p $(dir $(@))
 	$(GCJH) $(headerflags) \
 		-prepend 'class _Jv_JNIEnv;' \
 		-prepend '#define _JV_NOT_OWNER 1' \
@@ -226,6 +227,7 @@ headers/java/lang/Thread.h: classes/java/lang/Thread.class
 		java/lang/Thread
 
 headers/java/lang/String.h: classes/java/lang/String.class
+	@mkdir -p $(dir $(@))
 	$(GCJH) $(headerflags) \
 	    -prepend 'jchar* _Jv_GetStringChars (jstring str);' \
 	    -prepend 'jstring* _Jv_StringFindSlot (jchar*, jint, jint);' \
@@ -256,7 +258,7 @@ $(native_objects): objects/%.o: %.cc
 	@mkdir -p $(dir $(@))
 	$(CXXCOMPILE) -o $(@) -c $(<)
 
-libulibgcj-$(gcc_version).jar: $(classes)
+libulibgcj.jar: $(classes)
 	cd classes; $(ZIP) -cfM ../libulibgcj.jar gnu java
 
 clean:
