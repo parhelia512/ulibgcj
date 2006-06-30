@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+
 top_srcdir = @top_srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
@@ -71,55 +72,19 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(ulibgcjdir)"
+am__installdirs = "$(DESTDIR)$(ulibgcjdir)" "$(DESTDIR)$(jardir)" \
+	"$(DESTDIR)$(specdir)"
 ulibgcjLIBRARIES_INSTALL = $(INSTALL_DATA)
 LIBRARIES = $(ulibgcj_LIBRARIES)
 AR = ar
 ARFLAGS = cru
 libulibgcj_a_AR = $(AR) $(ARFLAGS)
-am__DEPENDENCIES_1 = gnu/gcj/RawData.o gnu/gcj/RawDataManaged.o \
-	gnu/gcj/runtime/StringBuffer.o java/lang/AbstractMethodError.o \
-	java/lang/ArithmeticException.o \
-	java/lang/ArrayIndexOutOfBoundsException.o \
-	java/lang/ArrayStoreException.o java/lang/Boolean.o \
-	java/lang/Byte.o java/lang/Character.o java/lang/Class.o \
-	java/lang/ClassCastException.o java/lang/ClassLoader.o \
-	java/lang/ClassNotFoundException.o \
-	java/lang/CloneNotSupportedException.o java/lang/Comparable.o \
-	java/lang/Double.o java/lang/Error.o java/lang/Exception.o \
-	java/lang/ExceptionInInitializerError.o java/lang/Float.o \
-	java/lang/IllegalAccessError.o \
-	java/lang/IllegalArgumentException.o \
-	java/lang/IllegalMonitorStateException.o \
-	java/lang/IllegalStateException.o \
-	java/lang/IllegalThreadStateException.o \
-	java/lang/IncompatibleClassChangeError.o \
-	java/lang/IndexOutOfBoundsException.o \
-	java/lang/InstantiationException.o java/lang/Integer.o \
-	java/lang/InternalError.o java/lang/LinkageError.o \
-	java/lang/Long.o java/lang/Math.o \
-	java/lang/NegativeArraySizeException.o \
-	java/lang/NoClassDefFoundError.o java/lang/NoSuchFieldError.o \
-	java/lang/NoSuchMethodError.o java/lang/NullPointerException.o \
-	java/lang/Number.o java/lang/NumberFormatException.o \
-	java/lang/Object.o java/lang/OutOfMemoryError.o \
-	java/lang/Runnable.o java/lang/RuntimeException.o \
-	java/lang/Short.o java/lang/String.o java/lang/StringBuffer.o \
-	java/lang/StringIndexOutOfBoundsException.o java/lang/System.o \
-	java/lang/Thread.o java/lang/Throwable.o \
-	java/lang/VMClassLoader.o java/lang/VMThrowable.o \
-	java/lang/VerifyError.o java/lang/VirtualMachineError.o \
-	java/lang/reflect/Modifier.o
-am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
-am__DEPENDENCIES_3 = gnu/gcj/runtime/natStringBuffer.o \
-	java/lang/natCharacter.o java/lang/natClass.o \
-	java/lang/natClassLoader.o java/lang/natMath.o \
-	java/lang/natObject.o java/lang/natString.o \
-	java/lang/natStringBuffer.o java/lang/natSystem.o \
-	java/lang/natThread.o java/lang/natVMClassLoader.o
-am__DEPENDENCIES_4 = $(am__DEPENDENCIES_3)
-libulibgcj_a_DEPENDENCIES = $(am__DEPENDENCIES_2) \
-	$(am__DEPENDENCIES_4)
+am__DEPENDENCIES_1 = $(foreach x,$(java_sources),$(patsubst \
+	%.java,objects/%.o,$(x)))
+am__DEPENDENCIES_2 = $(foreach x,$(native_sources),$(patsubst \
+	%.cc,objects/%.o,$(x)))
+libulibgcj_a_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_2)
 am__libulibgcj_a_SOURCES_DIST = prims.cc exception.cc defineclass.cc \
 	link.cc boehm.cc nogc.cc posix.cc win32.cc darwin.cc \
 	posix-threads.cc win32-threads.cc no-threads.cc
@@ -147,6 +112,9 @@ CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
 SOURCES = $(libulibgcj_a_SOURCES)
 DIST_SOURCES = $(am__libulibgcj_a_SOURCES_DIST)
+jarDATA_INSTALL = $(INSTALL_DATA)
+specDATA_INSTALL = $(INSTALL_DATA)
+DATA = $(jar_DATA) $(spec_DATA)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -244,6 +212,7 @@ USING_WIN32_PLATFORM_TRUE = @USING_WIN32_PLATFORM_TRUE@
 USING_WIN32_THREADS_FALSE = @USING_WIN32_THREADS_FALSE@
 USING_WIN32_THREADS_TRUE = @USING_WIN32_THREADS_TRUE@
 VERSION = @VERSION@
+ZIP = @ZIP@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
@@ -302,7 +271,7 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 SUFFIXES = .class .java .h
 AM_CPPFLAGS = \
 	-I$(srcdir)/../libjava \
-	-I. \
+	-Iheaders \
 	-Iinclude \
 	-I$(srcdir)/../libjava/include \
 	-I$(srcdir)/../libjava/classpath/include \
@@ -321,6 +290,10 @@ AM_CXXFLAGS = \
 	$(WARNINGS) \
 	-D_GNU_SOURCE
 
+jardir = $(datadir)/java
+jar_DATA = libulibgcj-$(gcc_version).jar
+specdir = $(libdir)
+spec_DATA = libgcj.spec
 ulibgcjdir = $(libdir)
 ulibgcj_LIBRARIES = libulibgcj.a
 java_sources = \
@@ -401,24 +374,34 @@ libulibgcj_a_SOURCES = prims.cc exception.cc defineclass.cc link.cc \
 	$(am__append_4) $(am__append_5) $(am__append_6) \
 	$(am__append_7) $(am__append_8)
 libulibgcj_a_LIBADD = $(objects) $(native_objects)
-classes = $(java_sources:.java=.class)
+classes = \
+	$(foreach x,$(java_sources),$(patsubst %.java,classes/%.class,$(x)))
+
 processed_java_sources = \
 	$(foreach x,$(java_sources),$(patsubst %,processed/%,$(x)))
 
 process_flags = -DULIBGCJ
-ommitted_headers = java/lang/Object.h java/lang/Class.h
-java_headers = $(filter-out $(ommitted_headers),$(java_sources:.java=.h))
+ommitted_headers = headers/java/lang/Object.h headers/java/lang/Class.h
+java_headers = $(filter-out $(ommitted_headers),$(foreach \
+	x,$(java_sources),$(patsubst %.java,headers/%.h,$(x))))
+
 special_headers = \
-java/lang/ClassLoader.h \
-java/lang/Thread.h \
-java/lang/String.h
+headers/java/lang/ClassLoader.h \
+headers/java/lang/Thread.h \
+headers/java/lang/String.h
 
 ordinary_headers = $(filter-out $(special_headers),$(java_headers))
-AM_LDFLAGS = -lm $(am__append_9)
+headerflags = -d headers --classpath classes --bootclasspath processed
 AM_GCJFLAGS = @LIBGCJ_JAVAFLAGS@ --classpath '' --bootclasspath processed
-objects = $(java_sources:.java=.o)
-native_objects = $(native_sources:.cc=.o)
+objects = $(foreach x,$(java_sources),$(patsubst %.java,objects/%.o,$(x)))
+native_objects = \
+	$(foreach x,$(native_sources),$(patsubst %.cc,objects/%.o,$(x)))
+
+AM_LDFLAGS = -lm $(am__append_9)
 linkflags = $(AM_LDFLAGS) $(LDFLAGS) $(THREADLDFLAGS) $(THREADLIBS)
+javaflags = $(CPPFLAGS) -I$(srcdir)/test $(GCJFLAGS) --bootclasspath processed
+hflags = -d headers -classpath classes:$(srcdir)/test -bootclasspath processed
+classflags = -d classes --classpath $(srcdir)/test --bootclasspath processed
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -544,6 +527,40 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 uninstall-info-am:
+install-jarDATA: $(jar_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(jardir)" || $(mkdir_p) "$(DESTDIR)$(jardir)"
+	@list='$(jar_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(jarDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(jardir)/$$f'"; \
+	  $(jarDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(jardir)/$$f"; \
+	done
+
+uninstall-jarDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(jar_DATA)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(jardir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(jardir)/$$f"; \
+	done
+install-specDATA: $(spec_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(specdir)" || $(mkdir_p) "$(DESTDIR)$(specdir)"
+	@list='$(spec_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(specDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(specdir)/$$f'"; \
+	  $(specDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(specdir)/$$f"; \
+	done
+
+uninstall-specDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(spec_DATA)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(specdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(specdir)/$$f"; \
+	done
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -723,9 +740,9 @@ distcleancheck: distclean
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(LIBRARIES)
+all-am: Makefile $(LIBRARIES) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(ulibgcjdir)"; do \
+	for dir in "$(DESTDIR)$(ulibgcjdir)" "$(DESTDIR)$(jardir)" "$(DESTDIR)$(specdir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -773,7 +790,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-ulibgcjLIBRARIES
+install-data-am: install-jarDATA install-specDATA \
+	install-ulibgcjLIBRARIES
 
 install-exec-am:
 
@@ -802,7 +820,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-info-am uninstall-ulibgcjLIBRARIES
+uninstall-am: uninstall-info-am uninstall-jarDATA uninstall-specDATA \
+	uninstall-ulibgcjLIBRARIES
 
 .PHONY: CTAGS GTAGS all all-am am--refresh check check-am clean \
 	clean-generic clean-ulibgcjLIBRARIES ctags dist dist-all \
@@ -811,41 +830,43 @@ uninstall-am: uninstall-info-am uninstall-ulibgcjLIBRARIES
 	distclean-tags distcleancheck distdir distuninstallcheck dvi \
 	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-exec install-exec-am \
-	install-info install-info-am install-man install-strip \
-	install-ulibgcjLIBRARIES installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
-	ps ps-am tags uninstall uninstall-am uninstall-info-am \
-	uninstall-ulibgcjLIBRARIES
+	install-info install-info-am install-jarDATA install-man \
+	install-specDATA install-strip install-ulibgcjLIBRARIES \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
+	uninstall-am uninstall-info-am uninstall-jarDATA \
+	uninstall-specDATA uninstall-ulibgcjLIBRARIES
 
 
 $(processed_java_sources): processed/%.java: %.java
 	@mkdir -p $(dir $(@))
 	@PERL@ $(srcdir)/scripts/process.pl $(process_flags) < $(<) > $(@)
 
+$(classes): classes/%.class: processed/%.java $(processed_java_sources)
+	@mkdir -p $(dir $(@))
+	$(GCJ) -d classes --classpath classes --bootclasspath processed -C $(<)
+
 .PRECIOUS: %.h
 %.h: files = $(shell echo $(subst $$,\$$,$(basename $(<)))*.class)
-%.h: classes = $(subst $$,\$$,$(patsubst %.class,%,$(files)))
-$(ordinary_headers): %.h: %.class
+%.h: classes = $(subst $$,\$$,$(patsubst classes/%.class,%,$(files)))
+$(ordinary_headers): headers/%.h: classes/%.class
 	@mkdir -p $(dir $(@))
-	$(GCJH) -classpath '' -bootclasspath processed $(classes)
+	$(GCJH) $(headerflags) $(classes)
 
 $(libulibgcj_a_OBJECTS): $(java_headers)
 
-$(classes): %.class: processed/%.java $(processed_java_sources)
+headers/java/lang/ClassLoader.h: classes/java/lang/ClassLoader.class
 	@mkdir -p $(dir $(@))
-	$(GCJ) -d . --classpath '' --bootclasspath processed -C $(<)
-
-java/lang/ClassLoader.h: java/lang/ClassLoader.class
-	$(GCJH) -classpath '' -bootclasspath processed \
+	$(GCJH) $(headerflags) \
 		-prepend 'jclass _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
 		-prepend 'void _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, bool is_jar);' \
 		-friend 'jclass (::_Jv_FindClass) (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
 		-friend 'void ::_Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, bool is_jar);' \
 		java/lang/ClassLoader
 
-java/lang/Thread.h: java/lang/Thread.class
-	$(GCJH) -classpath '' -bootclasspath processed \
+headers/java/lang/Thread.h: classes/java/lang/Thread.class
+	$(GCJH) $(headerflags) \
 		-prepend 'class _Jv_JNIEnv;' \
 		-prepend '#define _JV_NOT_OWNER 1' \
 		-prepend '#define _JV_INTERRUPTED 2' \
@@ -865,8 +886,8 @@ java/lang/Thread.h: java/lang/Thread.class
 		-friend 'jint (::_Jv_DetachCurrentThread) ();' \
 		java/lang/Thread
 
-java/lang/String.h: java/lang/String.class
-	$(GCJH) -classpath '' -bootclasspath processed \
+headers/java/lang/String.h: classes/java/lang/String.class
+	$(GCJH) $(headerflags) \
 	    -prepend 'jchar* _Jv_GetStringChars (jstring str);' \
 	    -prepend 'jstring* _Jv_StringFindSlot (jchar*, jint, jint);' \
 	    -prepend 'jstring* _Jv_StringGetSlot (jstring);' \
@@ -881,58 +902,47 @@ java/lang/String.h: java/lang/String.class
 	    -friend 'jstring (::_Jv_AllocString) (jsize);' \
 	    java/lang/String
 
-$(objects): %.o: processed/%.java $(classes)
+$(objects): objects/%.o: processed/%.java $(classes)
 	@mkdir -p $(dir $(@))
-	$(GCJ) -I. $(GCJFLAGS) -o $(@) -c $(<)
+	$(GCJ) -Iclasses $(GCJFLAGS) -o $(@) -c $(<)
 
-$(native_objects): %.o: %.cc
+$(native_objects): objects/%.o: %.cc
 	@mkdir -p $(dir $(@))
 	$(CXXCOMPILE) -o $(@) -c $(<)
+
+libulibgcj-$(gcc_version).jar: $(classes)
+	cd classes; $(ZIP) -cfM ../libulibgcj-$(gcc_version).jar gnu java
 
 clean:
-	rm -f $$(find . -name '*.o' -o -name '*.class')
+	rm -rf $(libulibgcj_a_OBJECTS) objects classes headers processed \
+		libulibgcj.a libulibgcj-$(gcc_version).jar hello core-test
 
-hello: \
-		Hello.o \
-		Hello-cpp.o \
-		libulibgcj.a \
-		$(GCLIBS)
-	$(CXX) $(linkflags) $(^) -o $(@)
+objects/%.o: $(srcdir)/test/%.java libulibgcj.a
+	$(GCJ) $(javaflags) -o $(@) -c $(<)
 
-Hello.o: $(srcdir)/test/Hello.java libulibgcj.a
-	$(GCJ) $(CPPFLAGS) $(GCJFLAGS) -o $(@) -c $(<)
-
-Hello-cpp.o: $(srcdir)/test/Hello.cpp Hello.h
+objects/%-cpp.o: $(srcdir)/test/%.cpp headers/%.h
 	$(CXXCOMPILE) -o $(@) -c $(<)
 
-Hello.h: Hello.class
-	$(GCJH) -classpath '' -bootclasspath processed $(<:.class=)
+headers/%.h: classes/%.class
+	$(GCJH) $(hflags) $(patsubst classes/%.class,%,$(<))
 
-Hello.class: $(srcdir)/test/Hello.java libulibgcj.a
-	$(GCJ) -d . --classpath '' --bootclasspath processed -C $(<)
+classes/%.class: $(srcdir)/test/%.java libulibgcj.a
+	$(GCJ) $(classflags) -C $(<)
 
-test: \
-		CoreTest.o \
-		CoreTest-cpp.o \
-		Thrower.o \
+hello: \
+		objects/Hello.o \
+		objects/Hello-cpp.o \
 		libulibgcj.a \
 		$(GCLIBS)
 	$(CXX) $(linkflags) $(^) -o $(@)
 
-CoreTest.o: $(srcdir)/test/CoreTest.java libulibgcj.a
-	$(GCJ) $(CPPFLAGS) -I$(srcdir)/test $(GCJFLAGS) -o $(@) -c $(<)
-
-Thrower.o: $(srcdir)/test/Thrower.java libulibgcj.a
-	$(GCJ) $(CPPFLAGS) $(GCJFLAGS) -o $(@) -c $(<)
-
-CoreTest-cpp.o: $(srcdir)/test/CoreTest.cpp CoreTest.h
-	$(CXXCOMPILE) $(CPPFLAGS) -o $(@) -c $(<)
-
-CoreTest.h: CoreTest.class
-	$(GCJH) -classpath .:$(srcdir)/test -bootclasspath processed $(<:.class=)
-
-CoreTest.class: $(srcdir)/test/CoreTest.java libulibgcj.a
-	$(GCJ) -d . --classpath $(srcdir)/test --bootclasspath processed -C $(<)
+core-test: \
+		objects/CoreTest.o \
+		objects/CoreTest-cpp.o \
+		objects/Thrower.o \
+		libulibgcj.a \
+		$(GCLIBS)
+	$(CXX) $(linkflags) $(^) -o $(@)
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

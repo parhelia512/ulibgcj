@@ -11,7 +11,7 @@ VPATH = @srcdir@/../libjava:@srcdir@/../libjava/classpath
 
 AM_CPPFLAGS = \
 	-I$(srcdir)/../libjava \
-	-I. \
+	-Iheaders \
 	-Iinclude \
 	-I$(srcdir)/../libjava/include \
 	-I$(srcdir)/../libjava/classpath/include \
@@ -29,6 +29,13 @@ AM_CXXFLAGS = \
 	@LIBGCJ_CXXFLAGS@ \
 	$(WARNINGS) \
 	-D_GNU_SOURCE
+
+jardir = $(datadir)/java
+jar_DATA = libulibgcj.jar
+
+## FIXME - this conflicts with libjava's libgcj.spec
+specdir = $(libdir)
+spec_DATA = libgcj.spec
 
 ulibgcjdir = $(libdir)
 ulibgcj_LIBRARIES = libulibgcj.a
@@ -147,7 +154,8 @@ if USING_NO_THREADS
 libulibgcj_a_SOURCES += no-threads.cc
 endif
 
-classes = $(java_sources:.java=.class)
+classes = \
+	$(foreach x,$(java_sources),$(patsubst %.java,classes/%.class,$(x)))
 
 processed_java_sources = \
 	$(foreach x,$(java_sources),$(patsubst %,processed/%,$(x)))
@@ -158,14 +166,19 @@ $(processed_java_sources): processed/%.java: %.java
 	@mkdir -p $(dir $(@))
 	@PERL@ $(srcdir)/scripts/process.pl $(process_flags) < $(<) > $(@)
 
-ommitted_headers = java/lang/Object.h java/lang/Class.h
+$(classes): classes/%.class: processed/%.java $(processed_java_sources)
+	@mkdir -p $(dir $(@))
+	$(GCJ) -d classes --classpath classes --bootclasspath processed -C $(<)
 
-java_headers = $(filter-out $(ommitted_headers),$(java_sources:.java=.h))
+ommitted_headers = headers/java/lang/Object.h headers/java/lang/Class.h
+
+java_headers = $(filter-out $(ommitted_headers),$(foreach \
+	x,$(java_sources),$(patsubst %.java,headers/%.h,$(x))))
 
 special_headers = \
-java/lang/ClassLoader.h \
-java/lang/Thread.h \
-java/lang/String.h
+headers/java/lang/ClassLoader.h \
+headers/java/lang/Thread.h \
+headers/java/lang/String.h
 
 ordinary_headers = $(filter-out $(special_headers),$(java_headers))
 
@@ -173,27 +186,26 @@ GCJH = @GCJH@
 
 .PRECIOUS: %.h
 %.h: files = $(shell echo $(subst $$,\$$,$(basename $(<)))*.class)
-%.h: classes = $(subst $$,\$$,$(patsubst %.class,%,$(files)))
-$(ordinary_headers): %.h: %.class
+%.h: classes = $(subst $$,\$$,$(patsubst classes/%.class,%,$(files)))
+$(ordinary_headers): headers/%.h: classes/%.class
 	@mkdir -p $(dir $(@))
-	$(GCJH) -classpath '' -bootclasspath processed $(classes)
+	$(GCJH) $(headerflags) $(classes)
 
 $(libulibgcj_a_OBJECTS): $(java_headers)
 
-$(classes): %.class: processed/%.java $(processed_java_sources)
-	@mkdir -p $(dir $(@))
-	$(GCJ) -d . --classpath '' --bootclasspath processed -C $(<)
+headerflags = -d headers --classpath classes --bootclasspath processed
 
-java/lang/ClassLoader.h: java/lang/ClassLoader.class
-	$(GCJH) -classpath '' -bootclasspath processed \
+headers/java/lang/ClassLoader.h: classes/java/lang/ClassLoader.class
+	@mkdir -p $(dir $(@))
+	$(GCJH) $(headerflags) \
 		-prepend 'jclass _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
 		-prepend 'void _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, bool is_jar);' \
 		-friend 'jclass (::_Jv_FindClass) (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
 		-friend 'void ::_Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, bool is_jar);' \
 		java/lang/ClassLoader
 
-java/lang/Thread.h: java/lang/Thread.class
-	$(GCJH) -classpath '' -bootclasspath processed \
+headers/java/lang/Thread.h: classes/java/lang/Thread.class
+	$(GCJH) $(headerflags) \
 		-prepend 'class _Jv_JNIEnv;' \
 		-prepend '#define _JV_NOT_OWNER 1' \
 		-prepend '#define _JV_INTERRUPTED 2' \
@@ -213,8 +225,8 @@ java/lang/Thread.h: java/lang/Thread.class
 		-friend 'jint (::_Jv_DetachCurrentThread) ();' \
 		java/lang/Thread
 
-java/lang/String.h: java/lang/String.class
-	$(GCJH) -classpath '' -bootclasspath processed \
+headers/java/lang/String.h: classes/java/lang/String.class
+	$(GCJH) $(headerflags) \
 	    -prepend 'jchar* _Jv_GetStringChars (jstring str);' \
 	    -prepend 'jstring* _Jv_StringFindSlot (jchar*, jint, jint);' \
 	    -prepend 'jstring* _Jv_StringGetSlot (jstring);' \
@@ -229,6 +241,30 @@ java/lang/String.h: java/lang/String.class
 	    -friend 'jstring (::_Jv_AllocString) (jsize);' \
 	    java/lang/String
 
+AM_GCJFLAGS = @LIBGCJ_JAVAFLAGS@ --classpath '' --bootclasspath processed
+
+objects = $(foreach x,$(java_sources),$(patsubst %.java,objects/%.o,$(x)))
+
+$(objects): objects/%.o: processed/%.java $(classes)
+	@mkdir -p $(dir $(@))
+	$(GCJ) -Iclasses $(GCJFLAGS) -o $(@) -c $(<)
+
+native_objects = \
+	$(foreach x,$(native_sources),$(patsubst %.cc,objects/%.o,$(x)))
+
+$(native_objects): objects/%.o: %.cc
+	@mkdir -p $(dir $(@))
+	$(CXXCOMPILE) -o $(@) -c $(<)
+
+libulibgcj-$(gcc_version).jar: $(classes)
+	cd classes; $(ZIP) -cfM ../libulibgcj.jar gnu java
+
+clean:
+	rm -rf $(libulibgcj_a_OBJECTS) objects classes headers processed \
+		libulibgcj.a libulibgcj.jar hello core-test
+
+## tests and examples #########################################################
+
 AM_LDFLAGS = -lm
 
 ## the only reason we need this is that libgc needs libdl on linux for
@@ -239,65 +275,37 @@ AM_LDFLAGS += -ldl
 endif
 endif
 
-AM_GCJFLAGS = @LIBGCJ_JAVAFLAGS@ --classpath '' --bootclasspath processed
-
-objects = $(java_sources:.java=.o)
-
-$(objects): %.o: processed/%.java $(classes)
-	@mkdir -p $(dir $(@))
-	$(GCJ) -I. $(GCJFLAGS) -o $(@) -c $(<)
-
-native_objects = $(native_sources:.cc=.o)
-
-$(native_objects): %.o: %.cc
-	@mkdir -p $(dir $(@))
-	$(CXXCOMPILE) -o $(@) -c $(<)
-
-clean:
-	rm -f $$(find . -name '*.o' -o -name '*.class')
-
-## test #######################################################################
-
 linkflags = $(AM_LDFLAGS) $(LDFLAGS) $(THREADLDFLAGS) $(THREADLIBS)
 
-hello: \
-		Hello.o \
-		Hello-cpp.o \
-		libulibgcj.a \
-		$(GCLIBS)
-	$(CXX) $(linkflags) $(^) -o $(@)
+javaflags = $(CPPFLAGS) -I$(srcdir)/test $(GCJFLAGS) --bootclasspath processed
 
-Hello.o: $(srcdir)/test/Hello.java libulibgcj.a
-	$(GCJ) $(CPPFLAGS) $(GCJFLAGS) -o $(@) -c $(<)
+hflags = -d headers -classpath classes:$(srcdir)/test -bootclasspath processed
 
-Hello-cpp.o: $(srcdir)/test/Hello.cpp Hello.h
+classflags = -d classes --classpath $(srcdir)/test --bootclasspath processed
+
+objects/%.o: $(srcdir)/test/%.java libulibgcj.a
+	$(GCJ) $(javaflags) -o $(@) -c $(<)
+
+objects/%-cpp.o: $(srcdir)/test/%.cpp headers/%.h
 	$(CXXCOMPILE) -o $(@) -c $(<)
 
-Hello.h: Hello.class
-	$(GCJH) -classpath '' -bootclasspath processed $(<:.class=)
+headers/%.h: classes/%.class
+	$(GCJH) $(hflags) $(patsubst classes/%.class,%,$(<))
 
-Hello.class: $(srcdir)/test/Hello.java libulibgcj.a
-	$(GCJ) -d . --classpath '' --bootclasspath processed -C $(<)
+classes/%.class: $(srcdir)/test/%.java libulibgcj.a
+	$(GCJ) $(classflags) -C $(<)
 
-test: \
-		CoreTest.o \
-		CoreTest-cpp.o \
-		Thrower.o \
+hello: \
+		objects/Hello.o \
+		objects/Hello-cpp.o \
 		libulibgcj.a \
 		$(GCLIBS)
 	$(CXX) $(linkflags) $(^) -o $(@)
 
-CoreTest.o: $(srcdir)/test/CoreTest.java libulibgcj.a
-	$(GCJ) $(CPPFLAGS) -I$(srcdir)/test $(GCJFLAGS) -o $(@) -c $(<)
-
-Thrower.o: $(srcdir)/test/Thrower.java libulibgcj.a
-	$(GCJ) $(CPPFLAGS) $(GCJFLAGS) -o $(@) -c $(<)
-
-CoreTest-cpp.o: $(srcdir)/test/CoreTest.cpp CoreTest.h
-	$(CXXCOMPILE) $(CPPFLAGS) -o $(@) -c $(<)
-
-CoreTest.h: CoreTest.class
-	$(GCJH) -classpath .:$(srcdir)/test -bootclasspath processed $(<:.class=)
-
-CoreTest.class: $(srcdir)/test/CoreTest.java libulibgcj.a
-	$(GCJ) -d . --classpath $(srcdir)/test --bootclasspath processed -C $(<)
+core-test: \
+		objects/CoreTest.o \
+		objects/CoreTest-cpp.o \
+		objects/Thrower.o \
+		libulibgcj.a \
+		$(GCLIBS)
+	$(CXX) $(linkflags) $(^) -o $(@)

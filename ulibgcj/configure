@@ -729,6 +729,7 @@ USING_NO_THREADS_TRUE
 USING_NO_THREADS_FALSE
 HASH_SYNC_SPEC
 GCJH
+ZIP
 CPP
 GREP
 EGREP
@@ -4704,7 +4705,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 4707 "configure"
+#line 4708 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -4923,6 +4924,9 @@ fi
 built_gcc_dir="`cd ../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
 GCJ="${built_gcc_dir}/gcj -B${built_gcc_dir}/"
 GCJH="${built_gcc_dir}/gcjh"
+built_fastjar_dir="`cd ../../${host_subdir}/fastjar && ${PWDCMD-pwd}`"
+ZIP="${built_fastjar_dir}/fastjar"
+
 
 
 
@@ -6709,6 +6713,7 @@ USING_NO_THREADS_TRUE!$USING_NO_THREADS_TRUE$ac_delim
 USING_NO_THREADS_FALSE!$USING_NO_THREADS_FALSE$ac_delim
 HASH_SYNC_SPEC!$HASH_SYNC_SPEC$ac_delim
 GCJH!$GCJH$ac_delim
+ZIP!$ZIP$ac_delim
 CPP!$CPP$ac_delim
 GREP!$GREP$ac_delim
 EGREP!$EGREP$ac_delim
@@ -6716,7 +6721,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 39; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 40; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

@@ -274,8 +274,11 @@ AC_SUBST(HASH_SYNC_SPEC)
 built_gcc_dir="`cd ../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
 GCJ="${built_gcc_dir}/gcj -B${built_gcc_dir}/"
 GCJH="${built_gcc_dir}/gcjh"
+built_fastjar_dir="`cd ../../${host_subdir}/fastjar && ${PWDCMD-pwd}`"
+ZIP="${built_fastjar_dir}/fastjar"
 AC_SUBST(GCJ)
 AC_SUBST(GCJH)
+AC_SUBST(ZIP)
 AC_SUBST(GCJFLAGS)
 
 if test -d sysdep; then true; else mkdir sysdep; fi
