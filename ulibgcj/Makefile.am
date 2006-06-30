@@ -254,7 +254,7 @@ $(native_objects): %.o: %.cc
 	$(CXXCOMPILE) -o $(@) -c $(<)
 
 clean:
-	rm -f $$(find -name '*.o' -o -name '*.class')
+	rm -f $$(find . -name '*.o' -o -name '*.class')
 
 ## test #######################################################################
 
