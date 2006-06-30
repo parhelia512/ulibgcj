@@ -57,9 +57,9 @@ extern "C" void *_Jv_ResolvePoolEntry (jclass this_class, jint index);
 // state changes, one should notify all waiters of this class.
 enum
 {
-  JV_STATE_NOTHING = 0,		// Set by compiler.
+  JV_STATE_NOTHING = 0,
 
-  JV_STATE_PRELOADING = 1,	// Can do _Jv_FindClass.
+  JV_STATE_PRELOADING = 1,	// Can do _Jv_FindClass - set by compiler.
   JV_STATE_LOADING = 3,		// Has super installed.
   JV_STATE_READ = 4,		// Has been completely defined.
   JV_STATE_LOADED = 5,		// Has Miranda methods defined.
