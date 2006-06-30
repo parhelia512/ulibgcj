@@ -710,17 +710,24 @@ USING_DARWIN_CRT_TRUE
 USING_DARWIN_CRT_FALSE
 GCLIBS
 GCINCS
+JC1GCSPEC
 USING_BOEHMGC_TRUE
 USING_BOEHMGC_FALSE
 USING_NOGC_TRUE
 USING_NOGC_FALSE
+DIVIDESPEC
+CHECKREFSPEC
+EXCEPTIONSPEC
+BACKTRACESPEC
 THREADLIBS
+THREADSPEC
 USING_POSIX_THREADS_TRUE
 USING_POSIX_THREADS_FALSE
 USING_WIN32_THREADS_TRUE
 USING_WIN32_THREADS_FALSE
 USING_NO_THREADS_TRUE
 USING_NO_THREADS_FALSE
+HASH_SYNC_SPEC
 GCJH
 CPP
 GREP
@@ -1324,6 +1331,8 @@ Optional Features:
   --enable-java-gc=TYPE   choose garbage collector (default is boehm)
   --enable-sjlj-exceptions
                           force use of builtin_setjmp for exceptions
+  --enable-hash-synchronization
+                          use global hash table for monitor locks
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -4626,10 +4635,12 @@ fi
 
 GCLIBS=
 GCINCS=
+JC1GCSPEC=
 case "$GC" in
  boehm)
     { echo "$as_me:$LINENO: result: boehm" >&5
 echo "${ECHO_T}boehm" >&6; }
+    JC1GCSPEC='-fuse-boehm-gc'
     GCLIBS=../boehm-gc/.libs/libgcjgc_convenience.a
     GCINCS='-I$(top_srcdir)/../boehm-gc/include -I../boehm-gc/include'
     GCHDR=boehm-gc.h
@@ -4653,6 +4664,7 @@ echo "$as_me: error: unrecognized collector \"$GC\"" >&2;}
 esac
 
 ac_config_links="$ac_config_links include/java-gc.h:${libjava}/include/${GCHDR}"
+
 
 
 
@@ -4692,7 +4704,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 4695 "configure"
+#line 4707 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -4749,6 +4761,10 @@ if test $can_unwind_signal = no && test $enable_sjlj_exceptions = no; then
   EXCEPTIONSPEC=
 fi
 
+
+
+
+
 ## threads ####################################################################
 
 { echo "$as_me:$LINENO: checking for thread model used by GCC" >&5
@@ -4784,9 +4800,11 @@ esac
 
 THREADLIBS=
 THREADH=
+THREADSPEC=
 case "$THREADS" in
  posix)
     THREADLIBS=-lpthread
+    THREADSPEC=-lpthread
     THREADH=posix-threads.h
 
 cat >>confdefs.h <<\_ACEOF
@@ -4810,6 +4828,7 @@ _ACEOF
 esac
 
 ac_config_links="$ac_config_links include/java-threads.h:${libjava}/include/${THREADH}"
+
 
 
 
@@ -4879,10 +4898,26 @@ ac_config_links="$ac_config_links include/java-signal.h:${libjava}/${SIGNAL_HAND
 
 ###############################################################################
 
+# Check whether --enable-hash-synchronization was given.
+if test "${enable_hash_synchronization+set}" = set; then
+  enableval=$enable_hash_synchronization;
+fi
+
+
+if test -z "$enable_hash_synchronization"; then
+   enable_hash_synchronization=$enable_hash_synchronization_default
+fi
+
+HASH_SYNC_SPEC=
+# Hash synchronization is only useful with threads right now.
+if test "$enable_hash_synchronization" = yes && test "$THREADS" != "none"; then
+   HASH_SYNC_SPEC=-fhash-synchronization
 
 cat >>confdefs.h <<\_ACEOF
 #define JV_HASH_SYNCHRONIZATION 1
 _ACEOF
+
+fi
 
 
 built_gcc_dir="`cd ../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
@@ -4909,7 +4944,8 @@ _ACEOF
 
 
 mkdir -p gcj
-echo > gcj/libgcj-config.h
+test -f gcj/libgcj-config.h || echo > gcj/libgcj-config.h
+test -f libgcj.spec || echo > libgcj.spec
 
 
 ac_ext=c
@@ -5788,7 +5824,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files Makefile"
+ac_config_files="$ac_config_files Makefile libgcj.spec"
 
 
 cat >confcache <<\_ACEOF
@@ -6437,6 +6473,7 @@ do
     "include/java-signal-aux.h") CONFIG_LINKS="$CONFIG_LINKS include/java-signal-aux.h:${libjava}/${SIGNAL_HANDLER_AUX}" ;;
     "sysdep/locks.h") CONFIG_LINKS="$CONFIG_LINKS sysdep/locks.h:${libjava}/sysdep/$sysdeps_dir/locks.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "libgcj.spec") CONFIG_FILES="$CONFIG_FILES libgcj.spec" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
@@ -6653,17 +6690,24 @@ USING_DARWIN_CRT_TRUE!$USING_DARWIN_CRT_TRUE$ac_delim
 USING_DARWIN_CRT_FALSE!$USING_DARWIN_CRT_FALSE$ac_delim
 GCLIBS!$GCLIBS$ac_delim
 GCINCS!$GCINCS$ac_delim
+JC1GCSPEC!$JC1GCSPEC$ac_delim
 USING_BOEHMGC_TRUE!$USING_BOEHMGC_TRUE$ac_delim
 USING_BOEHMGC_FALSE!$USING_BOEHMGC_FALSE$ac_delim
 USING_NOGC_TRUE!$USING_NOGC_TRUE$ac_delim
 USING_NOGC_FALSE!$USING_NOGC_FALSE$ac_delim
+DIVIDESPEC!$DIVIDESPEC$ac_delim
+CHECKREFSPEC!$CHECKREFSPEC$ac_delim
+EXCEPTIONSPEC!$EXCEPTIONSPEC$ac_delim
+BACKTRACESPEC!$BACKTRACESPEC$ac_delim
 THREADLIBS!$THREADLIBS$ac_delim
+THREADSPEC!$THREADSPEC$ac_delim
 USING_POSIX_THREADS_TRUE!$USING_POSIX_THREADS_TRUE$ac_delim
 USING_POSIX_THREADS_FALSE!$USING_POSIX_THREADS_FALSE$ac_delim
 USING_WIN32_THREADS_TRUE!$USING_WIN32_THREADS_TRUE$ac_delim
 USING_WIN32_THREADS_FALSE!$USING_WIN32_THREADS_FALSE$ac_delim
 USING_NO_THREADS_TRUE!$USING_NO_THREADS_TRUE$ac_delim
 USING_NO_THREADS_FALSE!$USING_NO_THREADS_FALSE$ac_delim
+HASH_SYNC_SPEC!$HASH_SYNC_SPEC$ac_delim
 GCJH!$GCJH$ac_delim
 CPP!$CPP$ac_delim
 GREP!$GREP$ac_delim
@@ -6672,7 +6716,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 32; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 39; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

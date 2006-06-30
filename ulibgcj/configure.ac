@@ -77,9 +77,11 @@ AC_ARG_ENABLE(java-gc,
 
 GCLIBS=
 GCINCS=
+JC1GCSPEC=
 case "$GC" in
  boehm)
     AC_MSG_RESULT(boehm)
+    JC1GCSPEC='-fuse-boehm-gc'
     GCLIBS=../boehm-gc/.libs/libgcjgc_convenience.a
     GCINCS='-I$(top_srcdir)/../boehm-gc/include -I../boehm-gc/include'
     GCHDR=boehm-gc.h
@@ -98,6 +100,7 @@ esac
 AC_CONFIG_LINKS(include/java-gc.h:${libjava}/include/${GCHDR})
 AC_SUBST(GCLIBS)
 AC_SUBST(GCINCS)
+AC_SUBST(JC1GCSPEC)
 AM_CONDITIONAL(USING_BOEHMGC, test "${GC}" = boehm)
 AM_CONDITIONAL(USING_NOGC, test "${GC}" = no)
 
@@ -156,6 +159,10 @@ if test $can_unwind_signal = no && test $enable_sjlj_exceptions = no; then
   DIVIDESPEC=-fuse-divide-subroutine
   EXCEPTIONSPEC=
 fi
+AC_SUBST(DIVIDESPEC)
+AC_SUBST(CHECKREFSPEC)
+AC_SUBST(EXCEPTIONSPEC)
+AC_SUBST(BACKTRACESPEC)
 
 ## threads ####################################################################
 
@@ -184,9 +191,11 @@ esac
 
 THREADLIBS=
 THREADH=
+THREADSPEC=
 case "$THREADS" in
  posix)
     THREADLIBS=-lpthread
+    THREADSPEC=-lpthread
     THREADH=posix-threads.h
     AC_DEFINE(HAVE_PTHREAD_MUTEXATTR_INIT, 1,
       [Define if using POSIX threads that have the mutexattr functions.])
@@ -205,6 +214,7 @@ esac
 
 AC_CONFIG_LINKS(include/java-threads.h:${libjava}/include/${THREADH})
 AC_SUBST(THREADLIBS)
+AC_SUBST(THREADSPEC)
 AM_CONDITIONAL(USING_POSIX_THREADS, test "${THREADS}" = posix)
 AM_CONDITIONAL(USING_WIN32_THREADS, test "${THREADS}" = win32)
 AM_CONDITIONAL(USING_NO_THREADS, test "${THREADS}" = none)
@@ -245,8 +255,21 @@ AC_CONFIG_LINKS(include/java-signal.h:${libjava}/${SIGNAL_HANDLER}
 
 ###############################################################################
 
-AC_DEFINE(JV_HASH_SYNCHRONIZATION, 1,
-          [Define if hash synchronization is in use])
+AC_ARG_ENABLE(hash-synchronization,
+  AS_HELP_STRING([--enable-hash-synchronization],
+                 [use global hash table for monitor locks]))
+
+if test -z "$enable_hash_synchronization"; then
+   enable_hash_synchronization=$enable_hash_synchronization_default
+fi
+
+HASH_SYNC_SPEC=
+# Hash synchronization is only useful with threads right now.
+if test "$enable_hash_synchronization" = yes && test "$THREADS" != "none"; then
+   HASH_SYNC_SPEC=-fhash-synchronization
+   AC_DEFINE(JV_HASH_SYNCHRONIZATION, 1, [Define if hash synchronization is in use])
+fi
+AC_SUBST(HASH_SYNC_SPEC)
 
 built_gcc_dir="`cd ../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
 GCJ="${built_gcc_dir}/gcj -B${built_gcc_dir}/"
@@ -270,6 +293,6 @@ AC_CHECK_HEADERS([unistd.h bstring.h sys/time.h string.h sys/types.h \
 		  pwd.h sys/config.h stdint.h langinfo.h locale.h \
 		  dirent.h math.h])
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile libgcj.spec])
 
 AC_OUTPUT
