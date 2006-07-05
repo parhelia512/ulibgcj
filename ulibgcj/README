@@ -5,14 +5,16 @@ Micro-libgcj is currently supported on the following platforms:
 
   Linux (i386 and amd64)
   Win32 (i386)
-  Mac OS X (PPC and i386)
+  Mac OS X (PPC)
+
+Mac OS X (i386) can also be made to work.  However, as of this
+writing, the Boehm GC library packaged with GCC does not support
+Darwin (OS X) on the i386 architecture.  Until this is fixed, you can
+substitute the latest upstream version, which does support this
+platform.  See also
+http://gcc.gnu.org/ml/java-patches/2006-q1/msg00347.html.
 
 Other platforms may work, but have not been tested.
-
-As of this writing, the Boehm GC library packaged with GCC does not
-support Darwin (OS X) on the i386 architecture.  Until this is fixed,
-you can substitute the latest upstream version, which does support
-this platform.
 
 
 Building with micro-libgcj enabled
