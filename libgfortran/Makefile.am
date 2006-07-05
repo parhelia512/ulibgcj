@@ -312,6 +312,8 @@ i_transpose_c= \
 generated/transpose_i4.c \
 generated/transpose_i8.c \
 generated/transpose_i16.c \
+generated/transpose_r4.c \
+generated/transpose_r8.c \
 generated/transpose_r10.c \
 generated/transpose_r16.c \
 generated/transpose_c4.c \
@@ -328,6 +330,8 @@ i_reshape_c= \
 generated/reshape_i4.c \
 generated/reshape_i8.c \
 generated/reshape_i16.c \
+generated/reshape_r4.c \
+generated/reshape_r8.c \
 generated/reshape_r10.c \
 generated/reshape_r16.c \
 generated/reshape_c4.c \
@@ -567,11 +571,9 @@ generated/_mod_i4.F90 \
 generated/_mod_i8.F90 \
 generated/_mod_i16.F90 \
 generated/_mod_r4.F90 \
-generated/_mod_r8.F90
-# There are commented out due to a bug in the way the front-end
-# handles MOD
-#generated/_mod_r10.F90
-#generated/_mod_r16.F90
+generated/_mod_r8.F90 \
+generated/_mod_r10.F90 \
+generated/_mod_r16.F90
 
 gfor_specific_src= \
 $(gfor_built_specific_src) \
@@ -579,8 +581,14 @@ $(gfor_built_specific2_src) \
 intrinsics/dprod_r8.f90 \
 intrinsics/f2c_specifics.F90
 
-# Turn on vectorization for matmul.
-$(patsubst %.c,%.lo,$(notdir $(i_matmul_c))): AM_CFLAGS += -ftree-vectorize
+# No install-html support yet.
+.PHONY: install-html
+install-html:
+
+# Turn on vectorization and loop unrolling for matmul.
+$(patsubst %.c,%.lo,$(notdir $(i_matmul_c))): AM_CFLAGS += -ftree-vectorize -funroll-loops
+# Logical matmul doesn't vectorize.
+$(patsubst %.c,%.lo,$(notdir $(i_matmull_c))): AM_CFLAGS += -funroll-loops
 
 BUILT_SOURCES=$(gfor_built_src) $(gfor_built_specific_src) \
     $(gfor_built_specific2_src)

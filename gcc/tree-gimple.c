@@ -216,6 +216,16 @@ is_gimple_stmt (tree t)
     case RESX_EXPR:
     case PHI_NODE:
     case STATEMENT_LIST:
+    case OMP_PARALLEL:
+    case OMP_FOR:
+    case OMP_SECTIONS:
+    case OMP_SECTION:
+    case OMP_SINGLE:
+    case OMP_MASTER:
+    case OMP_ORDERED:
+    case OMP_CRITICAL:
+    case OMP_RETURN:
+    case OMP_CONTINUE:
       /* These are always void.  */
       return true;
 
@@ -266,10 +276,11 @@ is_gimple_reg_type (tree type)
 bool
 is_gimple_reg (tree t)
 {
-  var_ann_t ann;
-
   if (TREE_CODE (t) == SSA_NAME)
     t = SSA_NAME_VAR (t);
+
+  if (MTAG_P (t))
+    return false;
 
   if (!is_gimple_variable (t))
     return false;
@@ -304,12 +315,6 @@ is_gimple_reg (tree t)
      assignments to the individual components.  */
   if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE)
     return DECL_COMPLEX_GIMPLE_REG_P (t);
-
-  /* Some compiler temporaries are created to be used exclusively in
-     virtual operands (currently memory tags and sub-variables).
-     These variables should never be considered GIMPLE registers.  */
-  if (DECL_ARTIFICIAL (t) && (ann = var_ann (t)) != NULL)
-    return ann->mem_tag_kind == NOT_A_TAG;
 
   return true;
 }

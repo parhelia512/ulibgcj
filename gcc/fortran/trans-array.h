@@ -1,5 +1,5 @@
 /* Header for array handling functions
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2006 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -30,10 +30,9 @@ bool gfc_array_allocate (gfc_se *, gfc_expr *, tree);
 void gfc_set_loop_bounds_from_array_spec (gfc_interface_mapping *,
 					  gfc_se *, gfc_array_spec *);
 
-/* Generate code to allocate a temporary array.  */
-tree gfc_trans_allocate_temp_array (stmtblock_t *, stmtblock_t *,
-                                    gfc_loopinfo *, gfc_ss_info *, tree, bool,
-                                    bool);
+/* Generate code to create a temporary array.  */
+tree gfc_trans_create_temp_array (stmtblock_t *, stmtblock_t *, gfc_loopinfo *,
+                                  gfc_ss_info *, tree, bool, bool, bool, bool);
 
 /* Generate function entry code for allocation of compiler allocated array
    variables.  */
@@ -42,6 +41,8 @@ tree gfc_trans_auto_array_allocation (tree, gfc_symbol *, tree);
 tree gfc_trans_dummy_array_bias (gfc_symbol *, tree, tree);
 /* Generate entry and exit code for g77 calling convention arrays.  */
 tree gfc_trans_g77_array (gfc_symbol *, tree);
+/* Generate code to deallocate an array, if it is allocated.  */
+tree gfc_trans_dealloc_allocated (tree);
 /* Add initialization for deferred arrays.  */
 tree gfc_trans_deferred_array (gfc_symbol *, tree);
 /* Generate an initializer for a static pointer or allocatable array.  */
@@ -85,7 +86,7 @@ void gfc_conv_resolve_dependencies (gfc_loopinfo *, gfc_ss *, gfc_ss *);
 tree gfc_build_null_descriptor (tree);
 
 /* Get a single array element.  */
-void gfc_conv_array_ref (gfc_se *, gfc_array_ref *);
+void gfc_conv_array_ref (gfc_se *, gfc_array_ref *, gfc_symbol *, locus *);
 /* Translate a reference to a temporary array.  */
 void gfc_conv_tmp_array_ref (gfc_se * se);
 /* Translate a reference to an array temporary.  */
@@ -95,6 +96,8 @@ void gfc_conv_tmp_ref (gfc_se *);
 void gfc_conv_expr_descriptor (gfc_se *, gfc_expr *, gfc_ss *);
 /* Convert an array for passing as an actual function parameter.  */
 void gfc_conv_array_parameter (gfc_se *, gfc_expr *, gfc_ss *, int);
+/* Evaluate and transpose a matrix expression.  */
+void gfc_conv_array_transpose (gfc_se *, gfc_expr *);
 
 /* These work with both descriptors and descriptorless arrays.  */
 tree gfc_conv_array_data (tree);
@@ -113,11 +116,6 @@ tree gfc_conv_descriptor_dtype (tree);
 tree gfc_conv_descriptor_stride (tree, tree);
 tree gfc_conv_descriptor_lbound (tree, tree);
 tree gfc_conv_descriptor_ubound (tree, tree);
-
-/* Dependency checking for WHERE and FORALL.  */
-int gfc_check_dependency (gfc_expr *, gfc_expr *, gfc_expr **, int);
-/* Dependency checking for function calls.  */
-int gfc_check_fncall_dependency (gfc_expr *, gfc_expr *);
 
 /* Add pre-loop scalarization code for intrinsic functions which require
    special handling.  */

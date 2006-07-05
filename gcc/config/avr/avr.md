@@ -1,7 +1,7 @@
 ;; -*- Mode: Scheme -*-
 ;;   Machine description for GNU compiler,
 ;;   for ATMEL AVR micro controllers.
-;;   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005
+;;   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006
 ;;   Free Software Foundation, Inc.
 ;;   Contributed by Denis Chertykov (denisc@overta.ru)
 
@@ -36,8 +36,20 @@
 
 ;; UNSPEC usage:
 ;;  0  Length of a string, see "strlenhi".
-;;  1  Read from a word address in program memory, see "casesi".
+;;  1  Jump by register pair Z or by table addressed by Z, see "casesi".
 
+(define_constants
+  [(REG_X	26)
+   (REG_Y	28)
+   (REG_Z	30)
+   (REG_W	24)
+   (TMP_REGNO	0)	; temporary register r0
+   (ZERO_REGNO	1)	; zero register r1
+   (UNSPEC_STRLEN	0)
+   (UNSPEC_INDEX_JMP	1)])
+
+(include "constraints.md")
+  
 ;; Condition code settings.
 (define_attr "cc" "none,set_czn,set_zn,set_n,compare,clobber"
   (const_string "none"))
@@ -45,8 +57,8 @@
 (define_attr "type" "branch,branch1,arith,xcall"
   (const_string "arith"))
 
-(define_attr "mcu_enhanced" "yes,no"
-  (const (if_then_else (symbol_ref "AVR_ENHANCED")
+(define_attr "mcu_have_movw" "yes,no"
+  (const (if_then_else (symbol_ref "AVR_HAVE_MOVW")
 		       (const_string "yes")
 		       (const_string "no"))))
 
@@ -482,7 +494,8 @@
     [(set (match_dup 4)
 	  (unspec:HI [(match_operand:BLK 1 "memory_operand" "")
 		      (match_operand:QI 2 "const_int_operand" "")
-		      (match_operand:HI 3 "immediate_operand" "")] 0))
+		      (match_operand:HI 3 "immediate_operand" "")]
+		     UNSPEC_STRLEN))
      (set (match_dup 4) (plus:HI (match_dup 4)
 				 (const_int -1)))
      (set (match_operand:HI 0 "register_operand" "")
@@ -503,7 +516,8 @@
   [(set (match_operand:HI 0 "register_operand" "=e")
 	(unspec:HI [(mem:BLK (match_operand:HI 1 "register_operand" "%0"))
 		    (const_int 0)
-		    (match_operand:HI 2 "immediate_operand" "i")] 0))]
+		    (match_operand:HI 2 "immediate_operand" "i")]
+		   UNSPEC_STRLEN))]
   ""
   "ld __tmp_reg__,%a0+
 	tst __tmp_reg__
@@ -1441,7 +1455,7 @@
   [(set_attr_alternative "length"
 			 [(const_int 7)
 			  (const_int 8)
-			  (if_then_else (eq_attr "mcu_enhanced" "yes")
+			  (if_then_else (eq_attr "mcu_have_movw" "yes")
 					(const_int 7)
 					(const_int 8))])
    (set_attr "cc" "set_czn,set_n,set_czn")])
@@ -1519,7 +1533,7 @@
 	{mov %A0,%A1\;mov %B0,%B1|movw %A0,%A1}\;clr %C0\;sbrc %B0,7\;com %C0\;mov %D0,%C0"
   [(set_attr_alternative "length"
 			 [(const_int 4)
-			  (if_then_else (eq_attr "mcu_enhanced" "yes")
+			  (if_then_else (eq_attr "mcu_have_movw" "yes")
 					(const_int 5)
 					(const_int 6))])
    (set_attr "cc" "set_n,set_n")])
@@ -1556,7 +1570,7 @@
 	{mov %A0,%A1\;mov %B0,%B1|movw %A0,%A1}\;clr %C0\;clr %D0"
   [(set_attr_alternative "length"
 			 [(const_int 2)
-			  (if_then_else (eq_attr "mcu_enhanced" "yes")
+			  (if_then_else (eq_attr "mcu_have_movw" "yes")
 					(const_int 3)
 					(const_int 4))])
    (set_attr "cc" "set_n,set_n")])
@@ -2090,7 +2104,7 @@
      return \"icall\";
   else if (which_alternative==1)
     {
-      if (AVR_ENHANCED)
+      if (AVR_HAVE_MOVW)
 	return (AS2 (movw, r30, %0) CR_TAB
 		\"icall\");
       else
@@ -2107,7 +2121,7 @@
   [(set_attr "cc" "clobber,clobber,clobber,clobber")
    (set_attr_alternative "length"
 			 [(const_int 1)
-			  (if_then_else (eq_attr "mcu_enhanced" "yes")
+			  (if_then_else (eq_attr "mcu_have_movw" "yes")
 					(const_int 2)
 					(const_int 3))
 			  (if_then_else (eq_attr "mcu_mega" "yes")
@@ -2127,7 +2141,7 @@
      return \"icall\";
   else if (which_alternative==1)
     {
-      if (AVR_ENHANCED)
+      if (AVR_HAVE_MOVW)
 	return (AS2 (movw, r30, %1) CR_TAB
 		\"icall\");
       else
@@ -2144,7 +2158,7 @@
   [(set_attr "cc" "clobber,clobber,clobber,clobber")
    (set_attr_alternative "length"
 			 [(const_int 1)
-			  (if_then_else (eq_attr "mcu_enhanced" "yes")
+			  (if_then_else (eq_attr "mcu_have_movw" "yes")
 					(const_int 2)
 					(const_int 3))
 			  (if_then_else (eq_attr "mcu_mega" "yes")
@@ -2180,7 +2194,8 @@
 
 ;; Table made from "rjmp" instructions for <=8K devices.
 (define_insn "*tablejump_rjmp"
-  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "!z,*r")] 1))
+  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "!z,*r")]
+			UNSPEC_INDEX_JMP))
    (use (label_ref (match_operand 1 "" "")))
    (clobber (match_dup 0))]
   "!AVR_MEGA"
@@ -2192,7 +2207,8 @@
 
 ;; Not a prologue, but similar idea - move the common piece of code to libgcc.
 (define_insn "*tablejump_lib"
-  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "z")] 1))
+  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "z")]
+			UNSPEC_INDEX_JMP))
    (use (label_ref (match_operand 1 "" "")))
    (clobber (match_dup 0))]
   "AVR_MEGA && TARGET_CALL_PROLOGUES"
@@ -2201,7 +2217,8 @@
    (set_attr "cc" "clobber")])
 
 (define_insn "*tablejump_enh"
-  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "z")] 1))
+  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "z")]
+			UNSPEC_INDEX_JMP))
    (use (label_ref (match_operand 1 "" "")))
    (clobber (match_dup 0))]
   "AVR_MEGA && AVR_ENHANCED"
@@ -2215,7 +2232,8 @@
    (set_attr "cc" "clobber")])
 
 (define_insn "*tablejump"
-  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "z")] 1))
+  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "z")]
+			UNSPEC_INDEX_JMP))
    (use (label_ref (match_operand 1 "" "")))
    (clobber (match_dup 0))]
   "AVR_MEGA"
@@ -2248,7 +2266,7 @@
    (set (match_dup 6)
 	(plus:HI (match_dup 6) (label_ref (match_operand:HI 3 "" ""))))
 
-   (parallel [(set (pc) (unspec:HI [(match_dup 6)] 1))
+   (parallel [(set (pc) (unspec:HI [(match_dup 6)] UNSPEC_INDEX_JMP))
 	      (use (label_ref (match_dup 3)))
 	      (clobber (match_dup 6))])]
   ""

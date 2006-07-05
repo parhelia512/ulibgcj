@@ -1,6 +1,6 @@
 /* Matching subroutines in all sizes, shapes and colors.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software
+   Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -139,7 +139,8 @@ gfc_match_eos (void)
 
 /* Match a literal integer on the input, setting the value on
    MATCH_YES.  Literal ints occur in kind-parameters as well as
-   old-style character length specifications.  */
+   old-style character length specifications.  If cnt is non-NULL it
+   will be set to the number of digits.  */
 
 match
 gfc_match_small_literal_int (int *value, int *cnt)
@@ -152,7 +153,8 @@ gfc_match_small_literal_int (int *value, int *cnt)
 
   gfc_gobble_whitespace ();
   c = gfc_next_char ();
-  *cnt = 0;
+  if (cnt)
+    *cnt = 0;
 
   if (!ISDIGIT (c))
     {
@@ -184,7 +186,8 @@ gfc_match_small_literal_int (int *value, int *cnt)
   gfc_current_locus = old_loc;
 
   *value = i;
-  *cnt = j;
+  if (cnt)
+    *cnt = j;
   return MATCH_YES;
 }
 
@@ -1058,6 +1061,12 @@ gfc_match_if (gfc_statement * if_type)
   gfc_undo_symbols ();
   gfc_current_locus = old_loc;
 
+  /* m can be MATCH_NO or MATCH_ERROR, here.  For MATCH_NO, continue to
+     call the various matchers.  For MATCH_ERROR, a mangled assignment
+     was found.  */
+  if (m == MATCH_ERROR)
+    return MATCH_ERROR;
+
   gfc_match (" if ( %e ) ", &expr);	/* Guaranteed to match */
 
   m = gfc_match_pointer_assignment ();
@@ -1338,7 +1347,7 @@ cleanup:
 static match
 match_exit_cycle (gfc_statement st, gfc_exec_op op)
 {
-  gfc_state_data *p;
+  gfc_state_data *p, *o;
   gfc_symbol *sym;
   match m;
 
@@ -1365,9 +1374,11 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 
   /* Find the loop mentioned specified by the label (or lack of a
      label).  */
-  for (p = gfc_state_stack; p; p = p->previous)
+  for (o = NULL, p = gfc_state_stack; p; p = p->previous)
     if (p->state == COMP_DO && (sym == NULL || sym == p->sym))
       break;
+    else if (o == NULL && p->state == COMP_OMP_STRUCTURED_BLOCK)
+      o = p;
 
   if (p == NULL)
     {
@@ -1378,6 +1389,25 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 	gfc_error ("%s statement at %C is not within loop '%s'",
 		   gfc_ascii_statement (st), sym->name);
 
+      return MATCH_ERROR;
+    }
+
+  if (o != NULL)
+    {
+      gfc_error ("%s statement at %C leaving OpenMP structured block",
+		 gfc_ascii_statement (st));
+      return MATCH_ERROR;
+    }
+  else if (st == ST_EXIT
+	   && p->previous != NULL
+	   && p->previous->state == COMP_OMP_STRUCTURED_BLOCK
+	   && (p->previous->head->op == EXEC_OMP_DO
+	       || p->previous->head->op == EXEC_OMP_PARALLEL_DO))
+    {
+      gcc_assert (p->previous->head->next != NULL);
+      gcc_assert (p->previous->head->next->op == EXEC_DO
+		  || p->previous->head->next->op == EXEC_DO_WHILE);
+      gfc_error ("EXIT statement at %C terminating !$OMP DO loop");
       return MATCH_ERROR;
     }
 
@@ -1431,10 +1461,10 @@ gfc_match_stopcode (gfc_statement st)
         goto cleanup;
 
       if (m == MATCH_YES && cnt > 5)
-        {
-          gfc_error ("Too many digits in STOP code at %C");
-          goto cleanup;
-        }
+	{
+	  gfc_error ("Too many digits in STOP code at %C");
+	  goto cleanup;
+	}
 
       if (m == MATCH_NO)
         {
@@ -2269,7 +2299,7 @@ gfc_match_common (void)
       if (gsym->type != GSYM_UNKNOWN && gsym->type != GSYM_COMMON)
 	{
 	  gfc_error ("Symbol '%s' at %C is already an external symbol that is not COMMON",
-		     sym->name);
+		     name);
 	  goto cleanup;
 	}
 
@@ -2772,7 +2802,11 @@ cleanup:
 
 /* Check that a statement function is not recursive. This is done by looking
    for the statement function symbol(sym) by looking recursively through its
-   expression(e).  If a reference to sym is found, true is returned.  */
+   expression(e).  If a reference to sym is found, true is returned.  
+   12.5.4 requires that any variable of function that is implicitly typed
+   shall have that type confirmed by any subsequent type declaration.  The
+   implicit typing is conveniently done here.  */
+
 static bool
 recursive_stmt_fcn (gfc_expr *e, gfc_symbol *sym)
 {
@@ -2806,11 +2840,17 @@ recursive_stmt_fcn (gfc_expr *e, gfc_symbol *sym)
 	    && recursive_stmt_fcn (e->symtree->n.sym->value, sym))
 	return true;
 
+      if (e->symtree->n.sym->ts.type == BT_UNKNOWN)
+	gfc_set_default_type (e->symtree->n.sym, 0, NULL);
+
       break;
 
     case EXPR_VARIABLE:
       if (e->symtree && sym->name == e->symtree->n.sym->name)
 	return true;
+
+      if (e->symtree->n.sym->ts.type == BT_UNKNOWN)
+	gfc_set_default_type (e->symtree->n.sym, 0, NULL);
       break;
 
     case EXPR_OP:
@@ -2999,6 +3039,11 @@ match_case_eos (void)
 
   if (gfc_match_eos () == MATCH_YES)
     return MATCH_YES;
+
+  /* If the case construct doesn't have a case-construct-name, we
+     should have matched the EOS.  */
+  if (!gfc_current_block ())
+    return MATCH_ERROR;
 
   gfc_gobble_whitespace ();
 
@@ -3346,6 +3391,9 @@ match_forall_iterator (gfc_forall_iterator ** result)
 	goto cleanup;
     }
 
+  /* Mark the iteration variable's symbol as used as a FORALL index.  */
+  iter->var->symtree->n.sym->forall_index = true;
+
   *result = iter;
   return MATCH_YES;
 
@@ -3354,6 +3402,13 @@ syntax:
   m = MATCH_ERROR;
 
 cleanup:
+  /* Make sure that potential internal function references in the
+     mask do not get messed up.  */
+  if (iter->var
+	&& iter->var->expr_type == EXPR_VARIABLE
+	&& iter->var->symtree->n.sym->refs == 1)
+    iter->var->symtree->n.sym->attr.flavor = FL_UNKNOWN;
+
   gfc_current_locus = where;
   gfc_free_forall_iterator (iter);
   return m;
@@ -3546,9 +3601,7 @@ gfc_match_forall (gfc_statement * st)
 
   c = gfc_get_code ();
   *c = new_st;
-
-  if (gfc_match_eos () != MATCH_YES)
-    goto syntax;
+  c->loc = gfc_current_locus;
 
   gfc_clear_new_st ();
   new_st.op = EXEC_FORALL;

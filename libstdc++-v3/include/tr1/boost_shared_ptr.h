@@ -57,8 +57,7 @@
 // namespace std::tr1
 namespace std
 {
-namespace tr1
-{
+_GLIBCXX_BEGIN_NAMESPACE(tr1)
 
 class bad_weak_ptr : public std::exception
 {
@@ -131,14 +130,14 @@ public:
   void
   add_ref_copy()
   {
-    __gnu_cxx::__atomic_add(&_M_use_count, 1);
+    __gnu_cxx::__atomic_add_dispatch(&_M_use_count, 1);
   }
 
   void
   add_ref_lock()
   {
     __gnu_cxx::lock lock(_M_mutex);
-    if (__gnu_cxx::__exchange_and_add(&_M_use_count, 1) == 0)
+    if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, 1) == 0)
       {
 	_M_use_count = 0;
 	__throw_bad_weak_ptr();
@@ -148,14 +147,14 @@ public:
   void
   release() // nothrow
   {
-    if (__gnu_cxx::__exchange_and_add(&_M_use_count, -1) == 1)
+    if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, -1) == 1)
       {
 	dispose();
 #ifdef __GTHREADS	
 	_GLIBCXX_READ_MEM_BARRIER;
 	_GLIBCXX_WRITE_MEM_BARRIER;
 #endif
-	if (__gnu_cxx::__exchange_and_add(&_M_weak_count, -1) == 1)
+	if (__gnu_cxx::__exchange_and_add_dispatch(&_M_weak_count, -1) == 1)
 	  destroy();
       }
   }
@@ -163,13 +162,13 @@ public:
   void
   weak_add_ref() // nothrow
   {
-    __gnu_cxx::__atomic_add(&_M_weak_count, 1);
+    __gnu_cxx::__atomic_add_dispatch(&_M_weak_count, 1);
   }
 
   void
   weak_release() // nothrow
   {
-    if (__gnu_cxx::__exchange_and_add(&_M_weak_count, -1) == 1)
+    if (__gnu_cxx::__exchange_and_add_dispatch(&_M_weak_count, -1) == 1)
       {
 #ifdef __GTHREADS
 	_GLIBCXX_READ_MEM_BARRIER;
@@ -977,7 +976,7 @@ template<typename _Tp>
     mutable weak_ptr<_Tp> _M_weak_this;
   };
 
-} // namespace tr1
+_GLIBCXX_END_NAMESPACE
 } // namespace std
 
 #endif

@@ -43,7 +43,7 @@ Warn about possible aliasing of dummy arguments
 
 Wampersand
 Fortran
-Warn about missing ampersand in continued character literals
+Warn about missing ampersand in continued character constants
 
 Wconversion
 Fortran
@@ -65,6 +65,10 @@ Wsurprising
 Fortran
 Warn about \"suspicious\" constructs
 
+Wtabs
+Fortran
+Permit nonconforming uses of the tab character
+
 Wunderflow
 Fortran
 Warn about underflow of numerical constant expressions
@@ -72,6 +76,10 @@ Warn about underflow of numerical constant expressions
 Wunused-labels
 Fortran
 Warn when a label is unused
+
+fall-intrinsics
+Fortran RejectNegative
+All intrinsics procedures are available regardless of selected standard
 
 fautomatic
 Fortran
@@ -114,12 +122,16 @@ Fortran
 Use f2c calling convention
 
 ffixed-form
-Fortran
+Fortran RejectNegative
 Assume that the source file is fixed form
 
 ffree-form
-Fortran
+Fortran RejectNegative
 Assume that the source file is free form
+
+fopenmp
+Fortran
+Enable OpenMP
 
 funderscoring
 Fortran
@@ -168,6 +180,10 @@ Set default accessibility of module entities to PRIVATE
 fno-backend
 Fortran RejectNegative
 Don't generate code, just do syntax and semantics checking
+
+frange-check
+Fortran
+Enable range checking during compilation
 
 fpack-derived
 Fortran

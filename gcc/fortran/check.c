@@ -1,5 +1,5 @@
 /* Check functions
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -317,34 +317,6 @@ dim_check (gfc_expr * dim, int n, int optional)
   return SUCCESS;
 }
 
-/* Compare the size of a along dimension ai with the size of b along
-   dimension bi, returning 0 if they are known not to be identical,
-   and 1 if they are identical, or if this cannot be determined.  */
-
-static int
-identical_dimen_shape (gfc_expr *a, int ai, gfc_expr *b, int bi)
-{
-  mpz_t a_size, b_size;
-  int ret;
-
-  gcc_assert (a->rank > ai);
-  gcc_assert (b->rank > bi);
-
-  ret = 1;
-
-  if (gfc_array_dimen_size (a, ai, &a_size) == SUCCESS)
-    {
-      if (gfc_array_dimen_size (b, bi, &b_size) == SUCCESS)
-	{
-	  if (mpz_cmp (a_size, b_size) != 0)
-	    ret = 0;
-  
-	  mpz_clear (b_size);
-	}
-      mpz_clear (a_size);
-    }
-  return ret;
-}
 
 /* If a DIM parameter is a constant, make sure that it is greater than
    zero and less than or equal to the rank of the given array.  If
@@ -375,6 +347,47 @@ dim_rank_check (gfc_expr * dim, gfc_expr * array, int allow_assumed)
     }
 
   return SUCCESS;
+}
+
+/* Compare the size of a along dimension ai with the size of b along
+   dimension bi, returning 0 if they are known not to be identical,
+   and 1 if they are identical, or if this cannot be determined.  */
+
+static int
+identical_dimen_shape (gfc_expr *a, int ai, gfc_expr *b, int bi)
+{
+  mpz_t a_size, b_size;
+  int ret;
+
+  gcc_assert (a->rank > ai);
+  gcc_assert (b->rank > bi);
+
+  ret = 1;
+
+  if (gfc_array_dimen_size (a, ai, &a_size) == SUCCESS)
+    {
+      if (gfc_array_dimen_size (b, bi, &b_size) == SUCCESS)
+	{
+	  if (mpz_cmp (a_size, b_size) != 0)
+	    ret = 0;
+  
+	  mpz_clear (b_size);
+	}
+      mpz_clear (a_size);
+    }
+  return ret;
+}
+
+/* Error return for transformational intrinsics not allowed in
+   initialization expressions.  */
+ 
+static try
+non_init_transformational (void)
+{
+  gfc_error ("transformational intrinsic '%s' at %L is not permitted "
+	     "in an initialization expression", gfc_current_intrinsic,
+	     gfc_current_intrinsic_where);
+  return FAILURE;
 }
 
 /***** Check functions *****/
@@ -438,6 +451,9 @@ gfc_check_all_any (gfc_expr * mask, gfc_expr * dim)
   if (dim_check (dim, 1, 1) == FAILURE)
     return FAILURE;
 
+  if (gfc_init_expr)
+    return non_init_transformational ();
+
   return SUCCESS;
 }
 
@@ -498,11 +514,16 @@ gfc_check_associated (gfc_expr * pointer, gfc_expr * target)
   symbol_attribute attr;
   int i;
   try t;
+  locus *where;
+
+  where = &pointer->where;
 
   if (pointer->expr_type == EXPR_VARIABLE)
     attr = gfc_variable_attr (pointer, NULL);
   else if (pointer->expr_type == EXPR_FUNCTION)
     attr = pointer->symtree->n.sym->attr;
+  else if (pointer->expr_type == EXPR_NULL)
+    goto null_arg;
   else
     gcc_assert (0); /* Pointer must be a variable or a function.  */
 
@@ -518,20 +539,21 @@ gfc_check_associated (gfc_expr * pointer, gfc_expr * target)
   if (target == NULL)
     return SUCCESS;
 
+  where = &target->where;
   if (target->expr_type == EXPR_NULL)
-    {
-      gfc_error ("NULL pointer at %L is not permitted as actual argument "
-                 "of '%s' intrinsic function",
-                 &target->where, gfc_current_intrinsic);
-      return FAILURE;
-    }
+    goto null_arg;
 
   if (target->expr_type == EXPR_VARIABLE)
     attr = gfc_variable_attr (target, NULL);
   else if (target->expr_type == EXPR_FUNCTION)
     attr = target->symtree->n.sym->attr;
   else
-    gcc_assert (0); /* Target must be a variable or a function.  */
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L must be a pointer "
+		 "or target VARIABLE or FUNCTION", gfc_current_intrinsic_arg[1],
+		 gfc_current_intrinsic, &target->where);
+      return FAILURE;
+    }
 
   if (!attr.pointer && !attr.target)
     {
@@ -559,6 +581,13 @@ gfc_check_associated (gfc_expr * pointer, gfc_expr * target)
           }
     }
   return t;
+
+null_arg:
+
+  gfc_error ("NULL pointer at %L is not permitted as actual argument "
+	     "of '%s' intrinsic function", where, gfc_current_intrinsic);
+  return FAILURE;
+
 }
 
 
@@ -710,6 +739,9 @@ gfc_check_count (gfc_expr * mask, gfc_expr * dim)
   if (dim_check (dim, 1, 1) == FAILURE)
     return FAILURE;
 
+  if (gfc_init_expr)
+    return non_init_transformational ();
+
   return SUCCESS;
 }
 
@@ -732,6 +764,9 @@ gfc_check_cshift (gfc_expr * array, gfc_expr * shift, gfc_expr * dim)
 
   if (dim_check (dim, 2, 1) == FAILURE)
     return FAILURE;
+
+  if (gfc_init_expr)
+    return non_init_transformational ();
 
   return SUCCESS;
 }
@@ -834,6 +869,9 @@ gfc_check_dot_product (gfc_expr * vector_a, gfc_expr * vector_b)
       return FAILURE;
     }
 
+  if (gfc_init_expr)
+    return non_init_transformational ();
+
   return SUCCESS;
 }
 
@@ -868,6 +906,9 @@ gfc_check_eoshift (gfc_expr * array, gfc_expr * shift, gfc_expr * boundary,
 
   if (dim_check (dim, 1, 1) == FAILURE)
     return FAILURE;
+
+  if (gfc_init_expr)
+    return non_init_transformational ();
 
   return SUCCESS;
 }
@@ -1046,7 +1087,7 @@ gfc_check_ichar_iachar (gfc_expr * c)
       if (!ref)
 	{
           /* Check that the argument is length one.  Non-constant lengths
-	     can't be checked here, so assume thay are ok.  */
+	     can't be checked here, so assume they are ok.  */
 	  if (c->ts.cl && c->ts.cl->length)
 	    {
 	      /* If we already have a length for this expression then use it.  */
@@ -1531,6 +1572,9 @@ gfc_check_matmul (gfc_expr * matrix_a, gfc_expr * matrix_b)
       return FAILURE;
     }
 
+  if (gfc_init_expr)
+    return non_init_transformational ();
+
   return SUCCESS;
 }
 
@@ -1590,6 +1634,9 @@ gfc_check_minloc_maxloc (gfc_actual_arglist * ap)
       if (gfc_check_conformance (buffer, a, m) == FAILURE)
 	return FAILURE;
     }
+
+  if (gfc_init_expr)
+    return non_init_transformational ();
 
   return SUCCESS;
 }
@@ -1659,6 +1706,9 @@ gfc_check_minval_maxval (gfc_actual_arglist * ap)
       || array_check (ap->expr, 0) == FAILURE)
     return FAILURE;
 
+  if (gfc_init_expr)
+    return non_init_transformational ();
+
   return check_reduction (ap);
 }
 
@@ -1669,6 +1719,9 @@ gfc_check_product_sum (gfc_actual_arglist * ap)
   if (numeric_check (ap->expr, 0) == FAILURE
       || array_check (ap->expr, 0) == FAILURE)
     return FAILURE;
+
+  if (gfc_init_expr)
+    return non_init_transformational ();
 
   return check_reduction (ap);
 }
@@ -1766,6 +1819,9 @@ gfc_check_pack (gfc_expr * array, gfc_expr * mask, gfc_expr * vector)
 
       /* TODO: More constraints here.  */
     }
+
+  if (gfc_init_expr)
+    return non_init_transformational ();
 
   return SUCCESS;
 }
@@ -2138,6 +2194,9 @@ gfc_check_spread (gfc_expr * source, gfc_expr * dim, gfc_expr * ncopies)
   if (scalar_check (ncopies, 2) == FAILURE)
     return FAILURE;
 
+  if (gfc_init_expr)
+    return non_init_transformational ();
+
   return SUCCESS;
 }
 
@@ -2353,6 +2412,9 @@ gfc_check_transpose (gfc_expr * matrix)
   if (rank_check (matrix, 0, 2) == FAILURE)
     return FAILURE;
 
+  if (gfc_init_expr)
+    return non_init_transformational ();
+
   return SUCCESS;
 }
 
@@ -2390,6 +2452,9 @@ gfc_check_unpack (gfc_expr * vector, gfc_expr * mask, gfc_expr * field)
 
   if (same_type_check (vector, 0, field, 2) == FAILURE)
     return FAILURE;
+
+  if (gfc_init_expr)
+    return non_init_transformational ();
 
   return SUCCESS;
 }
@@ -2965,6 +3030,28 @@ gfc_check_hostnm_sub (gfc_expr * name, gfc_expr * status)
     return FAILURE;
 
   if (type_check (status, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
+gfc_check_itime_idate (gfc_expr * values)
+{
+  if (array_check (values, 0) == FAILURE)
+    return FAILURE;
+
+  if (rank_check (values, 0, 1) == FAILURE)
+    return FAILURE;
+
+  if (variable_check (values, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (values, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (kind_value_check(values, 0, gfc_default_integer_kind) == FAILURE)
     return FAILURE;
 
   return SUCCESS;

@@ -638,10 +638,6 @@ enum reg_class
 
 #define EXTRA_MEMORY_CONSTRAINT(X, STR) ((X) == 'Q')
 
-/* We want the unary operators visible for constraint checking.
-   (will always be the case in 4.2).  */
-#define KEEP_UNARY_OPERATORS_AT_CONSTRAINT_CHECKING
-
 #define EXTRA_CONSTRAINT_Q(X)				\
  (							\
   /* Just an indirect register (happens to also be	\
@@ -1246,9 +1242,6 @@ enum cris_pic_symbol_type
 #undef ASM_OUTPUT_ALIGNED_DECL_LOCAL
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN) \
  CRIS_ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN, 1)
-
-/* FIXME: define ASM_OUTPUT_SHARED_COMMON and emit an error when it is
-   used with -melinux and a.out.  */
 
 /* Node: Label Output */
 

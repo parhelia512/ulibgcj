@@ -115,7 +115,7 @@ case "${host}" in
 	libgcj_flags="${libgcj_flags} -fomit-frame-pointer"
 	libgcj_cxxflags=
 	libgcj_cflags=
-	DIVIDESPEC=-f%{m32:no-}use-divide-subroutine
+	DIVIDESPEC=-fno-use-divide-subroutine
 	enable_hash_synchronization_default=yes
 	slow_pthread_self=yes
 	libgcj_interpreter=yes
@@ -127,10 +127,10 @@ case "${host}" in
 	enable_hash_synchronization_default=yes
 	IEEESPEC=-mieee
 	;;
-  hppa-*)
+  hppa*-*)
 	sysdeps_dir=pa
 	libgcj_interpreter=yes
-	enable_hash_synchronization_default=yes
+	enable_hash_synchronization_default=no
 	;;
   powerpc64*-*)
 	sysdeps_dir=powerpc
@@ -260,6 +260,7 @@ EOF
 	slow_pthread_self=
 	;;
   *-mingw*)
+        libgcj_flags="${libgcj_flags} -fno-omit-frame-pointer"
   	# FIXME: win32_exception_handler( ) in win32.cc does not do the
 	# right stuff yet w.r.t. SEH. Live with the following for now.
 	can_unwind_signal=no
@@ -271,6 +272,11 @@ EOF
 	# disable hash synchronization for now.
 	enable_hash_synchronization_default=no
 	slow_pthread_self=
+	;;
+  hppa*-hp-hpux11.*)
+	slow_pthread_self=no
+	can_unwind_signal=yes
+	DIVIDESPEC=-fuse-divide-subroutine
 	;;
 esac
 
@@ -285,6 +291,14 @@ esac
 case "${host}" in
   ia64-*)
 	descriptor_h=sysdep/descriptor-y.h
+	;;
+
+  hppa*64*-*-hpux*)
+	descriptor_h=sysdep/pa/descriptor-pa64-hpux.h
+	;;
+
+  hppa*-*-hpux*)
+	descriptor_h=sysdep/pa/descriptor-pa32-hpux.h
 	;;
 
   hppa*-*)

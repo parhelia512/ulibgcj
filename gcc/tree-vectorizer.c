@@ -1,5 +1,5 @@
 /* Loop Vectorization
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -805,7 +805,7 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
   bsi_insert_before (&loop_cond_bsi, cond_stmt, BSI_SAME_STMT);
 
   /* Remove old loop exit test:  */
-  bsi_remove (&loop_cond_bsi);
+  bsi_remove (&loop_cond_bsi, true);
 
   loop_loc = find_loop_location (loop);
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -860,7 +860,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops,
 					  exit_dest) == loop->header ? 
 		 true : false);
 
-  new_bbs = xmalloc (sizeof (basic_block) * loop->num_nodes);
+  new_bbs = XNEWVEC (basic_block, loop->num_nodes);
 
   copy_bbs (bbs, loop->num_nodes, new_bbs,
 	    &loop->single_exit, 1, &new_loop->single_exit, NULL,
@@ -1361,6 +1361,8 @@ new_stmt_vec_info (tree stmt, loop_vec_info loop_vinfo)
   STMT_VINFO_LIVE_P (res) = 0;
   STMT_VINFO_VECTYPE (res) = NULL;
   STMT_VINFO_VEC_STMT (res) = NULL;
+  STMT_VINFO_IN_PATTERN_P (res) = false;
+  STMT_VINFO_RELATED_STMT (res) = NULL;
   STMT_VINFO_DATA_REF (res) = NULL;
   if (TREE_CODE (stmt) == PHI_NODE)
     STMT_VINFO_DEF_TYPE (res) = vect_unknown_def_type;
@@ -1418,8 +1420,8 @@ new_loop_vec_info (struct loop *loop)
   LOOP_VINFO_VECTORIZABLE_P (res) = 0;
   LOOP_PEELING_FOR_ALIGNMENT (res) = 0;
   LOOP_VINFO_VECT_FACTOR (res) = 0;
-  VARRAY_GENERIC_PTR_INIT (LOOP_VINFO_DATAREFS (res), 20, "loop_datarefs");
-  VARRAY_GENERIC_PTR_INIT (LOOP_VINFO_DDRS (res), 20, "loop_ddrs");
+  LOOP_VINFO_DATAREFS (res) = VEC_alloc (data_reference_p, heap, 10);
+  LOOP_VINFO_DDRS (res) = VEC_alloc (ddr_p, heap, 10 * 10);
   LOOP_VINFO_UNALIGNED_DR (res) = NULL;
   LOOP_VINFO_MAY_MISALIGN_STMTS (res)
     = VEC_alloc (tree, heap, PARAM_VALUE (PARAM_VECT_MAX_VERSION_CHECKS));
@@ -1465,7 +1467,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo)
           set_stmt_info (ann, NULL);
         }
 
-      for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
+      for (si = bsi_start (bb); !bsi_end_p (si); )
 	{
 	  tree stmt = bsi_stmt (si);
 	  stmt_ann_t ann = stmt_ann (stmt);
@@ -1473,16 +1475,34 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo)
 
 	  if (stmt_info)
 	    {
+	      /* Check if this is a "pattern stmt" (introduced by the 
+		 vectorizer during the pattern recognition pass).  */
+	      bool remove_stmt_p = false;
+	      tree orig_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+	      if (orig_stmt)
+		{
+		  stmt_vec_info orig_stmt_info = vinfo_for_stmt (orig_stmt);
+		  if (orig_stmt_info
+		      && STMT_VINFO_IN_PATTERN_P (orig_stmt_info))
+		    remove_stmt_p = true; 
+		}
+			
+	      /* Free stmt_vec_info.  */
 	      VEC_free (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmt_info));
 	      free (stmt_info);
 	      set_stmt_info ((tree_ann_t)ann, NULL);
+
+	      /* Remove dead "pattern stmts".  */
+	      if (remove_stmt_p)
+	        bsi_remove (&si, true);
 	    }
+	  bsi_next (&si);
 	}
     }
 
   free (LOOP_VINFO_BBS (loop_vinfo));
-  varray_clear (LOOP_VINFO_DATAREFS (loop_vinfo));
-  varray_clear (LOOP_VINFO_DDRS (loop_vinfo));
+  free_data_refs (LOOP_VINFO_DATAREFS (loop_vinfo));
+  free_dependence_relations (LOOP_VINFO_DDRS (loop_vinfo));
   VEC_free (tree, heap, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo));
 
   free (loop_vinfo);

@@ -34,7 +34,7 @@ if ![info exists TORTURE_OPTIONS] {
 	{ -O0 } { -O1 } { -O2 } \
 	{ -O2 -fomit-frame-pointer -finline-functions } \
 	{ -O2 -fomit-frame-pointer -finline-functions -funroll-loops } \
-	{ -O2 -fomit-frame-pointer -finline-functions -funroll-all-loops } \
+	{ -O2 -fbounds-check } \
 	{ -O2 -fno-repack-arrays } \
 	{ -O3 -g } \
 	{ -Os }]
@@ -83,6 +83,12 @@ proc fortran-torture-compile { src option } {
 
     if [string match "$fatal_signal 11" $comp_output] then {
 	gfortran_fail $testcase "Got Signal 11, $option"
+	catch { remote_file build delete $output }
+	return
+    }
+
+    if [string match "*internal compiler error*" $comp_output] then {
+	gfortran_fail $testcase "$option (internal compiler error)"
 	catch { remote_file build delete $output }
 	return
     }
@@ -201,6 +207,12 @@ proc fortran-torture-execute { src } {
 	
 	if [string match "$fatal_signal 11" $comp_output] then {
 	    gfortran_fail $testcase "Got Signal 11, $option"
+	    catch { remote_file build delete $executable }
+	    continue
+	}
+
+	if [string match "*internal compiler error*" $comp_output] then {
+	    gfortran_fail $testcase "$option (internal compiler error)"
 	    catch { remote_file build delete $executable }
 	    continue
 	}

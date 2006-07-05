@@ -160,7 +160,6 @@ extern void dwarf2out_frame_finish (void);
 /* Decide whether we want to emit frame unwind information for the current
    translation unit.  */
 extern int dwarf2out_do_frame (void);
-void dwarf2out_switch_text_section (void);
 
 extern void debug_flush_symbol_queue (void);
 extern void debug_queue_symbol (tree);

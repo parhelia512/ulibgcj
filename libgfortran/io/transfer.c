@@ -220,7 +220,8 @@ read_sf (st_parameter_dt *dtp, int *length, int no_error)
       if (*q == ',')
 	if (dtp->u.p.sf_read_comma == 1)
 	  {
-	    notify_std (GFC_STD_GNU, "Comma in formatted numeric read.");
+	    notify_std (&dtp->common, GFC_STD_GNU,
+			"Comma in formatted numeric read.");
 	    *length = n;
 	    break;
 	  }
@@ -270,6 +271,13 @@ read_block (st_parameter_dt *dtp, int *length)
 	      generate_error (&dtp->common, ERROR_EOR, NULL);
 	      return NULL;
 	    }
+	}
+
+      if (dtp->u.p.current_unit->bytes_left == 0)
+	{
+	  dtp->u.p.current_unit->endfile = AT_ENDFILE;
+	  generate_error (&dtp->common, ERROR_END, NULL);
+	  return NULL;
 	}
 
       *length = dtp->u.p.current_unit->bytes_left;
@@ -326,6 +334,13 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 	      generate_error (&dtp->common, ERROR_EOR, NULL);
 	      return;
 	    }
+	}
+
+      if (dtp->u.p.current_unit->bytes_left == 0)
+	{
+	  dtp->u.p.current_unit->endfile = AT_ENDFILE;
+	  generate_error (&dtp->common, ERROR_END, NULL);
+	  return;
 	}
 
       *nbytes = dtp->u.p.current_unit->bytes_left;

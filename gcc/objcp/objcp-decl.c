@@ -59,7 +59,7 @@ objcp_start_struct (enum tree_code code ATTRIBUTE_UNUSED, tree name)
   CLASSTYPE_DECLARED_CLASS (s) = 0;  /* this is a 'struct', not a 'class'.  */
   xref_basetypes (s, NULL_TREE);     /* no base classes here!  */
 
-  return begin_class_definition (s);
+  return begin_class_definition (s, NULL_TREE);
 }
 
 tree 
@@ -85,12 +85,6 @@ objcp_finish_function (void)
   /* The C++ flavor of 'finish_function' does not generate RTL -- one has
      to call 'expand_or_defer_fn' to do that.  */
   expand_or_defer_fn (finish_function (0));
-}
-
-tree
-objcp_lookup_name (tree name)
-{
-  return lookup_name (name, -1);
 }
 
 tree
