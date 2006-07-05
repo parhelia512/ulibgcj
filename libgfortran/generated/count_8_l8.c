@@ -37,18 +37,21 @@ Boston, MA 02110-1301, USA.  */
 #if defined (HAVE_GFC_LOGICAL_8) && defined (HAVE_GFC_INTEGER_8)
 
 
-extern void count_8_l8 (gfc_array_i8 *, gfc_array_l8 *, index_type *);
+extern void count_8_l8 (gfc_array_i8 * const restrict, 
+	gfc_array_l8 * const restrict, const index_type * const restrict);
 export_proto(count_8_l8);
 
 void
-count_8_l8 (gfc_array_i8 *retarray, gfc_array_l8 *array, index_type *pdim)
+count_8_l8 (gfc_array_i8 * const restrict retarray, 
+	gfc_array_l8 * const restrict array, 
+	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  GFC_LOGICAL_8 *base;
-  GFC_INTEGER_8 *dest;
+  const GFC_LOGICAL_8 * restrict base;
+  GFC_INTEGER_8 * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
@@ -58,11 +61,6 @@ count_8_l8 (gfc_array_i8 *retarray, gfc_array_l8 *array, index_type *pdim)
   /* Make dim zero based to avoid confusion.  */
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
-
-  /* TODO:  It should be a front end job to correctly set the strides.  */
-
-  if (array->dim[0].stride == 0)
-    array->dim[0].stride = 1;
 
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
   delta = array->dim[dim].stride;
@@ -100,9 +98,6 @@ count_8_l8 (gfc_array_i8 *retarray, gfc_array_l8 *array, index_type *pdim)
     }
   else
     {
-      if (retarray->dim[0].stride == 0)
-	retarray->dim[0].stride = 1;
-
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect");
     }
@@ -120,7 +115,7 @@ count_8_l8 (gfc_array_i8 *retarray, gfc_array_l8 *array, index_type *pdim)
 
   while (base)
     {
-      GFC_LOGICAL_8 *src;
+      const GFC_LOGICAL_8 * restrict src;
       GFC_INTEGER_8 result;
       src = base;
       {

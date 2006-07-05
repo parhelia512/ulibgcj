@@ -106,8 +106,10 @@ jint
 java::lang::Thread::countStackFrames (void)
 {
   // NOTE: This is deprecated in JDK 1.2.
-  throw new UnsupportedOperationException
-    (JvNewStringLatin1 ("Thread.countStackFrames unimplemented"));
+
+  // Old applets still call this method.  Rather than throwing
+  // UnsupportedOperationException we simply fail silently.
+
   return 0;
 }
 #endif//JV_ULIBGCJ
@@ -167,8 +169,9 @@ void
 java::lang::Thread::resume (void)
 {
   checkAccess ();
-  throw new UnsupportedOperationException
-    (JvNewStringLatin1 ("Thread.resume unimplemented"));
+
+  // Old applets still call this method.  Rather than throwing
+  // UnsupportedOperationException we simply fail silently.
 }
 #endif//JV_ULIBGCJ
 
@@ -244,6 +247,11 @@ java::lang::Thread::finish_ ()
 
   // If a method cache was created, free it.
   _Jv_FreeMethodCache();
+
+#ifndef JV_ULIBGCJ
+  // Clear out thread locals.
+  locals = NULL;
+#endif//JV_ULIBGCJ
 
   // Signal any threads that are waiting to join() us.
   _Jv_MutexLock (&nt->join_mutex);
@@ -364,16 +372,18 @@ void
 java::lang::Thread::stop (java::lang::Throwable *)
 {
   checkAccess ();
-  throw new UnsupportedOperationException
-    (JvNewStringLatin1 ("Thread.stop unimplemented"));
+
+  // Old applets still call this method.  Rather than throwing
+  // UnsupportedOperationException we simply fail silently.
 }
 
 void
 java::lang::Thread::suspend (void)
 {
   checkAccess ();
-  throw new UnsupportedOperationException 
-    (JvNewStringLatin1 ("Thread.suspend unimplemented"));
+
+  // Old applets still call this method.  Rather than throwing
+  // UnsupportedOperationException we simply fail silently.
 }
 #endif//JV_ULIBGCJ
 

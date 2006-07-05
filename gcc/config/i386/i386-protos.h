@@ -1,6 +1,7 @@
 /* Definitions of target machine for GCC for IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -42,6 +43,7 @@ extern int standard_80387_constant_p (rtx);
 extern const char *standard_80387_constant_opcode (rtx);
 extern rtx standard_80387_constant_rtx (int);
 extern int standard_sse_constant_p (rtx);
+extern const char *standard_sse_constant_opcode (rtx, rtx);
 extern int symbolic_reference_mentioned_p (rtx);
 extern bool extended_reg_mentioned_p (rtx);
 extern bool x86_extended_QIreg_mentioned_p (rtx);
@@ -67,7 +69,7 @@ extern bool output_addr_const_extra (FILE*, rtx);
 extern void split_di (rtx[], int, rtx[], rtx[]);
 extern void split_ti (rtx[], int, rtx[], rtx[]);
 
-extern const char *output_set_got (rtx);
+extern const char *output_set_got (rtx, rtx);
 extern const char *output_387_binary_op (rtx, rtx*);
 extern const char *output_387_reg_move (rtx, rtx*);
 extern const char *output_fix_trunc (rtx, rtx*, int);
@@ -141,6 +143,7 @@ extern int ix86_secondary_memory_needed (enum reg_class, enum reg_class,
 extern bool ix86_cannot_change_mode_class (enum machine_mode,
 					   enum machine_mode, enum reg_class);
 extern enum reg_class ix86_preferred_reload_class (rtx, enum reg_class);
+extern enum reg_class ix86_preferred_output_reload_class (rtx, enum reg_class);
 extern int ix86_memory_move_cost (enum machine_mode, enum reg_class, int);
 extern int ix86_mode_needed (int, rtx);
 extern void emit_i387_cw_initialization (int);
@@ -171,7 +174,7 @@ extern int ix86_data_alignment (tree, int);
 extern int ix86_local_alignment (tree, int);
 extern int ix86_constant_alignment (tree, int);
 extern tree ix86_handle_shared_attribute (tree *, tree, tree, int, bool *);
-extern tree ix86_handle_selectany_attribute (tree *, tree, tree, int, bool *); 
+extern tree ix86_handle_selectany_attribute (tree *, tree, tree, int, bool *);
 
 extern unsigned int i386_pe_section_type_flags (tree, const char *, int);
 extern void i386_pe_asm_named_section (const char *, unsigned int, tree);
@@ -179,6 +182,7 @@ extern int x86_field_alignment (tree, int);
 #endif
 
 extern rtx ix86_tls_get_addr (void);
+extern rtx ix86_tls_module_base (void);
 
 extern void ix86_expand_vector_init (bool, rtx, rtx);
 extern void ix86_expand_vector_set (bool, rtx, rtx, int);

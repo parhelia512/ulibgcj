@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -45,8 +45,8 @@
 #include <bits/atomicity.h>
 #include <debug/debug.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    *  @class basic_string basic_string.h <string>
    *  @brief  Managing sequences of characters and character-like objects.
@@ -177,7 +177,10 @@ namespace std
 
         static _Rep&
         _S_empty_rep()
-        {
+        { 
+	  // NB: Mild hack to avoid strict-aliasing warnings.  Note that
+	  // _S_empty_rep_storage is never modified and the punning should
+	  // be reasonably safe in this case.
 	  void* __p = reinterpret_cast<void*>(&_S_empty_rep_storage);
 	  return *reinterpret_cast<_Rep*>(__p);
 	}
@@ -229,7 +232,8 @@ namespace std
 #ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
 	  if (__builtin_expect(this != &_S_empty_rep(), false))
 #endif
-	    if (__gnu_cxx::__exchange_and_add(&this->_M_refcount, -1) <= 0)
+	    if (__gnu_cxx::__exchange_and_add_dispatch(&this->_M_refcount,
+						       -1) <= 0)
 	      _M_destroy(__a);
 	}  // XXX MT
 
@@ -242,7 +246,7 @@ namespace std
 #ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
 	  if (__builtin_expect(this != &_S_empty_rep(), false))
 #endif
-            __gnu_cxx::__atomic_add(&this->_M_refcount, 1);
+            __gnu_cxx::__atomic_add_dispatch(&this->_M_refcount, 1);
 	  return _M_refdata();
 	}  // XXX MT
 
@@ -1094,7 +1098,7 @@ namespace std
 	const size_type __pos = __p - _M_ibegin();
 	_M_replace_aux(__pos, size_type(0), size_type(1), __c);
 	_M_rep()->_M_set_leaked();
-	return this->_M_ibegin() + __pos;
+	return iterator(_M_data() + __pos);
       }
 
       /**
@@ -1135,7 +1139,7 @@ namespace std
 	const size_type __pos = __position - _M_ibegin();
 	_M_mutate(__pos, size_type(1), size_type(0));
 	_M_rep()->_M_set_leaked();
-	return _M_ibegin() + __pos;
+	return iterator(_M_data() + __pos);
       }
 
       /**
@@ -1155,7 +1159,7 @@ namespace std
         const size_type __pos = __first - _M_ibegin();
 	_M_mutate(__pos, __last - __first, size_type(0));
 	_M_rep()->_M_set_leaked();
-	return _M_ibegin() + __pos;
+	return iterator(_M_data() + __pos);
       }
 
       /**
@@ -2440,6 +2444,7 @@ namespace std
     getline(basic_istream<wchar_t>& __in, basic_string<wchar_t>& __str,
 	    wchar_t __delim);
 #endif  
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _BASIC_STRING_H */

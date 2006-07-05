@@ -36,8 +36,8 @@
 #ifndef _SSO_STRING_BASE_H
 #define _SSO_STRING_BASE_H 1
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     class __sso_string_base
     : protected __vstring_utility<_CharT, _Traits, _Alloc>
@@ -61,9 +61,9 @@ namespace __gnu_cxx
       // npos = m * sizeof(_CharT) + sizeof(_CharT)
       // Solving for m:
       // m = npos / sizeof(_CharT) - 1
-      // In addition, this implementation quarters this amount.
+      // In addition, this implementation halfs this amount.
       enum { _S_max_size = (((static_cast<size_type>(-1)
-			      / sizeof(_CharT)) - 1) / 4) };
+			      / sizeof(_CharT)) - 1) / 2) };
 
       // Data Members (private):
       typename _Util_Base::template _Alloc_hider<_CharT_alloc_type>
@@ -242,7 +242,8 @@ namespace __gnu_cxx
     __sso_string_base<_CharT, _Traits, _Alloc>::
     _M_swap(__sso_string_base& __rcs)
     {
-      // NB: Implement Option 3 of DR 431 (see N1599).
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 431. Swapping containers with unequal allocators.
       std::__alloc_swap<_CharT_alloc_type>::_S_do_it(_M_get_allocator(),
 						     __rcs._M_get_allocator());
 
@@ -324,7 +325,12 @@ namespace __gnu_cxx
       // meet amortized linear time requirements of the library: see
       // http://gcc.gnu.org/ml/libstdc++/2001-07/msg00085.html.
       if (__capacity > __old_capacity && __capacity < 2 * __old_capacity)
-	__capacity = 2 * __old_capacity;
+	{
+	  __capacity = 2 * __old_capacity;
+	  // Never allocate a string bigger than _S_max_size.
+	  if (__capacity > size_type(_S_max_size))
+	    __capacity = size_type(_S_max_size);
+	}
 
       // NB: Need an array of char_type[__capacity], plus a terminating
       // null char_type() element.
@@ -568,6 +574,7 @@ namespace __gnu_cxx
 	return true;
       return false;
     }
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _SSO_STRING_BASE_H */

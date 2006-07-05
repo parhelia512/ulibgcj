@@ -259,7 +259,7 @@ $(native_objects): objects/%.o: %.cc
 	$(CXXCOMPILE) -o $(@) -c $(<)
 
 libulibgcj.jar: $(classes)
-	cd classes; $(ZIP) -cfM ../libulibgcj.jar gnu java
+	cd classes; $(JAR) -cfM ../libulibgcj.jar gnu java
 
 clean:
 	rm -rf $(libulibgcj_a_OBJECTS) objects classes headers processed \

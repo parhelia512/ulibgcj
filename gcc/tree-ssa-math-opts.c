@@ -446,17 +446,20 @@ execute_cse_reciprocals_1 (block_stmt_iterator *def_bsi, tree def)
   threshold = targetm.min_divisions_for_recip_mul (TYPE_MODE (TREE_TYPE (def)));
   if (count >= threshold)
     {
+      tree use_stmt;
       for (occ = occ_head; occ; occ = occ->next)
 	{
 	  compute_merit (occ);
 	  insert_reciprocals (def_bsi, occ, def, NULL, threshold);
 	}
 
-      FOR_EACH_IMM_USE_SAFE (use_p, use_iter, def)
+      FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, def)
 	{
-	  tree use_stmt = USE_STMT (use_p);
 	  if (is_division_by (use_stmt, def))
-	    replace_reciprocal (use_p);
+	    {
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, use_iter)
+		replace_reciprocal (use_p);
+	    }
 	}
     }
 
@@ -476,7 +479,7 @@ gate_cse_reciprocals (void)
 
 /* Go through all the floating-point SSA_NAMEs, and call
    execute_cse_reciprocals_1 on each of them.  */
-static void
+static unsigned int
 execute_cse_reciprocals (void)
 {
   basic_block bb;
@@ -486,7 +489,8 @@ execute_cse_reciprocals (void)
 				sizeof (struct occurrence),
 				n_basic_blocks / 3 + 1);
 
-  calculate_dominance_info (CDI_DOMINATORS | CDI_POST_DOMINATORS);
+  calculate_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_POST_DOMINATORS);
 
 #ifdef ENABLE_CHECKING
   FOR_EACH_BB (bb)
@@ -523,8 +527,10 @@ execute_cse_reciprocals (void)
 	}
     }
 
-  free_dominance_info (CDI_DOMINATORS | CDI_POST_DOMINATORS);
+  free_dominance_info (CDI_DOMINATORS);
+  free_dominance_info (CDI_POST_DOMINATORS);
   free_alloc_pool (occ_pool);
+  return 0;
 }
 
 struct tree_opt_pass pass_cse_reciprocals =

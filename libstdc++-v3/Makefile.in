@@ -131,10 +131,14 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
-ENABLE_SYMVERS_DARWIN_EXPORT_FALSE = @ENABLE_SYMVERS_DARWIN_EXPORT_FALSE@
-ENABLE_SYMVERS_DARWIN_EXPORT_TRUE = @ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@
+ENABLE_SYMVERS_DARWIN_FALSE = @ENABLE_SYMVERS_DARWIN_FALSE@
+ENABLE_SYMVERS_DARWIN_TRUE = @ENABLE_SYMVERS_DARWIN_TRUE@
+ENABLE_SYMVERS_FALSE = @ENABLE_SYMVERS_FALSE@
 ENABLE_SYMVERS_GNU_FALSE = @ENABLE_SYMVERS_GNU_FALSE@
+ENABLE_SYMVERS_GNU_NAMESPACE_FALSE = @ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@
+ENABLE_SYMVERS_GNU_NAMESPACE_TRUE = @ENABLE_SYMVERS_GNU_NAMESPACE_TRUE@
 ENABLE_SYMVERS_GNU_TRUE = @ENABLE_SYMVERS_GNU_TRUE@
+ENABLE_SYMVERS_TRUE = @ENABLE_SYMVERS_TRUE@
 EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GLIBCXX_BUILD_DEBUG_FALSE = @GLIBCXX_BUILD_DEBUG_FALSE@
@@ -150,12 +154,12 @@ GLIBCXX_C_HEADERS_C_TRUE = @GLIBCXX_C_HEADERS_C_TRUE@
 GLIBCXX_HOSTED_FALSE = @GLIBCXX_HOSTED_FALSE@
 GLIBCXX_HOSTED_TRUE = @GLIBCXX_HOSTED_TRUE@
 GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
-GREP = @GREP@
+GLIBCXX_LDBL_COMPAT_FALSE = @GLIBCXX_LDBL_COMPAT_FALSE@
+GLIBCXX_LDBL_COMPAT_TRUE = @GLIBCXX_LDBL_COMPAT_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-LDFLAGS = @LDFLAGS@
 LIBICONV = @LIBICONV@
 LIBMATHOBJS = @LIBMATHOBJS@
 LIBOBJS = @LIBOBJS@
@@ -185,14 +189,18 @@ SECTION_LDFLAGS = @SECTION_LDFLAGS@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-SYMVER_MAP = @SYMVER_MAP@
+SYMVER_FILE = @SYMVER_FILE@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
+ac_ct_AR = @ac_ct_AR@
+ac_ct_AS = @ac_ct_AS@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
+ac_ct_RANLIB = @ac_ct_RANLIB@
+ac_ct_STRIP = @ac_ct_STRIP@
 am__leading_dot = @am__leading_dot@
 am__tar = @am__tar@
 am__untar = @am__untar@
@@ -205,9 +213,6 @@ build_os = @build_os@
 build_vendor = @build_vendor@
 check_msgfmt = @check_msgfmt@
 datadir = @datadir@
-datarootdir = @datarootdir@
-docdir = @docdir@
-dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
@@ -227,24 +232,20 @@ host_alias = @host_alias@
 host_cpu = @host_cpu@
 host_os = @host_os@
 host_vendor = @host_vendor@
-htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
 libtool_VERSION = @libtool_VERSION@
-localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
 oldincludedir = @oldincludedir@
-pdfdir = @pdfdir@
 port_specific_symbol_files = @port_specific_symbol_files@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
-psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
@@ -785,6 +786,11 @@ check-%:
 # All the machinations with string instantiations messes up the
 # automake-generated TAGS rule. Make a simple one here.
 TAGS: tags-recursive $(LISP)
+
+# Installation of distribution html documentation not yet supported
+# TODO: Write custom install-html rule.
+.PHONY: install-html
+install-html:
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

@@ -37,18 +37,21 @@ Boston, MA 02110-1301, USA.  */
 #if defined (HAVE_GFC_COMPLEX_10) && defined (HAVE_GFC_COMPLEX_10)
 
 
-extern void sum_c10 (gfc_array_c10 *, gfc_array_c10 *, index_type *);
+extern void sum_c10 (gfc_array_c10 * const restrict, 
+	gfc_array_c10 * const restrict, const index_type * const restrict);
 export_proto(sum_c10);
 
 void
-sum_c10 (gfc_array_c10 *retarray, gfc_array_c10 *array, index_type *pdim)
+sum_c10 (gfc_array_c10 * const restrict retarray, 
+	gfc_array_c10 * const restrict array, 
+	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  GFC_COMPLEX_10 *base;
-  GFC_COMPLEX_10 *dest;
+  const GFC_COMPLEX_10 * restrict base;
+  GFC_COMPLEX_10 * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
@@ -58,11 +61,6 @@ sum_c10 (gfc_array_c10 *retarray, gfc_array_c10 *array, index_type *pdim)
   /* Make dim zero based to avoid confusion.  */
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
-
-  /* TODO:  It should be a front end job to correctly set the strides.  */
-
-  if (array->dim[0].stride == 0)
-    array->dim[0].stride = 1;
 
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
   delta = array->dim[dim].stride;
@@ -100,9 +98,6 @@ sum_c10 (gfc_array_c10 *retarray, gfc_array_c10 *array, index_type *pdim)
     }
   else
     {
-      if (retarray->dim[0].stride == 0)
-	retarray->dim[0].stride = 1;
-
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect");
     }
@@ -120,7 +115,7 @@ sum_c10 (gfc_array_c10 *retarray, gfc_array_c10 *array, index_type *pdim)
 
   while (base)
     {
-      GFC_COMPLEX_10 *src;
+      const GFC_COMPLEX_10 * restrict src;
       GFC_COMPLEX_10 result;
       src = base;
       {
@@ -170,22 +165,25 @@ sum_c10 (gfc_array_c10 *retarray, gfc_array_c10 *array, index_type *pdim)
 }
 
 
-extern void msum_c10 (gfc_array_c10 *, gfc_array_c10 *, index_type *,
-					       gfc_array_l4 *);
+extern void msum_c10 (gfc_array_c10 * const restrict, 
+	gfc_array_c10 * const restrict, const index_type * const restrict,
+	gfc_array_l4 * const restrict);
 export_proto(msum_c10);
 
 void
-msum_c10 (gfc_array_c10 * retarray, gfc_array_c10 * array,
-				  index_type *pdim, gfc_array_l4 * mask)
+msum_c10 (gfc_array_c10 * const restrict retarray, 
+	gfc_array_c10 * const restrict array, 
+	const index_type * const restrict pdim, 
+	gfc_array_l4 * const restrict mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
   index_type mstride[GFC_MAX_DIMENSIONS];
-  GFC_COMPLEX_10 *dest;
-  GFC_COMPLEX_10 *base;
-  GFC_LOGICAL_4 *mbase;
+  GFC_COMPLEX_10 * restrict dest;
+  const GFC_COMPLEX_10 * restrict base;
+  const GFC_LOGICAL_4 * restrict mbase;
   int rank;
   int dim;
   index_type n;
@@ -195,14 +193,6 @@ msum_c10 (gfc_array_c10 * retarray, gfc_array_c10 * array,
 
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
-
-  /* TODO:  It should be a front end job to correctly set the strides.  */
-
-  if (array->dim[0].stride == 0)
-    array->dim[0].stride = 1;
-
-  if (mask->dim[0].stride == 0)
-    mask->dim[0].stride = 1;
 
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
   if (len <= 0)
@@ -245,9 +235,6 @@ msum_c10 (gfc_array_c10 * retarray, gfc_array_c10 * array,
     }
   else
     {
-      if (retarray->dim[0].stride == 0)
-	retarray->dim[0].stride = 1;
-
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect");
     }
@@ -276,8 +263,8 @@ msum_c10 (gfc_array_c10 * retarray, gfc_array_c10 * array,
 
   while (base)
     {
-      GFC_COMPLEX_10 *src;
-      GFC_LOGICAL_4 *msrc;
+      const GFC_COMPLEX_10 * restrict src;
+      const GFC_LOGICAL_4 * restrict msrc;
       GFC_COMPLEX_10 result;
       src = base;
       msrc = mbase;
@@ -373,9 +360,6 @@ ssum_c10 (gfc_array_c10 * const restrict retarray,
 
       if (retarray->dim[0].ubound + 1 - retarray->dim[0].lbound != rank)
         runtime_error ("dimension of return array incorrect");
-
-      if (retarray->dim[0].stride == 0)
-	retarray->dim[0].stride = 1;
     }
 
     dstride = retarray->dim[0].stride;

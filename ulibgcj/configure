@@ -729,7 +729,11 @@ USING_NO_THREADS_TRUE
 USING_NO_THREADS_FALSE
 HASH_SYNC_SPEC
 GCJH
+JAR
 ZIP
+UNZIP
+BASH_JAR_TRUE
+BASH_JAR_FALSE
 CPP
 GREP
 EGREP
@@ -4705,7 +4709,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 4708 "configure"
+#line 4712 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -4925,11 +4929,155 @@ built_gcc_dir="`cd ../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
 GCJ="${built_gcc_dir}/gcj -B${built_gcc_dir}/"
 GCJH="${built_gcc_dir}/gcjh"
 built_fastjar_dir="`cd ../../${host_subdir}/fastjar && ${PWDCMD-pwd}`"
-ZIP="${built_fastjar_dir}/fastjar"
 
 
 
 
+for ac_prog in jar fastjar
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+if test "${ac_cv_prog_JAR+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$JAR"; then
+  ac_cv_prog_JAR="$JAR" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_JAR="$ac_prog"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+IFS=$as_save_IFS
+
+fi
+fi
+JAR=$ac_cv_prog_JAR
+if test -n "$JAR"; then
+  { echo "$as_me:$LINENO: result: $JAR" >&5
+echo "${ECHO_T}$JAR" >&6; }
+else
+  { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+fi
+
+
+  test -n "$JAR" && break
+done
+test -n "$JAR" || JAR="no"
+
+# Extract the first word of "zip", so it can be a program name with args.
+set dummy zip; ac_word=$2
+{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+if test "${ac_cv_path_ZIP+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $ZIP in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ZIP="$ZIP" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_ZIP="$as_dir/$ac_word$ac_exec_ext"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_ZIP" && ac_cv_path_ZIP="no"
+  ;;
+esac
+fi
+ZIP=$ac_cv_path_ZIP
+if test -n "$ZIP"; then
+  { echo "$as_me:$LINENO: result: $ZIP" >&5
+echo "${ECHO_T}$ZIP" >&6; }
+else
+  { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+fi
+
+
+# Extract the first word of "unzip", so it can be a program name with args.
+set dummy unzip; ac_word=$2
+{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+if test "${ac_cv_path_UNZIP+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $UNZIP in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_UNZIP="$UNZIP" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_UNZIP="$as_dir/$ac_word$ac_exec_ext"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_UNZIP" && ac_cv_path_UNZIP="unzip"
+  ;;
+esac
+fi
+UNZIP=$ac_cv_path_UNZIP
+if test -n "$UNZIP"; then
+  { echo "$as_me:$LINENO: result: $UNZIP" >&5
+echo "${ECHO_T}$UNZIP" >&6; }
+else
+  { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+fi
+
+
+
+
+if test "$JAR" = no; then
+  BASH_JAR_TRUE=
+  BASH_JAR_FALSE='#'
+else
+  BASH_JAR_TRUE='#'
+  BASH_JAR_FALSE=
+fi
+
+if test "$ZIP" = no; then
+  if test "$JAR" = no; then
+    { { echo "$as_me:$LINENO: error: cannot find neither zip nor jar, cannot continue" >&5
+echo "$as_me: error: cannot find neither zip nor jar, cannot continue" >&2;}
+   { (exit 1); exit 1; }; }
+  fi
+else
+  # InfoZIP available, use the 'guaranteed' Bourne-shell JAR to build libjava
+  JAR=`pwd`/scripts/jar
+fi
 
 if test -d sysdep; then true; else mkdir sysdep; fi
 ac_config_links="$ac_config_links sysdep/locks.h:${libjava}/sysdep/$sysdeps_dir/locks.h"
@@ -6011,6 +6159,13 @@ echo "$as_me: error: conditional \"USING_NO_THREADS\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
+if test -z "${BASH_JAR_TRUE}" && test -z "${BASH_JAR_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"BASH_JAR\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"BASH_JAR\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
 
 : ${CONFIG_STATUS=./config.status}
 ac_clean_files_save=$ac_clean_files
@@ -6713,7 +6868,11 @@ USING_NO_THREADS_TRUE!$USING_NO_THREADS_TRUE$ac_delim
 USING_NO_THREADS_FALSE!$USING_NO_THREADS_FALSE$ac_delim
 HASH_SYNC_SPEC!$HASH_SYNC_SPEC$ac_delim
 GCJH!$GCJH$ac_delim
+JAR!$JAR$ac_delim
 ZIP!$ZIP$ac_delim
+UNZIP!$UNZIP$ac_delim
+BASH_JAR_TRUE!$BASH_JAR_TRUE$ac_delim
+BASH_JAR_FALSE!$BASH_JAR_FALSE$ac_delim
 CPP!$CPP$ac_delim
 GREP!$GREP$ac_delim
 EGREP!$EGREP$ac_delim
@@ -6721,7 +6880,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 40; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 44; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

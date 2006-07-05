@@ -4,7 +4,7 @@
 
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-require-visibility "" } */
-/* { dg-options "-Os -fpic" }
+/* { dg-options "-Os -fpic" } */
 /* { dg-final { scan-assembler "memcpy@PLT" } } */
 
 #pragma GCC visibility push(hidden)

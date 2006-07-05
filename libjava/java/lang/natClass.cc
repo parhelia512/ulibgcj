@@ -1,6 +1,6 @@
 // natClass.cc - Implementation of java.lang.Class native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005  
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation
 
    This file is part of libgcj.
@@ -136,9 +136,19 @@ java::lang::Class::getClassLoader (void)
   if (s != NULL)
     {
       jclass caller = _Jv_StackTrace::GetCallingClass (&Class::class$);
-      ClassLoader *caller_loader = NULL;
-      if (caller)
-	caller_loader = caller->getClassLoaderInternal();
+      return getClassLoader (caller);
+   }
+
+  return loader;
+}
+
+java::lang::ClassLoader *
+java::lang::Class::getClassLoader (jclass caller)
+{
+  java::lang::SecurityManager *s = java::lang::System::getSecurityManager();
+  if (s != NULL)
+    {
+      ClassLoader *caller_loader = caller->getClassLoaderInternal();
 
       // If the caller has a non-null class loader, and that loader
       // is not this class' loader or an ancestor thereof, then do a
@@ -649,8 +659,9 @@ jboolean
 java::lang::Class::isAssignableFrom (jclass klass)
 {
   // Arguments may not have been initialized, given ".class" syntax.
-  _Jv_InitClass (this);
-  _Jv_InitClass (klass);
+  // This ensures we can at least look at their superclasses.
+  _Jv_Linker::wait_for_state (this, JV_STATE_LOADING);
+  _Jv_Linker::wait_for_state (klass, JV_STATE_LOADING);
   return _Jv_IsAssignableFrom (klass, this);
 }
 
@@ -659,7 +670,6 @@ java::lang::Class::isInstance (jobject obj)
 {
   if (! obj)
     return false;
-  _Jv_InitClass (this);
   return _Jv_IsAssignableFrom (JV_CLASS (obj), this);
 }
 
@@ -698,8 +708,9 @@ java::lang::Class::finalize (void)
 void
 java::lang::Class::initializeClass (void)
 {
-  // Short-circuit to avoid needless locking.
-  if (state == JV_STATE_DONE)
+  // Short-circuit to avoid needless locking (expression includes
+  // JV_STATE_PHANTOM and JV_STATE_DONE).
+  if (state >= JV_STATE_PHANTOM)
     return;
 
   // Step 1.  We introduce a new scope so we can synchronize more
@@ -926,9 +937,9 @@ static __thread _Jv_mcache *method_cache;
 #endif // HAVE_TLS
 
 static void *
-_Jv_FindMethodInCache (jclass klass,
-                       _Jv_Utf8Const *name,
-                       _Jv_Utf8Const *signature)
+_Jv_FindMethodInCache (jclass klass MAYBE_UNUSED,
+		       _Jv_Utf8Const *name MAYBE_UNUSED,
+		       _Jv_Utf8Const *signature MAYBE_UNUSED)
 {
 #ifdef HAVE_TLS
   _Jv_mcache *cache = method_cache;
@@ -948,7 +959,8 @@ _Jv_FindMethodInCache (jclass klass,
 }
 
 static void
-_Jv_AddMethodToCache (jclass klass, _Jv_Method *method)
+_Jv_AddMethodToCache (jclass klass MAYBE_UNUSED,
+		      _Jv_Method *method MAYBE_UNUSED)
 {
 #ifdef HAVE_TLS
   if (method_cache == NULL)
@@ -1016,8 +1028,8 @@ void *
 _Jv_LookupInterfaceMethodIdx (jclass klass, jclass iface, int method_idx)
 {
   _Jv_IDispatchTable *cldt = klass->idt;
-  int idx = iface->idt->iface.ioffsets[cldt->cls.iindex] + method_idx;
-  return cldt->cls.itable[idx];
+  int idx = iface->ioffsets[cldt->iindex] + method_idx;
+  return cldt->itable[idx];
 }
 
 jboolean
@@ -1044,16 +1056,15 @@ _Jv_IsAssignableFrom (jclass source, jclass target)
         return _Jv_InterfaceAssignableFrom (source, target);
 
       _Jv_IDispatchTable *cl_idt = source->idt;
-      _Jv_IDispatchTable *if_idt = target->idt;
 
-      if (__builtin_expect ((if_idt == NULL), false))
+      if (__builtin_expect ((target->ioffsets == NULL), false))
 	return false; // No class implementing TARGET has been loaded.    
-      jshort cl_iindex = cl_idt->cls.iindex;
-      if (cl_iindex < if_idt->iface.ioffsets[0])
+      jshort cl_iindex = cl_idt->iindex;
+      if (cl_iindex < target->ioffsets[0])
         {
-	  jshort offset = if_idt->iface.ioffsets[cl_iindex];
-	  if (offset != -1 && offset < cl_idt->cls.itable_length
-	      && cl_idt->cls.itable[offset] == target)
+	  jshort offset = target->ioffsets[cl_iindex];
+	  if (offset != -1 && offset < cl_idt->itable_length
+	      && cl_idt->itable[offset] == target)
 	    return true;
 	}
       return false;
@@ -1214,9 +1225,14 @@ _Jv_getInterfaceMethod (jclass search_class, jclass &found_class, int &index,
       if (!klass->isInterface ())
 	return false;
       
-      int i = klass->method_count;
-      while (--i >= 0)
+      int max = klass->method_count;
+      int offset = 0;
+      for (int i = 0; i < max; ++i)
 	{
+	  // Skip <clinit> here, as it will not be in the IDT.
+	  if (klass->methods[i].name->first() == '<')
+	    continue;
+
 	  if (_Jv_equalUtf8Consts (klass->methods[i].name, utf_name)
 	      && _Jv_equalUtf8Consts (klass->methods[i].signature, utf_sig))
 	    {
@@ -1229,9 +1245,11 @@ _Jv_getInterfaceMethod (jclass search_class, jclass &found_class, int &index,
 
 	      found_class = klass;
 	      // Interface method indexes count from 1.
-	      index = i+1;
+	      index = offset + 1;
 	      return true;
 	    }
+
+	  ++offset;
 	}
     }
 
@@ -1243,8 +1261,8 @@ _Jv_getInterfaceMethod (jclass search_class, jclass &found_class, int &index,
 	{
 	  using namespace java::lang::reflect;
 	  bool found = _Jv_getInterfaceMethod (search_class->interfaces[i], 
-					   found_class, index,
-					   utf_name, utf_sig);
+					       found_class, index,
+					       utf_name, utf_sig);
 	  if (found)
 	    return true;
 	}
@@ -1252,3 +1270,29 @@ _Jv_getInterfaceMethod (jclass search_class, jclass &found_class, int &index,
 
   return false;
 }
+
+#ifdef INTERPRETER
+_Jv_InterpMethod*
+_Jv_FindInterpreterMethod (jclass klass, jmethodID desired_method)
+{
+  using namespace java::lang::reflect;
+
+  _Jv_InterpClass* iclass
+    = reinterpret_cast<_Jv_InterpClass*> (klass->aux_info);
+  _Jv_MethodBase** imethods = _Jv_GetFirstMethod (iclass);
+
+  for (int i = 0; i < JvNumMethods (klass); ++i)
+    {
+      _Jv_MethodBase* imeth = imethods[i];
+      _Jv_ushort accflags = klass->methods[i].accflags;
+      if ((accflags & (Modifier::NATIVE | Modifier::ABSTRACT)) == 0)
+	{
+	  _Jv_InterpMethod* im = reinterpret_cast<_Jv_InterpMethod*> (imeth);
+	  if (im->get_method () == desired_method)
+	    return im;
+	}
+    }
+
+  return NULL;
+}
+#endif

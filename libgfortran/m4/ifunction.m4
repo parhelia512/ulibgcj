@@ -19,18 +19,21 @@ dnl You should not return or break from the inner loop of the implementation.
 dnl Care should also be taken to avoid using the names defined in iparm.m4
 define(START_ARRAY_FUNCTION,
 `
-extern void name`'rtype_qual`_'atype_code (rtype *, atype *, index_type *);
+extern void name`'rtype_qual`_'atype_code (rtype * const restrict, 
+	atype * const restrict, const index_type * const restrict);
 export_proto(name`'rtype_qual`_'atype_code);
 
 void
-name`'rtype_qual`_'atype_code (rtype *retarray, atype *array, index_type *pdim)
+name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
+	atype * const restrict array, 
+	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  atype_name *base;
-  rtype_name *dest;
+  const atype_name * restrict base;
+  rtype_name * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
@@ -40,11 +43,6 @@ name`'rtype_qual`_'atype_code (rtype *retarray, atype *array, index_type *pdim)
   /* Make dim zero based to avoid confusion.  */
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
-
-  /* TODO:  It should be a front end job to correctly set the strides.  */
-
-  if (array->dim[0].stride == 0)
-    array->dim[0].stride = 1;
 
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
   delta = array->dim[dim].stride;
@@ -82,9 +80,6 @@ name`'rtype_qual`_'atype_code (rtype *retarray, atype *array, index_type *pdim)
     }
   else
     {
-      if (retarray->dim[0].stride == 0)
-	retarray->dim[0].stride = 1;
-
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect");
     }
@@ -102,7 +97,7 @@ name`'rtype_qual`_'atype_code (rtype *retarray, atype *array, index_type *pdim)
 
   while (base)
     {
-      atype_name *src;
+      const atype_name * restrict src;
       rtype_name result;
       src = base;
       {
@@ -152,22 +147,25 @@ define(FINISH_ARRAY_FUNCTION,
 }')dnl
 define(START_MASKED_ARRAY_FUNCTION,
 `
-extern void `m'name`'rtype_qual`_'atype_code (rtype *, atype *, index_type *,
-					       gfc_array_l4 *);
+extern void `m'name`'rtype_qual`_'atype_code (rtype * const restrict, 
+	atype * const restrict, const index_type * const restrict,
+	gfc_array_l4 * const restrict);
 export_proto(`m'name`'rtype_qual`_'atype_code);
 
 void
-`m'name`'rtype_qual`_'atype_code (rtype * retarray, atype * array,
-				  index_type *pdim, gfc_array_l4 * mask)
+`m'name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
+	atype * const restrict array, 
+	const index_type * const restrict pdim, 
+	gfc_array_l4 * const restrict mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
   index_type mstride[GFC_MAX_DIMENSIONS];
-  rtype_name *dest;
-  atype_name *base;
-  GFC_LOGICAL_4 *mbase;
+  rtype_name * restrict dest;
+  const atype_name * restrict base;
+  const GFC_LOGICAL_4 * restrict mbase;
   int rank;
   int dim;
   index_type n;
@@ -177,14 +175,6 @@ void
 
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
-
-  /* TODO:  It should be a front end job to correctly set the strides.  */
-
-  if (array->dim[0].stride == 0)
-    array->dim[0].stride = 1;
-
-  if (mask->dim[0].stride == 0)
-    mask->dim[0].stride = 1;
 
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
   if (len <= 0)
@@ -227,9 +217,6 @@ void
     }
   else
     {
-      if (retarray->dim[0].stride == 0)
-	retarray->dim[0].stride = 1;
-
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect");
     }
@@ -258,8 +245,8 @@ void
 
   while (base)
     {
-      atype_name *src;
-      GFC_LOGICAL_4 *msrc;
+      const atype_name * restrict src;
+      const GFC_LOGICAL_4 * restrict msrc;
       rtype_name result;
       src = base;
       msrc = mbase;
@@ -354,9 +341,6 @@ void
 
       if (retarray->dim[0].ubound + 1 - retarray->dim[0].lbound != rank)
         runtime_error ("dimension of return array incorrect");
-
-      if (retarray->dim[0].stride == 0)
-	retarray->dim[0].stride = 1;
     }
 
     dstride = retarray->dim[0].stride;

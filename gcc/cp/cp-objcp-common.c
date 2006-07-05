@@ -154,7 +154,7 @@ void
 cxx_initialize_diagnostics (diagnostic_context *context)
 {
   pretty_printer *base = context->printer;
-  cxx_pretty_printer *pp = xmalloc (sizeof (cxx_pretty_printer));
+  cxx_pretty_printer *pp = XNEW (cxx_pretty_printer);
   memcpy (pp_base (pp), base, sizeof (pretty_printer));
   pp_cxx_pretty_printer_init (pp);
   context->printer = (pretty_printer *) pp;
@@ -179,7 +179,8 @@ cxx_types_compatible_p (tree x, tree y)
   if (POINTER_TYPE_P (x) && POINTER_TYPE_P (y)
       && TYPE_MODE (x) == TYPE_MODE (y)
       && TYPE_REF_CAN_ALIAS_ALL (x) == TYPE_REF_CAN_ALIAS_ALL (y)
-      && same_type_p (TREE_TYPE (x), TREE_TYPE (y)))
+      && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (x),
+						    TREE_TYPE (y)))
     return 1;
 
   return 0;
@@ -203,19 +204,19 @@ has_c_linkage (tree decl)
   return DECL_EXTERN_C_P (decl);
 }
 
-static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map))) 
+static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
      htab_t shadowed_var_for_decl;
 
 /* Lookup a shadowed var for FROM, and return it if we find one.  */
 
-tree 
+tree
 decl_shadowed_for_var_lookup (tree from)
 {
   struct tree_map *h, in;
   in.from = from;
 
-  h = htab_find_with_hash (shadowed_var_for_decl, &in, 
-			   htab_hash_pointer (from));
+  h = (struct tree_map *) htab_find_with_hash (shadowed_var_for_decl, &in,
+					       htab_hash_pointer (from));
   if (h)
     return h->to;
   return NULL_TREE;
@@ -229,7 +230,7 @@ decl_shadowed_for_var_insert (tree from, tree to)
   struct tree_map *h;
   void **loc;
 
-  h = ggc_alloc (sizeof (struct tree_map));
+  h = GGC_NEW (struct tree_map);
   h->hash = htab_hash_pointer (from);
   h->from = from;
   h->to = to;

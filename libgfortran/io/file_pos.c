@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2003, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2003, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Andy Vaught and Janne Blomqvist
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -312,7 +312,7 @@ st_rewind (st_parameter_filepos *fpp)
 	  u->endfile = NO_ENDFILE;
 	  u->current_record = 0;
 	  u->bytes_left = 0;
-          u->read_bad = 0;
+	  u->read_bad = 0;
 	  test_endfile (u);
 	}
       /* Update position for INQUIRE.  */

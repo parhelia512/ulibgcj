@@ -275,11 +275,22 @@ built_gcc_dir="`cd ../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
 GCJ="${built_gcc_dir}/gcj -B${built_gcc_dir}/"
 GCJH="${built_gcc_dir}/gcjh"
 built_fastjar_dir="`cd ../../${host_subdir}/fastjar && ${PWDCMD-pwd}`"
-ZIP="${built_fastjar_dir}/fastjar"
 AC_SUBST(GCJ)
 AC_SUBST(GCJH)
-AC_SUBST(ZIP)
 AC_SUBST(GCJFLAGS)
+
+AC_CHECK_PROGS([JAR], [jar fastjar], no)
+AC_PATH_PROG([ZIP], [zip], no)
+AC_PATH_PROG([UNZIP], [unzip], unzip)
+AM_CONDITIONAL(BASH_JAR, test "$JAR" = no)
+if test "$ZIP" = no; then
+  if test "$JAR" = no; then
+    AC_MSG_ERROR([cannot find neither zip nor jar, cannot continue])
+  fi
+else
+  # InfoZIP available, use the 'guaranteed' Bourne-shell JAR to build libjava
+  JAR=`pwd`/scripts/jar
+fi
 
 if test -d sysdep; then true; else mkdir sysdep; fi
 AC_CONFIG_LINKS(sysdep/locks.h:${libjava}/sysdep/$sysdeps_dir/locks.h)

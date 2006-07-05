@@ -38,18 +38,21 @@ Boston, MA 02110-1301, USA.  */
 #if defined (HAVE_GFC_INTEGER_4) && defined (HAVE_GFC_INTEGER_4)
 
 
-extern void maxval_i4 (gfc_array_i4 *, gfc_array_i4 *, index_type *);
+extern void maxval_i4 (gfc_array_i4 * const restrict, 
+	gfc_array_i4 * const restrict, const index_type * const restrict);
 export_proto(maxval_i4);
 
 void
-maxval_i4 (gfc_array_i4 *retarray, gfc_array_i4 *array, index_type *pdim)
+maxval_i4 (gfc_array_i4 * const restrict retarray, 
+	gfc_array_i4 * const restrict array, 
+	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  GFC_INTEGER_4 *base;
-  GFC_INTEGER_4 *dest;
+  const GFC_INTEGER_4 * restrict base;
+  GFC_INTEGER_4 * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
@@ -59,11 +62,6 @@ maxval_i4 (gfc_array_i4 *retarray, gfc_array_i4 *array, index_type *pdim)
   /* Make dim zero based to avoid confusion.  */
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
-
-  /* TODO:  It should be a front end job to correctly set the strides.  */
-
-  if (array->dim[0].stride == 0)
-    array->dim[0].stride = 1;
 
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
   delta = array->dim[dim].stride;
@@ -101,9 +99,6 @@ maxval_i4 (gfc_array_i4 *retarray, gfc_array_i4 *array, index_type *pdim)
     }
   else
     {
-      if (retarray->dim[0].stride == 0)
-	retarray->dim[0].stride = 1;
-
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect");
     }
@@ -121,7 +116,7 @@ maxval_i4 (gfc_array_i4 *retarray, gfc_array_i4 *array, index_type *pdim)
 
   while (base)
     {
-      GFC_INTEGER_4 *src;
+      const GFC_INTEGER_4 * restrict src;
       GFC_INTEGER_4 result;
       src = base;
       {
@@ -172,22 +167,25 @@ maxval_i4 (gfc_array_i4 *retarray, gfc_array_i4 *array, index_type *pdim)
 }
 
 
-extern void mmaxval_i4 (gfc_array_i4 *, gfc_array_i4 *, index_type *,
-					       gfc_array_l4 *);
+extern void mmaxval_i4 (gfc_array_i4 * const restrict, 
+	gfc_array_i4 * const restrict, const index_type * const restrict,
+	gfc_array_l4 * const restrict);
 export_proto(mmaxval_i4);
 
 void
-mmaxval_i4 (gfc_array_i4 * retarray, gfc_array_i4 * array,
-				  index_type *pdim, gfc_array_l4 * mask)
+mmaxval_i4 (gfc_array_i4 * const restrict retarray, 
+	gfc_array_i4 * const restrict array, 
+	const index_type * const restrict pdim, 
+	gfc_array_l4 * const restrict mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
   index_type mstride[GFC_MAX_DIMENSIONS];
-  GFC_INTEGER_4 *dest;
-  GFC_INTEGER_4 *base;
-  GFC_LOGICAL_4 *mbase;
+  GFC_INTEGER_4 * restrict dest;
+  const GFC_INTEGER_4 * restrict base;
+  const GFC_LOGICAL_4 * restrict mbase;
   int rank;
   int dim;
   index_type n;
@@ -197,14 +195,6 @@ mmaxval_i4 (gfc_array_i4 * retarray, gfc_array_i4 * array,
 
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
-
-  /* TODO:  It should be a front end job to correctly set the strides.  */
-
-  if (array->dim[0].stride == 0)
-    array->dim[0].stride = 1;
-
-  if (mask->dim[0].stride == 0)
-    mask->dim[0].stride = 1;
 
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
   if (len <= 0)
@@ -247,9 +237,6 @@ mmaxval_i4 (gfc_array_i4 * retarray, gfc_array_i4 * array,
     }
   else
     {
-      if (retarray->dim[0].stride == 0)
-	retarray->dim[0].stride = 1;
-
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect");
     }
@@ -278,8 +265,8 @@ mmaxval_i4 (gfc_array_i4 * retarray, gfc_array_i4 * array,
 
   while (base)
     {
-      GFC_INTEGER_4 *src;
-      GFC_LOGICAL_4 *msrc;
+      const GFC_INTEGER_4 * restrict src;
+      const GFC_LOGICAL_4 * restrict msrc;
       GFC_INTEGER_4 result;
       src = base;
       msrc = mbase;
@@ -375,9 +362,6 @@ smaxval_i4 (gfc_array_i4 * const restrict retarray,
 
       if (retarray->dim[0].ubound + 1 - retarray->dim[0].lbound != rank)
         runtime_error ("dimension of return array incorrect");
-
-      if (retarray->dim[0].stride == 0)
-	retarray->dim[0].stride = 1;
     }
 
     dstride = retarray->dim[0].stride;
