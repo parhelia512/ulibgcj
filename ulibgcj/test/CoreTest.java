@@ -65,6 +65,7 @@ public class CoreTest implements Runnable {
 
   public void run() {
     synchronized (this) {
+      int i = 0;
       try {
         System.out.println("I'm running in a seperate thread!");
 
@@ -72,7 +73,7 @@ public class CoreTest implements Runnable {
         final int arraySize = 4;
         System.out.println("Allocating and discarding " + arrayCount +
                       " arrays of " + arraySize + "MB each");
-        for (int i = 0; i < arrayCount; ++i) {
+        for (; i < arrayCount; ++i) {
 //           System.out.println("allocating array " + i);
           byte[] array = new byte[arraySize * 1024 * 1024];
         }
@@ -81,7 +82,8 @@ public class CoreTest implements Runnable {
 //         System.out.println("sleeping for " + nap + " seconds");
 //         Thread.sleep(nap * 1000);
       } catch (Throwable e) {
-        System.out.println("caught " + e + " in second thread");   
+        System.out.println("caught " + e + " in second thread after " + i +
+                           " iterations");   
         trouble = true;
       } finally {
         notifyAll();
