@@ -3,6 +3,7 @@ public class CoreTest implements Runnable {
   private static final Long SOME_USELESS_CONSTANT = new Long(955);
 
   private final Throwable[] uselessArray;
+  private boolean trouble = false;
 
   CoreTest() {
     uselessArray = new Throwable[3];
@@ -56,7 +57,10 @@ public class CoreTest implements Runnable {
       System.out.println("caught " + e);
     }
 
-    System.out.println("Everybody has won, and all must have prizes!");
+    if (test.trouble)
+      System.out.println("trouble!");
+    else
+      System.out.println("Everybody has won, and all must have prizes!");
   }
 
   public void run() {
@@ -77,7 +81,8 @@ public class CoreTest implements Runnable {
 //         System.out.println("sleeping for " + nap + " seconds");
 //         Thread.sleep(nap * 1000);
       } catch (Throwable e) {
-        System.out.println("caught " + e + " in second thread");        
+        System.out.println("caught " + e + " in second thread");   
+        trouble = true;
       } finally {
         notifyAll();
       }

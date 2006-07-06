@@ -843,10 +843,7 @@ public class Thread implements Runnable
    * @see #notify()
    * @see #wait(long)
    */
-  public static void sleep(long ms)
-/*#if not ULIBGCJ*/
-    throws InterruptedException
-/*#endif*/
+  public static void sleep(long ms) throws InterruptedException
   {
     sleep(ms, 0);
   }
@@ -872,10 +869,7 @@ public class Thread implements Runnable
    * @see #wait(long, int)
    */
   public static native void sleep(long timeout, int nanos)
-/*#if not ULIBGCJ*/
-    throws InterruptedException
-/*#endif*/
-           ;
+    throws InterruptedException;
 
   /**
    * Start this Thread, calling the run() method of the Runnable this Thread
