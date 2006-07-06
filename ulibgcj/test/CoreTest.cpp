@@ -9,7 +9,7 @@
 int
 main()
 {
-  GC_set_max_heap_size(24 * 1024 * 1024);
+  GC_set_max_heap_size(40 * 1024 * 1024);
 
   try {
     JvCreateJavaVM(0);
