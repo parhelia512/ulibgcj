@@ -70,6 +70,7 @@ java/lang/IllegalThreadStateException.java \
 java/lang/IncompatibleClassChangeError.java \
 java/lang/IndexOutOfBoundsException.java \
 java/lang/InstantiationException.java \
+java/lang/InterruptedException.java \
 java/lang/Integer.java \
 java/lang/InternalError.java \
 java/lang/LinkageError.java \

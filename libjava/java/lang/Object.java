@@ -262,10 +262,7 @@ public class Object
    * @see Thread
    */
   public final native void wait(long timeout, int nanos)
-/*#if not ULIBGCJ*/
-    throws InterruptedException
-/*#endif*/
-           ;
+    throws InterruptedException;
 
   /**
    * Determine whether this Object is semantically equal
@@ -402,10 +399,7 @@ public class Object
    * @see #wait(long, int)
    * @see Thread
    */
-  public final void wait()
-/*#if not ULIBGCJ*/
-    throws InterruptedException
-/*#endif*/
+  public final void wait() throws InterruptedException
   {
     wait(0, 0);
   }
@@ -450,10 +444,7 @@ public class Object
    * @see #wait(long, int)
    * @see Thread
    */
-  public final void wait(long timeout)
-/*#if not ULIBGCJ*/
-    throws InterruptedException
-/*#endif*/
+  public final void wait(long timeout) throws InterruptedException
   {
     wait(timeout, 0);
   }
