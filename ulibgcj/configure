@@ -5097,7 +5097,6 @@ _ACEOF
 
 mkdir -p gcj
 test -f gcj/libgcj-config.h || echo > gcj/libgcj-config.h
-test -f libgcj.spec || echo > libgcj.spec
 
 
 ac_ext=c
@@ -5979,6 +5978,9 @@ done
 ac_config_files="$ac_config_files Makefile libgcj.spec"
 
 
+ac_config_files="$ac_config_files scripts/jar:../libjava/scripts/jar.in"
+
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -6633,6 +6635,7 @@ do
     "sysdep/locks.h") CONFIG_LINKS="$CONFIG_LINKS sysdep/locks.h:${libjava}/sysdep/$sysdeps_dir/locks.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "libgcj.spec") CONFIG_FILES="$CONFIG_FILES libgcj.spec" ;;
+    "scripts/jar") CONFIG_FILES="$CONFIG_FILES scripts/jar:../libjava/scripts/jar.in" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
@@ -7464,6 +7467,7 @@ echo "$as_me: error: cannot create directory $as_dir" >&2;}
   done
 done
  ;;
+    "scripts/jar":F) chmod +x scripts/jar ;;
 
   esac
 done # for ac_tag

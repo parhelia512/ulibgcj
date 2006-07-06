@@ -301,12 +301,14 @@ AC_DEFINE(HAVE_MEMMOVE, 1, [Define if memmove is available])
 
 mkdir -p gcj
 test -f gcj/libgcj-config.h || echo > gcj/libgcj-config.h
-test -f libgcj.spec || echo > libgcj.spec
 
 AC_CHECK_HEADERS([unistd.h bstring.h sys/time.h string.h sys/types.h \
 		  pwd.h sys/config.h stdint.h langinfo.h locale.h \
 		  dirent.h math.h])
 
 AC_CONFIG_FILES([Makefile libgcj.spec])
+
+AC_CONFIG_FILES([scripts/jar:../libjava/scripts/jar.in],
+                [chmod +x scripts/jar])
 
 AC_OUTPUT

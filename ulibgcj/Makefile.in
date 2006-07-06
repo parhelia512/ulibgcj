@@ -50,6 +50,7 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../config.guess \
 	$(srcdir)/../install-sh $(srcdir)/../missing \
 	$(srcdir)/../mkinstalldirs $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/libgcj.spec.in \
+	$(top_srcdir)/../libjava/scripts/jar.in \
 	$(top_srcdir)/configure $(top_srcdir)/include/config.h.in
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -63,8 +64,8 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
-CONFIG_CLEAN_FILES = libgcj.spec include/platform.h include/java-gc.h \
-	include/java-threads.h include/java-signal.h \
+CONFIG_CLEAN_FILES = libgcj.spec scripts/jar include/platform.h \
+	include/java-gc.h include/java-threads.h include/java-signal.h \
 	include/java-signal-aux.h sysdep/locks.h
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -462,6 +463,8 @@ distclean-hdr:
 	-rm -f include/config.h include/stamp-h1
 libgcj.spec: $(top_builddir)/config.status $(srcdir)/libgcj.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
+scripts/jar: $(top_builddir)/config.status $(top_srcdir)/../libjava/scripts/jar.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 install-ulibgcjLIBRARIES: $(ulibgcj_LIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(ulibgcjdir)" || $(mkdir_p) "$(DESTDIR)$(ulibgcjdir)"
@@ -617,7 +620,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/. $(distdir)/.. $(distdir)/../config $(distdir)/include
+	$(mkdir_p) $(distdir)/. $(distdir)/.. $(distdir)/../config $(distdir)/../libjava/scripts $(distdir)/include
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
