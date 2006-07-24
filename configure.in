@@ -139,7 +139,7 @@ libgcj_exclusive="target-libffi \
 		target-libjava"
 
 libgcj="target-boehm-gc \
-	${libgcj}"
+	${libgcj_exclusive}"
 
 # these libraries are built for the target environment, and are built after
 # the host libraries and the host tools (which may be a cross compiler)
