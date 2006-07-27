@@ -323,7 +323,7 @@ libgcj_saved="${libgcj} target-ulibgcj"
 AC_ARG_ENABLE(micro-libgcj,
 [  --enable-micro-libgcj  Enables lightweight version of libgcj],
 ENABLE_ULIBGCJ=$enableval,
-ENABLE_ULIBGCJ=yes)
+ENABLE_ULIBGCJ=no)
 if test "${ENABLE_ULIBGCJ}" != "yes" ; then
   noconfigdirs="$noconfigdirs target-ulibgcj"
   libgcj_saved="${libgcj}"
@@ -336,6 +336,9 @@ yes)
   # If we reset it here, it won't get added to noconfigdirs in the
   # target-specific build rules, so it will be forcibly enabled
   # (unless the Java language itself isn't enabled).
+  if test "x${ENABLE_ULIBGCJ}" = "xyes" ; then
+    AC_MSG_ERROR([micro-libgcj])
+  fi
   libgcj=
   ;;
 no)

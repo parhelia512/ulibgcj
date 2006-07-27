@@ -2360,7 +2360,7 @@ libgcj_saved="${libgcj} target-ulibgcj"
 if test "${enable_micro_libgcj+set}" = set; then
   enableval=$enable_micro_libgcj; ENABLE_ULIBGCJ=$enableval
 else
-  ENABLE_ULIBGCJ=yes
+  ENABLE_ULIBGCJ=no
 fi
 
 if test "${ENABLE_ULIBGCJ}" != "yes" ; then
@@ -2375,6 +2375,11 @@ yes)
   # If we reset it here, it won't get added to noconfigdirs in the
   # target-specific build rules, so it will be forcibly enabled
   # (unless the Java language itself isn't enabled).
+  if test "x${ENABLE_ULIBGCJ}" = "xyes" ; then
+    { { echo "$as_me:$LINENO: error: micro-libgcj" >&5
+echo "$as_me: error: micro-libgcj" >&2;}
+   { (exit 1); exit 1; }; }
+  fi
   libgcj=
   ;;
 no)
