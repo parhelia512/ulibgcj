@@ -42,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+/*#if not ULIBGCJ*/
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
@@ -65,6 +66,7 @@ import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
+/*#endif*/
 
 /**
  * A set of persistent properties, which can be saved or loaded from a stream.
@@ -199,8 +201,13 @@ label   = Name:\\u0020</pre>
   public void load(InputStream inStream) throws IOException
   {
     // The spec says that the file must be encoded using ISO-8859-1.
+/*#if ULIBGCJ
+    BufferedReader reader =
+      new BufferedReader(new InputStreamReader(inStream));
+  #else*/
     BufferedReader reader =
       new BufferedReader(new InputStreamReader(inStream, "ISO-8859-1"));
+/*#endif*/
     String line;
 
     while ((line = reader.readLine()) != null)
@@ -365,6 +372,7 @@ label   = Name:\\u0020</pre>
       }
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Calls <code>store(OutputStream out, String header)</code> and
    * ignores the IOException that may be thrown.
@@ -437,6 +445,7 @@ label   = Name:\\u0020</pre>
 
     writer.flush ();
   }
+/*#endif*/
 
   /**
    * Gets the property with the specified key in this property list.
@@ -466,6 +475,7 @@ label   = Name:\\u0020</pre>
     return null;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Gets the property with the specified key in this property list.  If
    * the key is not found, the default property list is searched.  If the
@@ -487,6 +497,7 @@ label   = Name:\\u0020</pre>
       prop = defaultValue;
     return prop;
   }
+/*#endif*/
 
   /**
    * Returns an enumeration of all keys in this property list, including
@@ -511,6 +522,7 @@ label   = Name:\\u0020</pre>
     return Collections.enumeration(s);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Prints the key/value pairs to the given print stream.  This is 
    * mainly useful for debugging purposes.
@@ -911,5 +923,6 @@ label   = Name:\\u0020</pre>
     }
 
   } // class PropertiesHandler
+/*#endif*/
 
 } // class Properties

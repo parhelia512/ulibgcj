@@ -72,8 +72,8 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(ulibgcjdir)" "$(DESTDIR)$(jardir)" \
-	"$(DESTDIR)$(specdir)"
+am__installdirs = "$(DESTDIR)$(ulibgcjdir)" "$(DESTDIR)$(gcdir)" \
+	"$(DESTDIR)$(jardir)" "$(DESTDIR)$(specdir)"
 ulibgcjLIBRARIES_INSTALL = $(INSTALL_DATA)
 LIBRARIES = $(ulibgcj_LIBRARIES)
 AR = ar
@@ -112,9 +112,10 @@ CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
 SOURCES = $(libulibgcj_a_SOURCES)
 DIST_SOURCES = $(am__libulibgcj_a_SOURCES_DIST)
+gcDATA_INSTALL = $(INSTALL_DATA)
 jarDATA_INSTALL = $(INSTALL_DATA)
 specDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(jar_DATA) $(spec_DATA)
+DATA = $(gc_DATA) $(jar_DATA) $(spec_DATA)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -129,7 +130,7 @@ GZIP_ENV = --best
 distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
 srcdir = @srcdir@
-VPATH = @srcdir@/../libjava:@srcdir@/../libjava/classpath
+VPATH = @srcdir@/src:@srcdir@/../libjava:@srcdir@/../libjava/classpath
 ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
@@ -164,6 +165,7 @@ GCJDEPMODE = @GCJDEPMODE@
 GCJFLAGS = @GCJFLAGS@
 GCJH = @GCJH@
 GCLIBS = @GCLIBS@
+GCSPEC = @GCSPEC@
 GREP = @GREP@
 HASH_SYNC_SPEC = @HASH_SYNC_SPEC@
 INSTALL_DATA = @INSTALL_DATA@
@@ -290,16 +292,35 @@ AM_CXXFLAGS = \
 	$(WARNINGS) \
 	-D_GNU_SOURCE
 
+gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 jardir = $(datadir)/java
-jar_DATA = libulibgcj.jar
+jar_DATA = libgcj-$(gcc_version).jar
+gcdir = $(libdir)
+gc_DATA = libgc.a
 specdir = $(libdir)
 spec_DATA = libgcj.spec
 ulibgcjdir = $(libdir)
 ulibgcj_LIBRARIES = libulibgcj.a
 java_sources = \
+gnu/gcj/Core.java \
 gnu/gcj/RawData.java \
 gnu/gcj/RawDataManaged.java \
 gnu/gcj/runtime/StringBuffer.java \
+gnu/java/net/protocol/core/CoreInputStream.java \
+gnu/java/net/URLParseError.java \
+java/io/InputStreamReader.java \
+java/io/BufferedReader.java \
+java/io/Reader.java \
+java/io/Writer.java \
+java/io/PrintWriter.java \
+java/io/FilterOutputStream.java \
+java/io/PrintStream.java \
+java/io/ByteArrayOutputStream.java \
+java/io/IOException.java \
+java/io/InputStream.java \
+java/io/OutputStream.java \
+java/io/OutputStreamWriter.java \
+java/io/Serializable.java \
 java/lang/AbstractMethodError.java \
 java/lang/ArithmeticException.java \
 java/lang/ArrayIndexOutOfBoundsException.java \
@@ -311,6 +332,7 @@ java/lang/Class.java \
 java/lang/ClassCastException.java \
 java/lang/ClassLoader.java \
 java/lang/ClassNotFoundException.java \
+java/lang/Cloneable.java \
 java/lang/CloneNotSupportedException.java \
 java/lang/Comparable.java \
 java/lang/Double.java \
@@ -319,6 +341,7 @@ java/lang/Exception.java \
 java/lang/ExceptionInInitializerError.java \
 java/lang/Float.java \
 java/lang/IllegalAccessError.java \
+java/lang/IllegalAccessException.java \
 java/lang/IllegalArgumentException.java \
 java/lang/IllegalMonitorStateException.java \
 java/lang/IllegalStateException.java \
@@ -326,9 +349,9 @@ java/lang/IllegalThreadStateException.java \
 java/lang/IncompatibleClassChangeError.java \
 java/lang/IndexOutOfBoundsException.java \
 java/lang/InstantiationException.java \
-java/lang/InterruptedException.java \
 java/lang/Integer.java \
 java/lang/InternalError.java \
+java/lang/InterruptedException.java \
 java/lang/LinkageError.java \
 java/lang/Long.java \
 java/lang/Math.java \
@@ -346,18 +369,50 @@ java/lang/RuntimeException.java \
 java/lang/Short.java \
 java/lang/String.java \
 java/lang/StringBuffer.java \
+java/lang/StringBuilder.java \
 java/lang/StringIndexOutOfBoundsException.java \
 java/lang/System.java \
 java/lang/Thread.java \
 java/lang/Throwable.java \
+java/lang/UnsatisfiedLinkError.java \
+java/lang/UnsupportedOperationException.java \
 java/lang/VMClassLoader.java \
 java/lang/VMThrowable.java \
 java/lang/VerifyError.java \
 java/lang/VirtualMachineError.java \
-java/lang/reflect/Modifier.java
+java/lang/reflect/Modifier.java \
+java/util/AbstractCollection.java \
+java/util/AbstractList.java \
+java/util/AbstractMap.java \
+java/util/AbstractSet.java \
+java/util/Arrays.java \
+java/util/ArrayList.java \
+java/util/Collection.java \
+java/util/Collections.java \
+java/util/ConcurrentModificationException.java \
+java/util/Enumeration.java \
+java/util/EventListener.java \
+java/util/EventObject.java \
+java/util/HashSet.java \
+java/util/HashMap.java \
+java/util/Hashtable.java \
+java/util/Iterator.java \
+java/util/List.java \
+java/util/ListIterator.java \
+java/util/Locale.java \
+java/util/Map.java \
+java/util/MissingResourceException.java \
+java/util/NoSuchElementException.java \
+java/util/Properties.java \
+java/util/PropertyResourceBundle.java \
+java/util/ResourceBundle.java \
+java/util/Set.java \
+java/util/Vector.java
 
 native_sources = \
+gnu/gcj/natCore.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
+gnu/java/net/protocol/core/natCoreInputStream.cc \
 java/lang/natCharacter.cc \
 java/lang/natClass.cc \
 java/lang/natClassLoader.cc \
@@ -365,6 +420,7 @@ java/lang/natMath.cc \
 java/lang/natObject.cc \
 java/lang/natString.cc \
 java/lang/natStringBuffer.cc \
+java/lang/natStringBuilder.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
 java/lang/natVMClassLoader.cc
@@ -528,6 +584,23 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 uninstall-info-am:
+install-gcDATA: $(gc_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(gcdir)" || $(mkdir_p) "$(DESTDIR)$(gcdir)"
+	@list='$(gc_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(gcDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(gcdir)/$$f'"; \
+	  $(gcDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(gcdir)/$$f"; \
+	done
+
+uninstall-gcDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(gc_DATA)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(gcdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(gcdir)/$$f"; \
+	done
 install-jarDATA: $(jar_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(jardir)" || $(mkdir_p) "$(DESTDIR)$(jardir)"
@@ -743,7 +816,7 @@ check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LIBRARIES) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(ulibgcjdir)" "$(DESTDIR)$(jardir)" "$(DESTDIR)$(specdir)"; do \
+	for dir in "$(DESTDIR)$(ulibgcjdir)" "$(DESTDIR)$(gcdir)" "$(DESTDIR)$(jardir)" "$(DESTDIR)$(specdir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -791,7 +864,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-jarDATA install-specDATA \
+install-data-am: install-gcDATA install-jarDATA install-specDATA \
 	install-ulibgcjLIBRARIES
 
 install-exec-am:
@@ -821,8 +894,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-info-am uninstall-jarDATA uninstall-specDATA \
-	uninstall-ulibgcjLIBRARIES
+uninstall-am: uninstall-gcDATA uninstall-info-am uninstall-jarDATA \
+	uninstall-specDATA uninstall-ulibgcjLIBRARIES
 
 .PHONY: CTAGS GTAGS all all-am am--refresh check check-am clean \
 	clean-generic clean-ulibgcjLIBRARIES ctags dist dist-all \
@@ -831,13 +904,14 @@ uninstall-am: uninstall-info-am uninstall-jarDATA uninstall-specDATA \
 	distclean-tags distcleancheck distdir distuninstallcheck dvi \
 	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-exec install-exec-am \
-	install-info install-info-am install-jarDATA install-man \
-	install-specDATA install-strip install-ulibgcjLIBRARIES \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-info-am uninstall-jarDATA \
-	uninstall-specDATA uninstall-ulibgcjLIBRARIES
+	install-gcDATA install-info install-info-am install-jarDATA \
+	install-man install-specDATA install-strip \
+	install-ulibgcjLIBRARIES installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
+	ps ps-am tags uninstall uninstall-am uninstall-gcDATA \
+	uninstall-info-am uninstall-jarDATA uninstall-specDATA \
+	uninstall-ulibgcjLIBRARIES
 
 
 $(processed_java_sources): processed/%.java: %.java
@@ -913,12 +987,12 @@ $(native_objects): objects/%.o: %.cc
 	@mkdir -p $(dir $(@))
 	$(CXXCOMPILE) -o $(@) -c $(<)
 
-libulibgcj.jar: $(classes)
-	cd classes; $(ZIP) -cfM ../libulibgcj.jar gnu java
+libgcj-$(gcc_version).jar: $(classes)
+	cd classes; $(ZIP) -cfM ../libgcj-$(gcc_version).jar gnu java
 
 clean:
 	rm -rf $(libulibgcj_a_OBJECTS) objects classes headers processed \
-		libulibgcj.a libulibgcj.jar hello core-test
+		libulibgcj.a libgcj-$(gcc_version).jar hello core-test
 
 objects/%.o: $(srcdir)/test/%.java libulibgcj.a
 	$(GCJ) $(javaflags) -o $(@) -c $(<)
@@ -931,6 +1005,9 @@ headers/%.h: classes/%.class
 
 classes/%.class: $(srcdir)/test/%.java libulibgcj.a
 	$(GCJ) $(classflags) -C $(<)
+
+libgc.a: $(GCLIBS)
+	cp $(<) $(@)
 
 hello: \
 		objects/Hello.o \

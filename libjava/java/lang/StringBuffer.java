@@ -79,12 +79,10 @@ public final class StringBuffer
  implements Serializable, CharSequence
 /*#endif*/
 {
-/*#if not ULIBGCJ*/
   /**
    * Compatible with JDK 1.0+.
    */
   private static final long serialVersionUID = 3388685877147921107L;
-/*#endif*/
 
   /**
    * Index of next available character (and thus the size of the current

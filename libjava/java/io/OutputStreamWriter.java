@@ -38,10 +38,12 @@ exception statement from your version. */
 
 package java.io;
 
+/*#if not ULIBGCJ*/
 import gnu.gcj.convert.UnicodeToBytes;
 import gnu.gcj.convert.CharsetToBytesAdaptor;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+/*#endif*/
 
 /**
  * This class writes characters to an output stream that is byte oriented
@@ -78,6 +80,9 @@ import java.nio.charset.CharsetEncoder;
  */
 public class OutputStreamWriter extends Writer
 {
+/*#if ULIBGCJ
+  OutputStream out;
+  #else*/
   BufferedOutputStream out;
 
   /**
@@ -119,7 +124,13 @@ public class OutputStreamWriter extends Writer
   {
     this(out, UnicodeToBytes.getEncoder(encoding_scheme));
   }
+/*#endif*/
 
+/*#if ULIBGCJ
+  public OutputStreamWriter(OutputStream out) {
+    this.out = out;
+  }
+  #else*/
   /**
    * This method initializes a new instance of <code>OutputStreamWriter</code>
    * to write to the specified stream using the default encoding.
@@ -155,6 +166,7 @@ public class OutputStreamWriter extends Writer
   {
     this(out, new CharsetToBytesAdaptor(enc));
   }
+/*#endif*/
 
   /**
    * This method closes this stream, and the underlying 
@@ -172,10 +184,13 @@ public class OutputStreamWriter extends Writer
 	    out.close();
 	    out = null;
 	  }
+/*#if not ULIBGCJ*/
 	work = null;
+/*#endif*/
       }
   }
 
+/*#if not ULIBGCJ*/
   /**
    * This method returns the name of the character encoding scheme currently
    * in use by this stream.  If the stream has been closed, then this method
@@ -187,6 +202,7 @@ public class OutputStreamWriter extends Writer
   {
     return out != null ? converter.getName() : null;
   }
+/*#endif*/
 
   /**
    * This method flushes any buffered bytes to the underlying output sink.
@@ -200,11 +216,13 @@ public class OutputStreamWriter extends Writer
 	if (out == null)
 	  throw new IOException("Stream closed");
 
+/*#if not ULIBGCJ*/
 	if (wcount > 0)
 	  {
 	    writeChars(work, 0, wcount);
 	    wcount = 0;
 	  }
+/*#endif*/
 	out.flush();
       }
   }
@@ -227,15 +245,22 @@ public class OutputStreamWriter extends Writer
 	if (out == null)
 	  throw new IOException("Stream closed");
 
+/*#if ULIBGCJ
+        byte[] buffer = new byte[count];
+        for (int i = 0; i < count; ++i) buffer[i] = (byte) buf[offset + i];
+        out.write(buffer);
+  #else*/
 	if (wcount > 0)
 	  {
 	    writeChars(work, 0, wcount);
 	    wcount = 0;
 	  }
 	writeChars(buf, offset, count);
+/*#endif*/
       }
   }
 
+/*#if not ULIBGCJ*/
   /*
    * Writes characters through to the inferior BufferedOutputStream.
    * Ignores wcount and the work buffer.
@@ -268,6 +293,7 @@ public class OutputStreamWriter extends Writer
 	out.count = converter.count;
       }
   }
+/*#endif*/
 
   /**
    * This method writes <code>count</code> bytes from the specified 
@@ -288,6 +314,11 @@ public class OutputStreamWriter extends Writer
 	if (out == null)
 	  throw new IOException("Stream closed");
 
+/*#if ULIBGCJ
+    byte[] buffer = new byte[count];
+    for (int i = 0; i < count; ++i) buffer[i] = (byte) str.charAt(offset + i);
+    out.write(buffer);
+  #else*/
 	if (work == null)
 	  work = new char[100];
 	int wlength = work.length;
@@ -309,6 +340,7 @@ public class OutputStreamWriter extends Writer
 	    count -= size;
 	    wcount += size;
 	  }
+/*#endif*/
       }
   }
 
@@ -326,6 +358,9 @@ public class OutputStreamWriter extends Writer
 	if (out == null)
 	  throw new IOException("Stream closed");
 
+/*#if ULIBGCJ
+        out.write(ch);
+  #else*/
 	if (work == null)
 	  work = new char[100];
 	if (wcount >= work.length)
@@ -334,6 +369,7 @@ public class OutputStreamWriter extends Writer
 	    wcount = 0;
 	  }
 	work[wcount++] = (char) ch;
+/*#endif*/
       }
   }
 

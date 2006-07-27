@@ -155,6 +155,7 @@ public class ByteArrayOutputStream extends OutputStream
     return new String (buf, 0, count);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Returns the bytes in the internal array as a <code>String</code>.  The
    * bytes in the buffer are converted to characters using the specified
@@ -195,6 +196,7 @@ public class ByteArrayOutputStream extends OutputStream
   {
     return new String (buf, hibyte, 0, count);
   }
+/*#endif*/
 
   // Resize buffer to accommodate new bytes.
   private void resize (int add)
@@ -274,11 +276,15 @@ public class ByteArrayOutputStream extends OutputStream
 
   static
   {
+    /*#if ULIBGCJ
+      initial_buffer_size = DEFAULT_INITIAL_BUFFER_SIZE;
+      #else*/
     int r
       = Integer.getInteger ("gnu.java.io.ByteArrayOutputStream.initialBufferSize",
 			    DEFAULT_INITIAL_BUFFER_SIZE).intValue ();
     if (r <= 0)
       r = DEFAULT_INITIAL_BUFFER_SIZE;
     initial_buffer_size = r;
+    /*#endif*/
   }
 }

@@ -37,10 +37,13 @@ exception statement from your version. */
 
 
 package java.util;
+
+/*#if not ULIBGCJ*/
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
+/*#endif*/
 
 /**
  * The <code>Vector</code> classes implements growable arrays of Objects.
@@ -81,7 +84,11 @@ import java.lang.reflect.Array;
  * @status updated to 1.4
  */
 public class Vector extends AbstractList
+/*#if ULIBGCJ
+  implements List
+  #else*/
   implements List, RandomAccess, Cloneable, Serializable
+/*#endif*/
 {
   /**
    * Compatible with JDK 1.0+.
@@ -514,6 +521,7 @@ public class Vector extends AbstractList
     elementCount = 0;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Creates a new Vector with the same contents as this one. The clone is
    * shallow; elements are not cloned.
@@ -534,6 +542,7 @@ public class Vector extends AbstractList
         throw new InternalError(ex.toString());
       }
   }
+/*#endif*/
 
   /**
    * Returns an Object array with the contents of this Vector, in the order
@@ -571,8 +580,12 @@ public class Vector extends AbstractList
   public synchronized Object[] toArray(Object[] a)
   {
     if (a.length < elementCount)
+/*#if ULIBGCJ
+      throw new RuntimeException("reflective array creation not supported");
+  #else*/
       a = (Object[]) Array.newInstance(a.getClass().getComponentType(),
                                        elementCount);
+/*#endif*/
     else if (a.length > elementCount)
       a[elementCount] = null;
     System.arraycopy(elementData, 0, a, 0, elementCount);
@@ -915,6 +928,7 @@ public class Vector extends AbstractList
       throw new ArrayIndexOutOfBoundsException(index + " >= " + elementCount);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Serializes this object to the given stream.
    *
@@ -927,5 +941,6 @@ public class Vector extends AbstractList
   {
     s.defaultWriteObject();
   }
+/*#endif*/
 
 }

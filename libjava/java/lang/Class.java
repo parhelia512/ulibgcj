@@ -102,6 +102,7 @@ public final class Class
 /*#if not ULIBGCJ*/
   // finalization
   protected native void finalize () throws Throwable;
+/*#endif*/
 
   /**
    * Use the classloader of the current class to load, link, and initialize
@@ -119,6 +120,7 @@ public final class Class
   public static native Class forName (String className)
     throws ClassNotFoundException;
 
+/*#if not ULIBGCJ*/
   /**
    * Use the specified classloader to load and link a class. If the loader
    * is null, this uses the bootstrap class loader (provide the security
@@ -754,6 +756,7 @@ public final class Class
    * @since 1.1
    */
   public native boolean isPrimitive ();
+/*#endif*/
   
   /**
    * Get a new instance of this class by calling the no-argument constructor.
@@ -775,6 +778,7 @@ public final class Class
   public native Object newInstance ()
     throws InstantiationException, IllegalAccessException;
 
+/*#if not ULIBGCJ*/
   // We need a native method to retrieve the protection domain, because we
   // can't add fields to java.lang.Class that are accessible from Java.
   private native ProtectionDomain getProtectionDomain0();

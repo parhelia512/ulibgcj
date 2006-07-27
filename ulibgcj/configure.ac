@@ -77,10 +77,12 @@ AC_ARG_ENABLE(java-gc,
 
 GCLIBS=
 GCINCS=
+GCSPEC=
 JC1GCSPEC=
 case "$GC" in
  boehm)
     AC_MSG_RESULT(boehm)
+    GCSPEC='-lgc'
     JC1GCSPEC='-fuse-boehm-gc'
     GCLIBS=../boehm-gc/.libs/libgcjgc_convenience.a
     GCINCS='-I$(top_srcdir)/../boehm-gc/include -I../boehm-gc/include'
@@ -100,6 +102,7 @@ esac
 AC_CONFIG_LINKS(include/java-gc.h:${libjava}/include/${GCHDR})
 AC_SUBST(GCLIBS)
 AC_SUBST(GCINCS)
+AC_SUBST(GCSPEC)
 AC_SUBST(JC1GCSPEC)
 AM_CONDITIONAL(USING_BOEHMGC, test "${GC}" = boehm)
 AM_CONDITIONAL(USING_NOGC, test "${GC}" = no)

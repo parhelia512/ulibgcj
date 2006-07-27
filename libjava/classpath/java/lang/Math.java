@@ -294,7 +294,6 @@ public final class Math
     return (a > b) ? a : b;
   }
 
-/*#if not ULIBGCJ*/
   /**
    * The trigonometric function <em>sin</em>. The sine of NaN or infinity is
    * NaN, and the sine of 0 retains its sign. This is accurate within 1 ulp,
@@ -521,6 +520,7 @@ public final class Math
    */
   public static native double pow(double a, double b);
 
+/*#if not ULIBGCJ*/
   /**
    * Get the IEEE 754 floating point remainder on two numbers. This is the
    * value of <code>x - y * <em>n</em></code>, where <em>n</em> is the closest
@@ -536,6 +536,7 @@ public final class Math
    * @see #rint(double)
    */
   public static native double IEEEremainder(double x, double y);
+/*#endif*/
 
   /**
    * Take the nearest integer that is that is greater than or equal to the
@@ -547,7 +548,6 @@ public final class Math
    * @return the nearest integer &gt;= <code>a</code>
    */
   public static native double ceil(double a);
-/*#endif*/
 
   /**
    * Take the nearest integer that is that is less than or equal to the
@@ -559,7 +559,6 @@ public final class Math
    */
   public static native double floor(double a);
 
-/*#if not ULIBGCJ*/
   /**
    * Take the nearest integer to the argument.  If it is exactly between
    * two integers, the even integer is taken. If the argument is NaN,
@@ -569,7 +568,6 @@ public final class Math
    * @return the nearest integer to <code>a</code>
    */
   public static native double rint(double a);
-/*#endif*/
 
   /**
    * Take the nearest integer to the argument.  This is equivalent to

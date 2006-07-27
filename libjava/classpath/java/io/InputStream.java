@@ -242,7 +242,7 @@ public abstract class InputStream
    * This method reads and discards bytes into a byte array until the
    * specified number of bytes were skipped or until either the end of stream
    * is reached or a read attempt returns a short count.  Subclasses can
-   * override this metho to provide a more efficient implementation where
+   * override this method to provide a more efficient implementation where
    * one exists.
    *
    * @param n The requested number of bytes to skip

@@ -53,7 +53,6 @@ details.  */
 #include <gnu/gcj/runtime/SystemClassLoader.h>
 #endif//JV_ULIBGCJ
 
-#ifndef JV_ULIBGCJ
 // Size of local hash table.
 #define HASH_LEN 1013
 
@@ -62,6 +61,7 @@ details.  */
 
 static jclass loaded_classes[HASH_LEN];
 
+#ifndef JV_ULIBGCJ
 // This records classes which will be registered with the system class
 // loader when it is initialized.
 static jclass system_class_list;
@@ -75,7 +75,6 @@ static jclass system_class_list;
 // This is the root of a linked list of classes
 static jclass stack_head;
 
-#ifndef JV_ULIBGCJ
 // While bootstrapping we keep a list of classes we found, so that we
 // can register their packages.  There aren't many of these so we
 // just keep a small buffer here and abort if we overflow.
@@ -86,6 +85,7 @@ static int bootstrap_index;
 
 
 
+#ifndef JV_ULIBGCJ
 jclass
 java::lang::ClassLoader::loadClassFromSig(jstring name)
 {
@@ -97,6 +97,7 @@ java::lang::ClassLoader::loadClassFromSig(jstring name)
     throw new ClassNotFoundException(name);
   return result;
 }
+#endif//JV_ULIBGCJ
 
 
 
@@ -119,6 +120,7 @@ _Jv_FindClassInCache (_Jv_Utf8Const *name)
   return klass;
 }
 
+#ifndef JV_ULIBGCJ
 void
 _Jv_UnregisterClass (jclass the_class)
 {
@@ -166,6 +168,7 @@ _Jv_UnregisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
     loader = java::lang::VMClassLoader::bootLoader;
   loader->loadedClasses->remove(klass->name->toString());
 }
+#endif//JV_ULIBGCJ
 
 // This function is called many times during startup, before main() is
 // run.  At that point in time we know for certain we are running 
@@ -206,6 +209,7 @@ _Jv_RegisterClassHookDefault (jclass klass)
   if (! klass->engine)
     klass->engine = &_Jv_soleCompiledEngine;
 
+#ifndef JV_ULIBGCJ
   if (system_class_list != SYSTEM_LOADER_INITIALIZED)
     {
       unsigned long abi = (unsigned long) klass->next_or_version;
@@ -216,6 +220,7 @@ _Jv_RegisterClassHookDefault (jclass klass)
 	  return;
 	}
     }
+#endif//JV_ULIBGCJ
 
   jint hash = HASH_UTF (klass->name);
 
@@ -255,15 +260,7 @@ _Jv_RegisterClassHookDefault (jclass klass)
 // Should synchronize on Class:class$ while setting/restore this variable.
 
 void (*_Jv_RegisterClassHook) (jclass cl) = _Jv_RegisterClassHookDefault;
-#endif//JV_ULIBGCJ
 
-#ifdef JV_ULIBGCJ
-void
-_Jv_RegisterClass (jclass klass)
-{
-  // do nothing
-}
-#else
 void
 _Jv_RegisterClass (jclass klass)
 {
@@ -272,7 +269,6 @@ _Jv_RegisterClass (jclass klass)
   classes[1] = NULL;
   _Jv_RegisterClasses (classes);
 }
-#endif
 
 #ifndef JV_ULIBGCJ
 // This is used during initialization to register all compiled-in
@@ -289,6 +285,7 @@ _Jv_CopyClassesToSystemLoader (gnu::gcj::runtime::SystemClassLoader *loader)
     }
   system_class_list = SYSTEM_LOADER_INITIALIZED;
 }
+#endif//JV_ULIBGCJ
 
 jclass
 _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
@@ -297,6 +294,9 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
   // initiating loader checks, as we register classes with their
   // initiating loaders.
 
+#ifdef JV_ULIBGCJ
+  jclass klass = 0;
+#else
   java::lang::ClassLoader *boot = java::lang::VMClassLoader::bootLoader;
   java::lang::ClassLoader *real = loader;
   if (! real)
@@ -305,9 +305,11 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
   // We might still be bootstrapping the VM, in which case there
   // won't be a bootstrap class loader yet.
   jclass klass = real ? real->findLoadedClass (sname) : NULL;
+#endif
 
   if (! klass)
     {
+#ifndef JV_ULIBGCJ
       if (loader)
 	{
 	  // Load using a user-defined loader, jvmspec 5.3.2.
@@ -333,6 +335,7 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 	    _Jv_RegisterInitiatingLoader (klass, 0);
 	}
       else
+#endif//JV_ULIBGCJ
 	{
 	  // Not even a bootstrap loader, try the built-in cache.
 	  klass = _Jv_FindClassInCache (name);
@@ -361,6 +364,7 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
   return klass;
 }
 
+#ifndef JV_ULIBGCJ
 void
 _Jv_RegisterBootstrapPackages ()
 {

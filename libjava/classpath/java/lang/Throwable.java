@@ -39,9 +39,11 @@ package java.lang;
 
 /*#if not ULIBGCJ*/
 import gnu.classpath.SystemProperties;
+/*#endif*/
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+/*#if not ULIBGCJ*/
 import java.io.Serializable;
 /*#endif*/
 
@@ -271,7 +273,6 @@ public class Throwable
     return getClass().getName() + (msg == null ? "" : ": " + msg);
   }
 
-/*#if not ULIBGCJ*/
   /**
    * Print a stack trace to the standard error stream. This stream is the
    * current contents of <code>System.err</code>. The first line of output
@@ -408,6 +409,7 @@ public class Throwable
     pw.print(stackTraceString());
   }
 
+/*#if not ULIBGCJ*/
   /*
    * We use inner class to avoid a static initializer in this basic class.
    */
@@ -415,12 +417,16 @@ public class Throwable
   {
     static final String nl = SystemProperties.getProperty("line.separator");
   }
+/*#endif*/
 
   // Create whole stack trace in a stringbuffer so we don't have to print
   // it line by line. This prevents printing multiple stack traces from
   // different threads to get mixed up when written to the same PrintWriter.
   private String stackTraceString()
   {
+/*#if ULIBGCJ
+    return "<stack trace not available>";
+  #else*/
     StringBuffer sb = new StringBuffer();
 
     // Main stacktrace
@@ -461,8 +467,10 @@ public class Throwable
       }
 
     return sb.toString();
+/*#endif*/
   }
 
+/*#if not ULIBGCJ*/
   // Adds to the given StringBuffer a line containing the name and
   // all stacktrace elements minus the last equal ones.
   private static void stackTraceStringBuffer(StringBuffer sb, String name,

@@ -46,7 +46,9 @@ import java.io.UnsupportedEncodingException;
 import java.lang.Comparable;
 /*#if not ULIBGCJ*/
 import java.util.Comparator;
+/*#endif*/
 import java.util.Locale;
+/*#if not ULIBGCJ*/
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 /*#endif*/
@@ -416,7 +418,6 @@ public final class String
       }
   }
 
-/*#if not ULIBGCJ*/
   /**
    * Creates a new String using the character sequence represented by
    * the StringBuilder. Subsequent changes to buf do not affect the String.
@@ -428,7 +429,6 @@ public final class String
   {
     this(buffer.value, 0, buffer.count);
   }
-/*#endif*/
 
   /**
    * Special constructor which can share an array when safe to do so.
@@ -567,6 +567,7 @@ public final class String
    */
   public native byte[] getBytes(String enc)
     throws UnsupportedEncodingException;
+/*#endif*/
 
   /**
    * Converts the Unicode characters in this String to a byte array. Uses the
@@ -578,6 +579,9 @@ public final class String
    * @return the resulting byte array, or null on a problem
    * @since 1.1
    */
+/*#if ULIBGCJ
+  public native byte[] getBytes();
+  #else*/
   public byte[] getBytes()
   {
     try
@@ -709,6 +713,7 @@ public final class String
     return this.toUpperCase().toLowerCase().compareTo(
      str.toUpperCase().toLowerCase());
   }  
+/*#endif*/
 
   /**
    * Predicate which determines if this String matches another String
@@ -745,7 +750,6 @@ public final class String
    */
   public native boolean regionMatches(boolean ignoreCase, int toffset,
 				      String other, int ooffset, int len);
-/*#endif*/
 
   /**
    * Predicate which determines if this String contains the given prefix,
@@ -775,7 +779,6 @@ public final class String
     return startsWith (prefix, 0);
   }
 
-/*#if not ULIBGCJ*/
   /**
    * Predicate which determines if this String ends with a given suffix.
    * If the suffix is an empty String, true is returned.
@@ -789,7 +792,6 @@ public final class String
   {
     return regionMatches (this.count - suffix.count, suffix, 0, suffix.count);
   }
-/*#endif*/
 
   /**
    * Computes the hashcode for this String. This is done with int arithmetic,
@@ -961,6 +963,7 @@ public final class String
    * @throws NullPointerException if str is null
    */
   public native String concat(String str);
+/*#endif*/
 
   /**
    * Replaces every instance of a character in this String with a new
@@ -972,6 +975,7 @@ public final class String
    */
   public native String replace(char oldChar, char newChar);
 
+/*#if not ULIBGCJ*/
   /**
    * Test if this String matches a regular expression. This is shorthand for
    * <code>{@link Pattern}.matches(regex, this)</code>.
@@ -1089,6 +1093,7 @@ public final class String
   {
     return Pattern.compile(regex).split(this, 0);
   }
+/*#endif*/
 
   /**
    * Lowercases this String according to a particular locale. This uses
@@ -1161,7 +1166,6 @@ public final class String
    * @return new trimmed String, or this if nothing trimmed
    */
   public native String trim();
-/*#endif*/
 
   /**
    * Returns this, as it is already a String!
@@ -1173,7 +1177,6 @@ public final class String
     return this;
   }
 
-/*#if not ULIBGCJ*/
   /**
    * Copies the contents of this String into a character array. Subsequent
    * changes to the array do not affect the String.
@@ -1181,7 +1184,6 @@ public final class String
    * @return character array copying the String
    */
   public native char[] toCharArray();
-/*#endif*/
 
   /**
    * Returns a String representation of an Object. This is "null" if the

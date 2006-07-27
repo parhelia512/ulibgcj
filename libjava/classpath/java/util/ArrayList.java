@@ -39,11 +39,13 @@ exception statement from your version. */
 
 package java.util;
 
+/*#if not ULIBGCJ*/
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
+/*#endif*/
 
 /**
  * An array-backed implementation of the List interface.  This implements
@@ -82,7 +84,11 @@ import java.lang.reflect.Array;
  * @status updated to 1.4
  */
 public class ArrayList extends AbstractList
+/*#if ULIBGCJ
+  implements List
+  #else*/
   implements List, RandomAccess, Cloneable, Serializable
+/*#endif*/
 {
   /**
    * Compatible with JDK 1.2
@@ -240,6 +246,7 @@ public class ArrayList extends AbstractList
     return -1;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Creates a shallow copy of this ArrayList (elements are not cloned).
    *
@@ -259,6 +266,7 @@ public class ArrayList extends AbstractList
       }
     return clone;
   }
+/*#endif*/
 
   /**
    * Returns an Object array containing all of the elements in this ArrayList.
@@ -290,8 +298,12 @@ public class ArrayList extends AbstractList
   public Object[] toArray(Object[] a)
   {
     if (a.length < size)
+/*#if ULIBGCJ
+      throw new RuntimeException("reflective array creation not supported");
+  #else*/
       a = (Object[]) Array.newInstance(a.getClass().getComponentType(),
                                        size);
+/*#endif*/
     else if (a.length > size)
       a[size] = null;
     System.arraycopy(data, 0, a, 0, size);
@@ -548,6 +560,7 @@ public class ArrayList extends AbstractList
     return true;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Serializes this object to the given stream.
    *
@@ -588,4 +601,5 @@ public class ArrayList extends AbstractList
     for (int i = 0; i < size; i++)
       data[i] = s.readObject();
   }
+/*#endif*/
 }

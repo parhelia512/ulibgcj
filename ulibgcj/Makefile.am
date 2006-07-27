@@ -7,7 +7,7 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 SUFFIXES = .class .java .h
 
 srcdir = @srcdir@
-VPATH = @srcdir@/../libjava:@srcdir@/../libjava/classpath
+VPATH = @srcdir@/src:@srcdir@/../libjava:@srcdir@/../libjava/classpath
 
 AM_CPPFLAGS = \
 	-I$(srcdir)/../libjava \
@@ -30,8 +30,13 @@ AM_CXXFLAGS = \
 	$(WARNINGS) \
 	-D_GNU_SOURCE
 
+gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+
 jardir = $(datadir)/java
-jar_DATA = libulibgcj.jar
+jar_DATA = libgcj-$(gcc_version).jar
+
+gcdir = $(libdir)
+gc_DATA = libgc.a
 
 ## FIXME - this conflicts with libjava's libgcj.spec
 specdir = $(libdir)
@@ -41,9 +46,25 @@ ulibgcjdir = $(libdir)
 ulibgcj_LIBRARIES = libulibgcj.a
 
 java_sources = \
+gnu/gcj/Core.java \
 gnu/gcj/RawData.java \
 gnu/gcj/RawDataManaged.java \
 gnu/gcj/runtime/StringBuffer.java \
+gnu/java/net/protocol/core/CoreInputStream.java \
+gnu/java/net/URLParseError.java \
+java/io/InputStreamReader.java \
+java/io/BufferedReader.java \
+java/io/Reader.java \
+java/io/Writer.java \
+java/io/PrintWriter.java \
+java/io/FilterOutputStream.java \
+java/io/PrintStream.java \
+java/io/ByteArrayOutputStream.java \
+java/io/IOException.java \
+java/io/InputStream.java \
+java/io/OutputStream.java \
+java/io/OutputStreamWriter.java \
+java/io/Serializable.java \
 java/lang/AbstractMethodError.java \
 java/lang/ArithmeticException.java \
 java/lang/ArrayIndexOutOfBoundsException.java \
@@ -55,6 +76,7 @@ java/lang/Class.java \
 java/lang/ClassCastException.java \
 java/lang/ClassLoader.java \
 java/lang/ClassNotFoundException.java \
+java/lang/Cloneable.java \
 java/lang/CloneNotSupportedException.java \
 java/lang/Comparable.java \
 java/lang/Double.java \
@@ -63,6 +85,7 @@ java/lang/Exception.java \
 java/lang/ExceptionInInitializerError.java \
 java/lang/Float.java \
 java/lang/IllegalAccessError.java \
+java/lang/IllegalAccessException.java \
 java/lang/IllegalArgumentException.java \
 java/lang/IllegalMonitorStateException.java \
 java/lang/IllegalStateException.java \
@@ -70,9 +93,9 @@ java/lang/IllegalThreadStateException.java \
 java/lang/IncompatibleClassChangeError.java \
 java/lang/IndexOutOfBoundsException.java \
 java/lang/InstantiationException.java \
-java/lang/InterruptedException.java \
 java/lang/Integer.java \
 java/lang/InternalError.java \
+java/lang/InterruptedException.java \
 java/lang/LinkageError.java \
 java/lang/Long.java \
 java/lang/Math.java \
@@ -90,18 +113,50 @@ java/lang/RuntimeException.java \
 java/lang/Short.java \
 java/lang/String.java \
 java/lang/StringBuffer.java \
+java/lang/StringBuilder.java \
 java/lang/StringIndexOutOfBoundsException.java \
 java/lang/System.java \
 java/lang/Thread.java \
 java/lang/Throwable.java \
+java/lang/UnsatisfiedLinkError.java \
+java/lang/UnsupportedOperationException.java \
 java/lang/VMClassLoader.java \
 java/lang/VMThrowable.java \
 java/lang/VerifyError.java \
 java/lang/VirtualMachineError.java \
-java/lang/reflect/Modifier.java
+java/lang/reflect/Modifier.java \
+java/util/AbstractCollection.java \
+java/util/AbstractList.java \
+java/util/AbstractMap.java \
+java/util/AbstractSet.java \
+java/util/Arrays.java \
+java/util/ArrayList.java \
+java/util/Collection.java \
+java/util/Collections.java \
+java/util/ConcurrentModificationException.java \
+java/util/Enumeration.java \
+java/util/EventListener.java \
+java/util/EventObject.java \
+java/util/HashSet.java \
+java/util/HashMap.java \
+java/util/Hashtable.java \
+java/util/Iterator.java \
+java/util/List.java \
+java/util/ListIterator.java \
+java/util/Locale.java \
+java/util/Map.java \
+java/util/MissingResourceException.java \
+java/util/NoSuchElementException.java \
+java/util/Properties.java \
+java/util/PropertyResourceBundle.java \
+java/util/ResourceBundle.java \
+java/util/Set.java \
+java/util/Vector.java
 
 native_sources = \
+gnu/gcj/natCore.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
+gnu/java/net/protocol/core/natCoreInputStream.cc \
 java/lang/natCharacter.cc \
 java/lang/natClass.cc \
 java/lang/natClassLoader.cc \
@@ -109,6 +164,7 @@ java/lang/natMath.cc \
 java/lang/natObject.cc \
 java/lang/natString.cc \
 java/lang/natStringBuffer.cc \
+java/lang/natStringBuilder.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
 java/lang/natVMClassLoader.cc
@@ -259,12 +315,12 @@ $(native_objects): objects/%.o: %.cc
 	@mkdir -p $(dir $(@))
 	$(CXXCOMPILE) -o $(@) -c $(<)
 
-libulibgcj.jar: $(classes)
-	cd classes; $(ZIP) -cfM ../libulibgcj.jar gnu java
+libgcj-$(gcc_version).jar: $(classes)
+	cd classes; $(ZIP) -cfM ../libgcj-$(gcc_version).jar gnu java
 
 clean:
 	rm -rf $(libulibgcj_a_OBJECTS) objects classes headers processed \
-		libulibgcj.a libulibgcj.jar hello core-test
+		libulibgcj.a libgcj-$(gcc_version).jar hello core-test
 
 ## tests and examples #########################################################
 
@@ -297,6 +353,9 @@ headers/%.h: classes/%.class
 
 classes/%.class: $(srcdir)/test/%.java libulibgcj.a
 	$(GCJ) $(classflags) -C $(<)
+
+libgc.a: $(GCLIBS)
+	cp $(<) $(@)
 
 hello: \
 		objects/Hello.o \

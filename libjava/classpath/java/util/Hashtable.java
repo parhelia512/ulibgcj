@@ -39,10 +39,12 @@ exception statement from your version. */
 
 package java.util;
 
+/*#if not ULIBGCJ*/
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+/*#endif*/
 
 // NOTE: This implementation is very similar to that of HashMap. If you fix
 // a bug in here, chances are you should make a similar change to the HashMap
@@ -100,8 +102,13 @@ import java.io.Serializable;
  * @since 1.0
  * @status updated to 1.4
  */
-public class Hashtable extends Dictionary
+public class Hashtable
+/*#if ULIBGCJ
+  implements Map
+  #else*/
+  extends Dictionary
   implements Map, Cloneable, Serializable
+/*#endif*/
 {
   // WARNING: Hashtable is a CORE class in the bootstrap cycle. See the
   // comments in vm/reference/java/lang/Runtime for implications of this fact.
@@ -920,6 +927,7 @@ public class Hashtable extends Dictionary
       }
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Serializes this object to the given stream.
    *
@@ -976,6 +984,7 @@ public class Hashtable extends Dictionary
     while (--len >= 0)
       put(s.readObject(), s.readObject());
   }
+/*#endif*/
 
   /**
    * A class which implements the Iterator interface and is used for
