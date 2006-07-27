@@ -337,7 +337,7 @@ yes)
   # target-specific build rules, so it will be forcibly enabled
   # (unless the Java language itself isn't enabled).
   if test "x${ENABLE_ULIBGCJ}" = "xyes" ; then
-    AC_MSG_ERROR([micro-libgcj])
+    AC_MSG_ERROR([micro-libgcj and libgcj are mutually exclusive])
   fi
   libgcj=
   ;;
