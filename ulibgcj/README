@@ -56,7 +56,7 @@ above configure command with something like the following.  Here we
 assume you have already installed the binutils, mingw-runtime, and
 w32api packages from mingw.org into /usr/local/mingw32.
 
- $ ../gcc-4.1.1/configure \
+ $ ../gcc-ulibgcj/configure \
   CFLAGS="-Os -g" CXXFLAGS="-Os -g" GCJFLAGS="-Os -g" \
   --prefix=/usr/local/mingw32 \
   --target=mingw32 \
@@ -80,15 +80,11 @@ w32api packages from mingw.org into /usr/local/mingw32.
 Linking with micro-libgcj
 -------------------------
 
-The simplest way to link your program with micro-libgcj is to use g++,
-since it won't try to link against the standard libgcj automatically.
-The trick is to provide a simple C++ driver program to initialize the
-runtime and invoke the main method of your Java class.  For example:
+Assuming you have a micro-libgcj-enabled build of gcc installed under
+/usr/local/gcc-ulibgcj, the following example should produce a binary
+which is statically linked to libulibgcj.a:
 
- $ gcj --bootclasspath libulibgcj.jar -c Hello.java -o Hello.o
- $ gcj -C Hello.java
- $ gcjh Hello
- $ g++ -c Hello.cpp -o Hello-cpp.o
- $ g++ -lpthread Hello.o Hello-cpp.o libulibgcj.a libgc.a -o Hello
+ $ /usr/local/gcc-ulibgcj/bin/gcj --main=Hello Hello.java -o hello
 
-See the code in ulibgcj/test for more examples.
+Dynamic linking is not currently supported, but could probably be made
+to work without too much trouble.
