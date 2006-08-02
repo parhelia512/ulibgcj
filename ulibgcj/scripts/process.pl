@@ -6,9 +6,9 @@
 
 #   #if <expression> - enables the following code iff <expression> is true
 #   #else            - enables or disables the following code per the reverse
-#                      logic of the corresponding #ifdef or #ifndef
+#                      logic of the corresponding #if
 #   #endif           - indicates the end of the area affected by the
-#                      corresponding #ifdef, #ifndef, or #else
+#                      corresponding #if or #else
 #   #eoc             - flag to replace '*/' when disabling code containing
 #                      comments
 
@@ -122,20 +122,14 @@ sub parseExpression {
 
 sub replaceEOC {
     my $text = shift;
-    if ($text =~ /^(.*)\*\/(.*)$/) {
-        return "$1#eoc$2";
-    } else {
-        return $text;
-    }
+    $text =~ s:\*/:#eoc:g;
+    return $text;
 }
 
 sub restoreEOC {
     my $text = shift;
-    if ($text =~ /^(.*)#eoc(.*)$/) {
-        return "$1*/$2";
-    } else {
-        return $text;
-    }
+    $text =~ s:#eoc:*/:g;
+    return $text;
 }
 
 sub write {
