@@ -1267,6 +1267,7 @@ public final class String
   {
     return copyValueOf (data, 0, data.length);
   }
+/*#endif*/
 
   /**
    * Returns a String representing a boolean.
@@ -1286,7 +1287,6 @@ public final class String
    * @return String containing the single character c
    */
   public static native String valueOf(char c);
-/*#endif*/
 
   /**
    * Returns a String representing an integer.
@@ -1297,7 +1297,6 @@ public final class String
    */
   public static native String valueOf(int i);
 
-/*#if not ULIBGCJ*/
   /**
    * Returns a String representing a long.
    *
@@ -1334,6 +1333,7 @@ public final class String
     return Double.toString(d);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Fetches this String from the intern hashtable. If two Strings are
    * considered equal, by the equals() method, then intern() will return the

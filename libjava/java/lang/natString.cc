@@ -1143,6 +1143,7 @@ java::lang::String::valueOf(jcharArray data, jint offset, jint count)
     *dPtr++ = *sPtr++;
   return result;
 }
+#endif//JV_ULIBGCJ
 
 jstring
 java::lang::String::valueOf(jchar c)
@@ -1151,4 +1152,3 @@ java::lang::String::valueOf(jchar c)
   JvGetStringChars (result)[0] = c;
   return result;
 }
-#endif//JV_ULIBGCJ

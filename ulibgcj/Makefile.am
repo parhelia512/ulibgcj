@@ -54,6 +54,8 @@ gnu/java/net/protocol/core/CoreInputStream.java \
 gnu/java/net/URLParseError.java \
 java/io/InputStreamReader.java \
 java/io/BufferedReader.java \
+java/io/FilterInputStream.java \
+java/io/BufferedInputStream.java \
 java/io/Reader.java \
 java/io/Writer.java \
 java/io/PrintWriter.java \
