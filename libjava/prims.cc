@@ -1370,6 +1370,10 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
     }
 #endif//JV_ULIBGCJ
 
+#ifdef JV_ULIBGCJ
+  _Jv_InitClass (&java::lang::System::class$);
+#endif//JV_ULIBGCJ
+
   return 0;
 }
 
