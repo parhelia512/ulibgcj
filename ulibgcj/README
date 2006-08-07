@@ -22,9 +22,8 @@ Building with micro-libgcj enabled
 
 To build GCC with micro-libgcj enabled, specify --enable-micro-libgcj
 in your configure command.  The following example assumes you have the
-micro-libgcj -patched GCC source tree in a directory called
-gcc-ulibgcj and that you are building within a sibling directory
-called gcc-build.
+micro-libgcj-patched GCC source tree in a directory called gcc-ulibgcj
+and that you are building within a sibling directory called gcc-build.
 
  $ cd gcc-build
  $ ../gcc-ulibgcj/configure \
@@ -38,6 +37,7 @@ called gcc-build.
   --disable-multilib \
   --without-libidn \
   --disable-tls \
+  --without-x \
   --enable-java-gc=boehm \
   --enable-hash-synchronization \
   --disable-libgcj \
@@ -70,6 +70,7 @@ w32api packages from mingw.org into /usr/local/mingw32.
   --disable-multilib \
   --without-libidn \
   --disable-tls \
+  --without-x \
   --enable-sjlj-exceptions \
   --enable-java-gc=boehm \
   --enable-hash-synchronization \
