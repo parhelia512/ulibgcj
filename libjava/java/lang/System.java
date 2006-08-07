@@ -437,6 +437,7 @@ public final class System
       sm.checkPermission(new RuntimePermission("getenv." + name));
     return getenv0(name);
   }
+/*#endif*/
 
   /**
    * Terminate the Virtual Machine. This just calls
@@ -447,11 +448,16 @@ public final class System
    * @throws SecurityException if permission is denied
    * @see Runtime#exit(int)
    */
+/*#if ULIBGCJ
+  public static native void exit(int status);
+  #else*/
   public static void exit(int status)
   {
     Runtime.getRuntime().exit(status);
   }
+//#endif
 
+/*#if not ULIBGCJ*/
   /**
    * Calls the garbage collector. This is only a hint, and it is up to the
    * implementation what this hint suggests, but it usually causes a

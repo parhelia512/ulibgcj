@@ -172,4 +172,10 @@ java::lang::System$Output::flush ()
 {
   fflush(stdout);
 }
+
+void
+java::lang::System::exit (jint status)
+{
+  ::exit(status);
+}
 #endif//JV_ULIBGCJ
