@@ -278,8 +278,12 @@ public abstract class ResourceBundle
       baseName = s;
       locale = l;
       classLoader = cl;
+/*#if ULIBGCJ
+      hashcode = baseName.hashCode() ^ locale.hashCode();
+  #else*/
       hashcode = baseName.hashCode() ^ locale.hashCode() ^
         classLoader.hashCode();
+/*#endif*/
     }
     
     public int hashCode()
@@ -474,6 +478,7 @@ public abstract class ResourceBundle
       try {
 	String resourceName = localizedName.replace('.', '/') + ".properties";
         Core core = Core.find(resourceName);
+        if (core == null) return null;
         return new PropertyResourceBundle(new CoreInputStream(core));
       } catch (IOException e) {
         MissingResourceException mre = new MissingResourceException
