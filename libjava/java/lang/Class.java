@@ -38,11 +38,9 @@ exception statement from your version. */
 
 package java.lang;
 
-/*#if not ULIBGCJ*/
 import java.io.InputStream;
-import java.io.Serializable;
-/*#endif*/
 /*#if not ULIBGCJ*/
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -53,6 +51,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 /*#endif*/
+
+/*#if ULIBGCJ
+import gnu.gcj.Core;
+import gnu.java.net.protocol.core.CoreInputStream;
+  #endif*/
 
 /**
  * A Class represents a Java type.  There will never be multiple Class
@@ -622,6 +625,7 @@ public final class Class
       return ClassLoader.getSystemResource(name);
     return loader.getResource(name);
   }
+/*#endif*/
 
   /**
    * Get a resource using this class's package using the
@@ -644,11 +648,16 @@ public final class Class
    */
   public InputStream getResourceAsStream(String resourceName)
   {
+/*#if ULIBGCJ   
+    Core core = Core.find(resourcePath(resourceName));
+    return (core == null ? null : new CoreInputStream(core));
+  #else*/
     String name = resourcePath(resourceName);
     ClassLoader loader = getClassLoader();
     if (loader == null)
       return ClassLoader.getSystemResourceAsStream(name);
     return loader.getResourceAsStream(name);
+//#endif
   }
 
   private String resourcePath(String resourceName)
@@ -669,6 +678,7 @@ public final class Class
     return resourceName;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Get the signers of this class. This returns null if there are no signers,
    * such as for primitive types or void.
@@ -892,6 +902,7 @@ public final class Class
       }
     return c.defaultAssertionStatus;
   }
+/*#endif*/
 
   /**
    * Strip the last portion of the name (after the last dot).
@@ -907,6 +918,7 @@ public final class Class
     return name.substring(0, lastInd);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Perform security checks common to all of the methods that
    * get members of this Class.
