@@ -13,6 +13,7 @@ details.  */
 // If we're using the Boehm GC, then we need this include to override dlopen.
 #ifdef HAVE_BOEHM_GC
 #include <gc.h>
+#undef STRICT
 #endif /* HAVE_BOEHM_GC */
 
 #include <gcj/cni.h>
