@@ -21,6 +21,8 @@ AM_PROG_CC_C_O
 
 AC_CHECK_PROGS(PERL, perl, false)
 
+TL_AC_GXX_INCLUDE_DIR
+
 # most of the following was taken from libjava/configure.ac.
 
 libgcj_cflags=

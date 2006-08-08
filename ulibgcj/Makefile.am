@@ -229,17 +229,34 @@ $(classes): classes/%.class: processed/%.java $(processed_java_sources)
 	@mkdir -p $(dir $(@))
 	$(GCJ) -d classes --classpath classes --bootclasspath processed -C $(<)
 
-ommitted_headers = headers/java/lang/Object.h headers/java/lang/Class.h
-
-java_headers = $(filter-out $(ommitted_headers),$(foreach \
-	x,$(java_sources),$(patsubst %.java,headers/%.h,$(x))))
+java_headers = $(foreach	x,$(java_sources),$(patsubst %.java,headers/%.h,$(x)))
 
 special_headers = \
+headers/java/lang/Object.h \
+headers/java/lang/Class.h \
 headers/java/lang/ClassLoader.h \
 headers/java/lang/Thread.h \
 headers/java/lang/String.h
 
 ordinary_headers = $(filter-out $(special_headers),$(java_headers))
+
+gcj_headers = array.h cni.h field.h javaprims.h method.h
+
+install-data-local: $(java_headers)
+	$(PRE_INSTALL)
+	@set -e; for header in $(foreach x,$(java_headers),$(patsubst headers/%,%,$(x))); do \
+	   directory="$$(echo $${header} | sed -e 's,/[^/]*$$,,')"; \
+		 echo "$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/$${directory}"; \
+	   $(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/$${directory}; \
+		 echo "$(INSTALL_DATA) headers/$${header} $(DESTDIR)$(gxx_include_dir)/$${header}"; \
+		 $(INSTALL_DATA) headers/$${header} $(DESTDIR)$(gxx_include_dir)/$${header}; \
+	 done
+	$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/gcj
+	@set -e; for header in $(gcj_headers); do \
+		 echo "$(INSTALL_DATA) @srcdir@/../libjava/gcj/$${header} $(DESTDIR)$(gxx_include_dir)/gcj/$${header}"; \
+		 $(INSTALL_DATA) @srcdir@/../libjava/gcj/$${header} $(DESTDIR)$(gxx_include_dir)/gcj/$${header}; \
+	 done
+	$(INSTALL_DATA) gcj/libgcj-config.h $(DESTDIR)$(gxx_include_dir)/gcj/libgcj-config.h
 
 GCJH = @GCJH@
 
@@ -253,6 +270,11 @@ $(ordinary_headers): headers/%.h: classes/%.class
 $(libulibgcj_a_OBJECTS): $(java_headers)
 
 headerflags = -d headers --classpath classes --bootclasspath processed
+
+headers/java/lang/Object.h headers/java/lang/Class.h: headers/%.h: @srcdir@/../libjava/%.h
+	@mkdir -p $(dir $(@))
+	echo "#define JV_ULIBGCJ 1" >$(@)
+	cat $(<) >>$(@)
 
 headers/java/lang/ClassLoader.h: classes/java/lang/ClassLoader.class
 	@mkdir -p $(dir $(@))

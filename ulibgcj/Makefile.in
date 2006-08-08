@@ -54,6 +54,7 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../config.guess \
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
+	$(top_srcdir)/../config/gxx-include-dir.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/configure.ac
@@ -239,6 +240,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+gxx_include_dir = @gxx_include_dir@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -250,6 +252,7 @@ infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
+libstdcxx_incdir = @libstdcxx_incdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
@@ -440,16 +443,16 @@ processed_java_sources = \
 	$(foreach x,$(java_sources),$(patsubst %,processed/%,$(x)))
 
 process_flags = -DULIBGCJ
-ommitted_headers = headers/java/lang/Object.h headers/java/lang/Class.h
-java_headers = $(filter-out $(ommitted_headers),$(foreach \
-	x,$(java_sources),$(patsubst %.java,headers/%.h,$(x))))
-
+java_headers = $(foreach	x,$(java_sources),$(patsubst %.java,headers/%.h,$(x)))
 special_headers = \
+headers/java/lang/Object.h \
+headers/java/lang/Class.h \
 headers/java/lang/ClassLoader.h \
 headers/java/lang/Thread.h \
 headers/java/lang/String.h
 
 ordinary_headers = $(filter-out $(special_headers),$(java_headers))
+gcj_headers = array.h cni.h field.h javaprims.h method.h
 headerflags = -d headers --classpath classes --bootclasspath processed
 AM_GCJFLAGS = @LIBGCJ_JAVAFLAGS@ --classpath '' --bootclasspath processed
 objects = $(foreach x,$(java_sources),$(patsubst %.java,objects/%.o,$(x)))
@@ -866,8 +869,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-gcDATA install-jarDATA install-specDATA \
-	install-ulibgcjLIBRARIES
+install-data-am: install-data-local install-gcDATA install-jarDATA \
+	install-specDATA install-ulibgcjLIBRARIES
 
 install-exec-am:
 
@@ -905,9 +908,9 @@ uninstall-am: uninstall-gcDATA uninstall-info-am uninstall-jarDATA \
 	distclean distclean-compile distclean-generic distclean-hdr \
 	distclean-tags distcleancheck distdir distuninstallcheck dvi \
 	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-exec install-exec-am \
-	install-gcDATA install-info install-info-am install-jarDATA \
-	install-man install-specDATA install-strip \
+	install-data install-data-am install-data-local install-exec \
+	install-exec-am install-gcDATA install-info install-info-am \
+	install-jarDATA install-man install-specDATA install-strip \
 	install-ulibgcjLIBRARIES installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
@@ -924,6 +927,22 @@ $(classes): classes/%.class: processed/%.java $(processed_java_sources)
 	@mkdir -p $(dir $(@))
 	$(GCJ) -d classes --classpath classes --bootclasspath processed -C $(<)
 
+install-data-local: $(java_headers)
+	$(PRE_INSTALL)
+	@set -e; for header in $(foreach x,$(java_headers),$(patsubst headers/%,%,$(x))); do \
+	   directory="$$(echo $${header} | sed -e 's,/[^/]*$$,,')"; \
+		 echo "$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/$${directory}"; \
+	   $(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/$${directory}; \
+		 echo "$(INSTALL_DATA) headers/$${header} $(DESTDIR)$(gxx_include_dir)/$${header}"; \
+		 $(INSTALL_DATA) headers/$${header} $(DESTDIR)$(gxx_include_dir)/$${header}; \
+	 done
+	$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/gcj
+	@set -e; for header in $(gcj_headers); do \
+		 echo "$(INSTALL_DATA) @srcdir@/../libjava/gcj/$${header} $(DESTDIR)$(gxx_include_dir)/gcj/$${header}"; \
+		 $(INSTALL_DATA) @srcdir@/../libjava/gcj/$${header} $(DESTDIR)$(gxx_include_dir)/gcj/$${header}; \
+	 done
+	$(INSTALL_DATA) gcj/libgcj-config.h $(DESTDIR)$(gxx_include_dir)/gcj/libgcj-config.h
+
 .PRECIOUS: %.h
 %.h: files = $(shell echo $(subst $$,\$$,$(basename $(<)))*.class)
 %.h: classes = $(subst $$,\$$,$(patsubst classes/%.class,%,$(files)))
@@ -932,6 +951,11 @@ $(ordinary_headers): headers/%.h: classes/%.class
 	$(GCJH) $(headerflags) $(classes)
 
 $(libulibgcj_a_OBJECTS): $(java_headers)
+
+headers/java/lang/Object.h headers/java/lang/Class.h: headers/%.h: @srcdir@/../libjava/%.h
+	@mkdir -p $(dir $(@))
+	echo "#define JV_ULIBGCJ 1" >$(@)
+	cat $(<) >>$(@)
 
 headers/java/lang/ClassLoader.h: classes/java/lang/ClassLoader.class
 	@mkdir -p $(dir $(@))

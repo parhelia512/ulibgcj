@@ -698,6 +698,8 @@ CCDEPMODE
 am__fastdepCC_TRUE
 am__fastdepCC_FALSE
 PERL
+gxx_include_dir
+libstdcxx_incdir
 LIBGCJ_CFLAGS
 LIBGCJ_CXXFLAGS
 LIBGCJ_JAVAFLAGS
@@ -4555,6 +4557,26 @@ done
 test -n "$PERL" || PERL="false"
 
 
+
+case "${with_gxx_include_dir}" in
+  yes)
+    { { echo "$as_me:$LINENO: error: --with-gxx-include-dir=[dir] requires a directory" >&5
+echo "$as_me: error: --with-gxx-include-dir=[dir] requires a directory" >&2;}
+   { (exit 1); exit 1; }; }
+    ;;
+  no | "")
+    case "${enable_version_specific_runtime_libs}" in
+      yes) gxx_include_dir='$(libsubdir)/include/c++' ;;
+      *)
+	libstdcxx_incdir='c++/$(gcc_version)'
+	gxx_include_dir='$(prefix)/include/$(libstdcxx_incdir)' ;;
+    esac ;;
+  *) gxx_include_dir=${with_gxx_include_dir} ;;
+esac
+
+
+
+
 # most of the following was taken from libjava/configure.ac.
 
 libgcj_cflags=
@@ -4714,7 +4736,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 4717 "configure"
+#line 4739 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -6691,6 +6713,8 @@ for ac_last_try in false false false false false :; do
 am__fastdepCC_TRUE!$am__fastdepCC_TRUE$ac_delim
 am__fastdepCC_FALSE!$am__fastdepCC_FALSE$ac_delim
 PERL!$PERL$ac_delim
+gxx_include_dir!$gxx_include_dir$ac_delim
+libstdcxx_incdir!$libstdcxx_incdir$ac_delim
 LIBGCJ_CFLAGS!$LIBGCJ_CFLAGS$ac_delim
 LIBGCJ_CXXFLAGS!$LIBGCJ_CXXFLAGS$ac_delim
 LIBGCJ_JAVAFLAGS!$LIBGCJ_JAVAFLAGS$ac_delim
@@ -6731,7 +6755,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 41; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 43; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
