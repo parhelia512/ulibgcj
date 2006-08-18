@@ -276,7 +276,7 @@ one_cppchar_to_utf8 (cppchar_t c, uchar **outbufp, size_t *outbytesleftp)
    failure, which may be E2BIG (need more space), EILSEQ (ill-formed
    input sequence), ir EINVAL (incomplete input sequence).  */
 
-static inline int
+static int
 one_utf8_to_utf32 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
 		   uchar **outbufp, size_t *outbytesleftp)
 {
@@ -303,7 +303,7 @@ one_utf8_to_utf32 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
   return 0;
 }
 
-static inline int
+static int
 one_utf32_to_utf8 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
 		   uchar **outbufp, size_t *outbytesleftp)
 {
@@ -333,7 +333,7 @@ one_utf32_to_utf8 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
   return 0;
 }
 
-static inline int
+static int
 one_utf8_to_utf16 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
 		   uchar **outbufp, size_t *outbytesleftp)
 {
@@ -396,7 +396,7 @@ one_utf8_to_utf16 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
     }
 }
 
-static inline int
+static int
 one_utf16_to_utf8 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
 		   uchar **outbufp, size_t *outbytesleftp)
 {
