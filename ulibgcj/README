@@ -27,7 +27,8 @@ and that you are building within a sibling directory called gcc-build.
 
  $ cd gcc-build
  $ ../gcc-ulibgcj/configure \
-  CFLAGS="-Os -g" CXXFLAGS="-Os -g" GCJFLAGS="-Os -g" \
+  CFLAGS="-Os -g -fPIC" CXXFLAGS="-Os -g -fPIC" GCJFLAGS="-Os -g -fPIC" \
+  CPPFLAGS="-fPIC" \
   --prefix=/usr/local/gcc-ulibgcj \
   --enable-languages=c,c++,java \
   --enable-threads \
