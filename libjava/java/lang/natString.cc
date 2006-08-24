@@ -268,8 +268,6 @@ _Jv_NewStringUTF (const char *bytes)
   return jstr;
 }
 
-#include <stdio.h>
-
 jstring
 _Jv_NewStringUtf8Const (Utf8Const* str)
 {
@@ -515,10 +513,10 @@ java::lang::String::init (jbyteArray bytes, jint offset, jint count,
 {
   if (! bytes)
     throw new NullPointerException;
-  jsize data_size = JvGetArrayLength (bytes);
 #ifdef JV_ULIBGCJ
-  init(bytes, 0, 0, data_size);
+  init(bytes, 0, offset, count);
 #else//JV_ULIBGCJ
+  jsize data_size = JvGetArrayLength (bytes);
   if (offset < 0 || count < 0 || offset + count < 0
       || offset + count > data_size)
     throw new ArrayIndexOutOfBoundsException;
