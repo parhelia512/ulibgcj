@@ -23,6 +23,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor,Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "flags.h"
 #include "gfortran.h"
 #include "arith.h"  /* For gfc_compare_expr().  */
 #include "dependency.h"
@@ -857,6 +858,13 @@ resolve_actual_arglist (gfc_actual_arglist * arg)
 			 &e->where);
 	    }
 
+	  if (sym->attr.generic)
+	    {
+	      gfc_error ("GENERIC non-INTRINSIC procedure '%s' is not "
+		         "allowed as an actual argument at %L", sym->name,
+			 &e->where);
+	    }
+
 	  /* If the symbol is the function that names the current (or
 	     parent) scope, then we really have a variable reference.  */
 
@@ -904,6 +912,148 @@ resolve_actual_arglist (gfc_actual_arglist * arg)
 	  e->ref->u.ar.type = AR_FULL;
 	  e->ref->u.ar.as = sym->as;
 	}
+    }
+
+  return SUCCESS;
+}
+
+
+/* Do the checks of the actual argument list that are specific to elemental
+   procedures.  If called with c == NULL, we have a function, otherwise if
+   expr == NULL, we have a subroutine.  */
+static try
+resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
+{
+  gfc_actual_arglist *arg0;
+  gfc_actual_arglist *arg;
+  gfc_symbol *esym = NULL;
+  gfc_intrinsic_sym *isym = NULL;
+  gfc_expr *e = NULL;
+  gfc_intrinsic_arg *iformal = NULL;
+  gfc_formal_arglist *eformal = NULL;
+  bool formal_optional = false;
+  bool set_by_optional = false;
+  int i;
+  int rank = 0;
+
+  /* Is this an elemental procedure?  */
+  if (expr && expr->value.function.actual != NULL)
+    {
+      if (expr->value.function.esym != NULL
+	    && expr->value.function.esym->attr.elemental)
+	{
+	  arg0 = expr->value.function.actual;
+	  esym = expr->value.function.esym;
+	}
+      else if (expr->value.function.isym != NULL
+		 && expr->value.function.isym->elemental)
+	{
+	  arg0 = expr->value.function.actual;
+	  isym = expr->value.function.isym;
+	}
+      else
+	return SUCCESS;
+    }
+  else if (c && c->ext.actual != NULL
+	     && c->symtree->n.sym->attr.elemental)
+    {
+      arg0 = c->ext.actual;
+      esym = c->symtree->n.sym;
+    }
+  else
+    return SUCCESS;
+
+  /* The rank of an elemental is the rank of its array argument(s).  */
+  for (arg = arg0; arg; arg = arg->next)
+    {
+      if (arg->expr != NULL && arg->expr->rank > 0)
+	{
+	  rank = arg->expr->rank;
+	  if (arg->expr->expr_type == EXPR_VARIABLE
+		&& arg->expr->symtree->n.sym->attr.optional)
+	    set_by_optional = true;
+
+	  /* Function specific; set the result rank and shape.  */
+	  if (expr)
+	    {
+	      expr->rank = rank;
+	      if (!expr->shape && arg->expr->shape)
+		{
+		  expr->shape = gfc_get_shape (rank);
+		  for (i = 0; i < rank; i++)
+		    mpz_init_set (expr->shape[i], arg->expr->shape[i]);
+		}
+	    }
+	  break;
+	}
+    }
+
+  /* If it is an array, it shall not be supplied as an actual argument
+     to an elemental procedure unless an array of the same rank is supplied
+     as an actual argument corresponding to a nonoptional dummy argument of
+     that elemental procedure(12.4.1.5).  */
+  formal_optional = false;
+  if (isym)
+    iformal = isym->formal;
+  else
+    eformal = esym->formal;
+
+  for (arg = arg0; arg; arg = arg->next)
+    {
+      if (eformal)
+	{
+	  if (eformal->sym && eformal->sym->attr.optional)
+	    formal_optional = true;
+	  eformal = eformal->next;
+	}
+      else if (isym && iformal)
+	{
+	  if (iformal->optional)
+	    formal_optional = true;
+	  iformal = iformal->next;
+	}
+      else if (isym)
+	formal_optional = true;
+
+      if (pedantic && arg->expr != NULL
+	    && arg->expr->expr_type == EXPR_VARIABLE
+	    && arg->expr->symtree->n.sym->attr.optional
+	    && formal_optional
+	    && arg->expr->rank
+	    && (set_by_optional || arg->expr->rank != rank)
+	    && !(isym && isym->generic_id == GFC_ISYM_CONVERSION)) 
+	{
+	  gfc_warning ("'%s' at %L is an array and OPTIONAL; IF IT IS "
+		       "MISSING, it cannot be the actual argument of an "
+		       "ELEMENTAL procedure unless there is a non-optional"
+		       "argument with the same rank (12.4.1.5)",
+		       arg->expr->symtree->n.sym->name, &arg->expr->where);
+	  return FAILURE;
+	}
+    }
+
+  for (arg = arg0; arg; arg = arg->next)
+    {
+      if (arg->expr == NULL || arg->expr->rank == 0)
+	continue;
+
+      /* Being elemental, the last upper bound of an assumed size array
+	 argument must be present.  */
+      if (resolve_assumed_size_actual (arg->expr))
+	return FAILURE;
+
+      if (expr)
+	continue;
+
+      /* Elemental subroutine array actual arguments must conform.  */
+      if (e != NULL)
+	{
+	  if (gfc_check_conformance ("elemental subroutine", arg->expr, e)
+		== FAILURE)
+	    return FAILURE;
+	}
+      else
+	e = arg->expr;
     }
 
   return SUCCESS;
@@ -1237,7 +1387,6 @@ resolve_function (gfc_expr * expr)
   const char *name;
   try t;
   int temp;
-  int i;
 
   sym = NULL;
   if (expr->symtree)
@@ -1313,38 +1462,9 @@ resolve_function (gfc_expr * expr)
   temp = need_full_assumed_size;
   need_full_assumed_size = 0;
 
-  if (expr->value.function.actual != NULL
-      && ((expr->value.function.esym != NULL
-	   && expr->value.function.esym->attr.elemental)
-	  || (expr->value.function.isym != NULL
-	      && expr->value.function.isym->elemental)))
-    {
-      /* The rank of an elemental is the rank of its array argument(s).  */
-      for (arg = expr->value.function.actual; arg; arg = arg->next)
-	{
-	  if (arg->expr != NULL && arg->expr->rank > 0)
-	    {
-	      expr->rank = arg->expr->rank;
-	      if (!expr->shape && arg->expr->shape)
-		{
-		  expr->shape = gfc_get_shape (expr->rank);
-		  for (i = 0; i < expr->rank; i++)
-		    mpz_init_set (expr->shape[i], arg->expr->shape[i]);
-	        }
-	      break;
-	    }
-	}
+  if (resolve_elemental_actual (expr, NULL) == FAILURE)
+    return FAILURE;
 
-      /* Being elemental, the last upper bound of an assumed size array
-	 argument must be present.  */
-      for (arg = expr->value.function.actual; arg; arg = arg->next)
-	{
-	  if (arg->expr != NULL
-		&& arg->expr->rank > 0
-		&& resolve_assumed_size_actual (arg->expr))
-	    return FAILURE;
-	}
-    }
   if (omp_workshare_flag
       && expr->value.function.esym
       && ! gfc_elemental (expr->value.function.esym))
@@ -1500,7 +1620,7 @@ resolve_generic_s (gfc_code * c)
   if (m == MATCH_ERROR)
     return FAILURE;
 
-  if (sym->ns->parent != NULL)
+  if (sym->ns->parent != NULL && !sym->attr.use_assoc)
     {
       gfc_find_symbol (sym->name, sym->ns->parent, 1, &sym);
       if (sym != NULL)
@@ -1730,35 +1850,9 @@ resolve_call (gfc_code * c)
 	gfc_internal_error ("resolve_subroutine(): bad function type");
       }
 
-  /* Some checks of elemental subroutines.  */
-  if (c->ext.actual != NULL
-      && c->symtree->n.sym->attr.elemental)
-    {
-      gfc_actual_arglist * a;
-      gfc_expr * e;
-      e = NULL;
-
-      for (a = c->ext.actual; a; a = a->next)
-	{
-	  if (a->expr == NULL || a->expr->rank == 0)
-	    continue;
-
-	 /* The last upper bound of an assumed size array argument must
-	    be present.  */
-	  if (resolve_assumed_size_actual (a->expr))
-	    return FAILURE;
-
-	  /* Array actual arguments must conform.  */
-	  if (e != NULL)
-	    {
-	      if (gfc_check_conformance ("elemental subroutine", a->expr, e)
-			== FAILURE)
-		return FAILURE;
-	    }
-	  else
-	    e = a->expr;
-	}
-    }
+  /* Some checks of elemental subroutine actual arguments.  */
+  if (resolve_elemental_actual (NULL, c) == FAILURE)
+    return FAILURE;
 
   if (t == SUCCESS)
     find_noncopying_intrinsics (c->resolved_sym, c->ext.actual);
@@ -2796,10 +2890,10 @@ resolve_variable (gfc_expr * e)
 
   t = SUCCESS;
 
-  if (e->ref && resolve_ref (e) == FAILURE)
+  if (e->symtree == NULL)
     return FAILURE;
 
-  if (e->symtree == NULL)
+  if (e->ref && resolve_ref (e) == FAILURE)
     return FAILURE;
 
   sym = e->symtree->n.sym;
@@ -5145,8 +5239,8 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
     }
 
   /* Assign default initializer.  */
-  if (sym->ts.type == BT_DERIVED && !(sym->value || flag)
-	&& !sym->attr.pointer)
+  if (sym->ts.type == BT_DERIVED && !sym->value && !sym->attr.pointer
+      && !sym->attr.allocatable && (!flag || sym->attr.intent == INTENT_OUT))
     sym->value = gfc_default_initializer (&sym->ts);
 
   return SUCCESS;
@@ -5273,7 +5367,6 @@ static try
 resolve_fl_derived (gfc_symbol *sym)
 {
   gfc_component *c;
-  gfc_dt_list * dt_list;
   int i;
 
   for (c = sym->components; c != NULL; c = c->next)
@@ -5305,6 +5398,17 @@ resolve_fl_derived (gfc_symbol *sym)
 	  return FAILURE;
 	}
 
+      if (sym->attr.sequence)
+	{
+	  if (c->ts.type == BT_DERIVED && c->ts.derived->attr.sequence == 0)
+	    {
+	      gfc_error ("Component %s of SEQUENCE type declared at %L does "
+			 "not have the SEQUENCE attribute",
+			 c->ts.derived->name, &sym->declared_at);
+	      return FAILURE;
+	    }
+	}
+
       if (c->pointer || c->as == NULL)
 	continue;
 
@@ -5325,12 +5429,6 @@ resolve_fl_derived (gfc_symbol *sym)
 	}
     }
     
-  /* Add derived type to the derived type list.  */
-  dt_list = gfc_get_dt_list ();
-  dt_list->next = sym->ns->derived_types;
-  dt_list->derived = sym;
-  sym->ns->derived_types = dt_list;
-
   return SUCCESS;
 }
 
@@ -6015,12 +6113,12 @@ gfc_elemental (gfc_symbol * sym)
 /* Warn about unused labels.  */
 
 static void
-warn_unused_label (gfc_st_label * label)
+warn_unused_fortran_label (gfc_st_label * label)
 {
   if (label == NULL)
     return;
 
-  warn_unused_label (label->left);
+  warn_unused_fortran_label (label->left);
 
   if (label->defined == ST_LABEL_UNKNOWN)
     return;
@@ -6041,7 +6139,7 @@ warn_unused_label (gfc_st_label * label)
       break;
     }
 
-  warn_unused_label (label->right);
+  warn_unused_fortran_label (label->right);
 }
 
 
@@ -6564,7 +6662,7 @@ resolve_types (gfc_namespace * ns)
 
   /* Warn about unused labels.  */
   if (gfc_option.warn_unused_labels)
-    warn_unused_label (ns->st_labels);
+    warn_unused_fortran_label (ns->st_labels);
 
   gfc_resolve_uops (ns->uop_root);
     

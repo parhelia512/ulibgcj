@@ -635,7 +635,6 @@ configure-target:  \
     maybe-configure-target-examples \
     maybe-configure-target-libffi \
     maybe-configure-target-libjava \
-    maybe-configure-target-ulibgcj \
     maybe-configure-target-zlib \
     maybe-configure-target-boehm-gc \
     maybe-configure-target-qthreads \
@@ -780,7 +779,6 @@ all-target: maybe-all-target-gperf
 all-target: maybe-all-target-examples
 all-target: maybe-all-target-libffi
 all-target: maybe-all-target-libjava
-all-target: maybe-all-target-ulibgcj
 all-target: maybe-all-target-zlib
 all-target: maybe-all-target-boehm-gc
 all-target: maybe-all-target-qthreads
@@ -889,7 +887,6 @@ info-target: maybe-info-target-gperf
 info-target: maybe-info-target-examples
 info-target: maybe-info-target-libffi
 info-target: maybe-info-target-libjava
-info-target: maybe-info-target-ulibgcj
 info-target: maybe-info-target-zlib
 info-target: maybe-info-target-boehm-gc
 info-target: maybe-info-target-qthreads
@@ -993,7 +990,6 @@ dvi-target: maybe-dvi-target-gperf
 dvi-target: maybe-dvi-target-examples
 dvi-target: maybe-dvi-target-libffi
 dvi-target: maybe-dvi-target-libjava
-dvi-target: maybe-dvi-target-ulibgcj
 dvi-target: maybe-dvi-target-zlib
 dvi-target: maybe-dvi-target-boehm-gc
 dvi-target: maybe-dvi-target-qthreads
@@ -1097,7 +1093,6 @@ html-target: maybe-html-target-gperf
 html-target: maybe-html-target-examples
 html-target: maybe-html-target-libffi
 html-target: maybe-html-target-libjava
-html-target: maybe-html-target-ulibgcj
 html-target: maybe-html-target-zlib
 html-target: maybe-html-target-boehm-gc
 html-target: maybe-html-target-qthreads
@@ -1201,7 +1196,6 @@ TAGS-target: maybe-TAGS-target-gperf
 TAGS-target: maybe-TAGS-target-examples
 TAGS-target: maybe-TAGS-target-libffi
 TAGS-target: maybe-TAGS-target-libjava
-TAGS-target: maybe-TAGS-target-ulibgcj
 TAGS-target: maybe-TAGS-target-zlib
 TAGS-target: maybe-TAGS-target-boehm-gc
 TAGS-target: maybe-TAGS-target-qthreads
@@ -1305,7 +1299,6 @@ install-info-target: maybe-install-info-target-gperf
 install-info-target: maybe-install-info-target-examples
 install-info-target: maybe-install-info-target-libffi
 install-info-target: maybe-install-info-target-libjava
-install-info-target: maybe-install-info-target-ulibgcj
 install-info-target: maybe-install-info-target-zlib
 install-info-target: maybe-install-info-target-boehm-gc
 install-info-target: maybe-install-info-target-qthreads
@@ -1409,7 +1402,6 @@ install-html-target: maybe-install-html-target-gperf
 install-html-target: maybe-install-html-target-examples
 install-html-target: maybe-install-html-target-libffi
 install-html-target: maybe-install-html-target-libjava
-install-html-target: maybe-install-html-target-ulibgcj
 install-html-target: maybe-install-html-target-zlib
 install-html-target: maybe-install-html-target-boehm-gc
 install-html-target: maybe-install-html-target-qthreads
@@ -1513,7 +1505,6 @@ installcheck-target: maybe-installcheck-target-gperf
 installcheck-target: maybe-installcheck-target-examples
 installcheck-target: maybe-installcheck-target-libffi
 installcheck-target: maybe-installcheck-target-libjava
-installcheck-target: maybe-installcheck-target-ulibgcj
 installcheck-target: maybe-installcheck-target-zlib
 installcheck-target: maybe-installcheck-target-boehm-gc
 installcheck-target: maybe-installcheck-target-qthreads
@@ -1617,7 +1608,6 @@ mostlyclean-target: maybe-mostlyclean-target-gperf
 mostlyclean-target: maybe-mostlyclean-target-examples
 mostlyclean-target: maybe-mostlyclean-target-libffi
 mostlyclean-target: maybe-mostlyclean-target-libjava
-mostlyclean-target: maybe-mostlyclean-target-ulibgcj
 mostlyclean-target: maybe-mostlyclean-target-zlib
 mostlyclean-target: maybe-mostlyclean-target-boehm-gc
 mostlyclean-target: maybe-mostlyclean-target-qthreads
@@ -1721,7 +1711,6 @@ clean-target: maybe-clean-target-gperf
 clean-target: maybe-clean-target-examples
 clean-target: maybe-clean-target-libffi
 clean-target: maybe-clean-target-libjava
-clean-target: maybe-clean-target-ulibgcj
 clean-target: maybe-clean-target-zlib
 clean-target: maybe-clean-target-boehm-gc
 clean-target: maybe-clean-target-qthreads
@@ -1825,7 +1814,6 @@ distclean-target: maybe-distclean-target-gperf
 distclean-target: maybe-distclean-target-examples
 distclean-target: maybe-distclean-target-libffi
 distclean-target: maybe-distclean-target-libjava
-distclean-target: maybe-distclean-target-ulibgcj
 distclean-target: maybe-distclean-target-zlib
 distclean-target: maybe-distclean-target-boehm-gc
 distclean-target: maybe-distclean-target-qthreads
@@ -1929,7 +1917,6 @@ maintainer-clean-target: maybe-maintainer-clean-target-gperf
 maintainer-clean-target: maybe-maintainer-clean-target-examples
 maintainer-clean-target: maybe-maintainer-clean-target-libffi
 maintainer-clean-target: maybe-maintainer-clean-target-libjava
-maintainer-clean-target: maybe-maintainer-clean-target-ulibgcj
 maintainer-clean-target: maybe-maintainer-clean-target-zlib
 maintainer-clean-target: maybe-maintainer-clean-target-boehm-gc
 maintainer-clean-target: maybe-maintainer-clean-target-qthreads
@@ -2088,7 +2075,6 @@ check-target:  \
     maybe-check-target-examples \
     maybe-check-target-libffi \
     maybe-check-target-libjava \
-    maybe-check-target-ulibgcj \
     maybe-check-target-zlib \
     maybe-check-target-boehm-gc \
     maybe-check-target-qthreads \
@@ -2289,7 +2275,6 @@ install-target:  \
     maybe-install-target-examples \
     maybe-install-target-libffi \
     maybe-install-target-libjava \
-    maybe-install-target-ulibgcj \
     maybe-install-target-zlib \
     maybe-install-target-boehm-gc \
     maybe-install-target-qthreads \
@@ -4276,6 +4261,7 @@ configure-stage1-bfd:
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif bfd-bootstrap
 
@@ -4303,6 +4289,7 @@ configure-stage2-bfd:
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif bfd-bootstrap
 
@@ -4330,6 +4317,7 @@ configure-stage3-bfd:
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif bfd-bootstrap
 
@@ -4357,6 +4345,7 @@ configure-stage4-bfd:
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif bfd-bootstrap
 
@@ -4384,6 +4373,7 @@ configure-stageprofile-bfd:
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif bfd-bootstrap
 
@@ -4411,6 +4401,7 @@ configure-stagefeedback-bfd:
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif bfd-bootstrap
 
@@ -4982,6 +4973,7 @@ configure-stage1-opcodes:
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif opcodes-bootstrap
 
@@ -5009,6 +5001,7 @@ configure-stage2-opcodes:
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif opcodes-bootstrap
 
@@ -5036,6 +5029,7 @@ configure-stage3-opcodes:
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif opcodes-bootstrap
 
@@ -5063,6 +5057,7 @@ configure-stage4-opcodes:
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif opcodes-bootstrap
 
@@ -5090,6 +5085,7 @@ configure-stageprofile-opcodes:
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif opcodes-bootstrap
 
@@ -5117,6 +5113,7 @@ configure-stagefeedback-opcodes:
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif opcodes-bootstrap
 
@@ -5688,6 +5685,7 @@ configure-stage1-binutils:
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif binutils-bootstrap
 
@@ -5715,6 +5713,7 @@ configure-stage2-binutils:
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif binutils-bootstrap
 
@@ -5742,6 +5741,7 @@ configure-stage3-binutils:
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif binutils-bootstrap
 
@@ -5769,6 +5769,7 @@ configure-stage4-binutils:
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif binutils-bootstrap
 
@@ -5796,6 +5797,7 @@ configure-stageprofile-binutils:
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif binutils-bootstrap
 
@@ -5823,6 +5825,7 @@ configure-stagefeedback-binutils:
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif binutils-bootstrap
 
@@ -11129,6 +11132,7 @@ configure-stage1-gas:
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif gas-bootstrap
 
@@ -11156,6 +11160,7 @@ configure-stage2-gas:
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gas-bootstrap
 
@@ -11183,6 +11188,7 @@ configure-stage3-gas:
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gas-bootstrap
 
@@ -11210,6 +11216,7 @@ configure-stage4-gas:
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gas-bootstrap
 
@@ -11237,6 +11244,7 @@ configure-stageprofile-gas:
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gas-bootstrap
 
@@ -11264,6 +11272,7 @@ configure-stagefeedback-gas:
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gas-bootstrap
 
@@ -11835,6 +11844,7 @@ configure-stage1-gcc:
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif gcc-bootstrap
 
@@ -11862,6 +11872,7 @@ configure-stage2-gcc:
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gcc-bootstrap
 
@@ -11889,6 +11900,7 @@ configure-stage3-gcc:
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gcc-bootstrap
 
@@ -11916,6 +11928,7 @@ configure-stage4-gcc:
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gcc-bootstrap
 
@@ -11943,6 +11956,7 @@ configure-stageprofile-gcc:
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gcc-bootstrap
 
@@ -11970,6 +11984,7 @@ configure-stagefeedback-gcc:
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gcc-bootstrap
 
@@ -15131,6 +15146,7 @@ configure-stage1-intl:
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif intl-bootstrap
 
@@ -15158,6 +15174,7 @@ configure-stage2-intl:
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif intl-bootstrap
 
@@ -15185,6 +15202,7 @@ configure-stage3-intl:
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif intl-bootstrap
 
@@ -15212,6 +15230,7 @@ configure-stage4-intl:
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif intl-bootstrap
 
@@ -15239,6 +15258,7 @@ configure-stageprofile-intl:
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif intl-bootstrap
 
@@ -15266,6 +15286,7 @@ configure-stagefeedback-intl:
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif intl-bootstrap
 
@@ -16562,6 +16583,7 @@ configure-stage1-ld:
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif ld-bootstrap
 
@@ -16589,6 +16611,7 @@ configure-stage2-ld:
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif ld-bootstrap
 
@@ -16616,6 +16639,7 @@ configure-stage3-ld:
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif ld-bootstrap
 
@@ -16643,6 +16667,7 @@ configure-stage4-ld:
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif ld-bootstrap
 
@@ -16670,6 +16695,7 @@ configure-stageprofile-ld:
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif ld-bootstrap
 
@@ -16697,6 +16723,7 @@ configure-stagefeedback-ld:
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif ld-bootstrap
 
@@ -17268,6 +17295,7 @@ configure-stage1-libcpp:
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif libcpp-bootstrap
 
@@ -17295,6 +17323,7 @@ configure-stage2-libcpp:
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libcpp-bootstrap
 
@@ -17322,6 +17351,7 @@ configure-stage3-libcpp:
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libcpp-bootstrap
 
@@ -17349,6 +17379,7 @@ configure-stage4-libcpp:
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libcpp-bootstrap
 
@@ -17376,6 +17407,7 @@ configure-stageprofile-libcpp:
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libcpp-bootstrap
 
@@ -17403,6 +17435,7 @@ configure-stagefeedback-libcpp:
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libcpp-bootstrap
 
@@ -17974,6 +18007,7 @@ configure-stage1-libdecnumber:
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif libdecnumber-bootstrap
 
@@ -18001,6 +18035,7 @@ configure-stage2-libdecnumber:
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libdecnumber-bootstrap
 
@@ -18028,6 +18063,7 @@ configure-stage3-libdecnumber:
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libdecnumber-bootstrap
 
@@ -18055,6 +18091,7 @@ configure-stage4-libdecnumber:
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libdecnumber-bootstrap
 
@@ -18082,6 +18119,7 @@ configure-stageprofile-libdecnumber:
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libdecnumber-bootstrap
 
@@ -18109,6 +18147,7 @@ configure-stagefeedback-libdecnumber:
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libdecnumber-bootstrap
 
@@ -19050,6 +19089,7 @@ configure-stage1-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif libiberty-bootstrap
 
@@ -19077,6 +19117,7 @@ configure-stage2-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libiberty-bootstrap
 
@@ -19104,6 +19145,7 @@ configure-stage3-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libiberty-bootstrap
 
@@ -19131,6 +19173,7 @@ configure-stage4-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libiberty-bootstrap
 
@@ -19158,6 +19201,7 @@ configure-stageprofile-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libiberty-bootstrap
 
@@ -19185,6 +19229,7 @@ configure-stagefeedback-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libiberty-bootstrap
 
@@ -28245,6 +28290,7 @@ configure-stage1-zlib:
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif zlib-bootstrap
 
@@ -28272,6 +28318,7 @@ configure-stage2-zlib:
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif zlib-bootstrap
 
@@ -28299,6 +28346,7 @@ configure-stage3-zlib:
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif zlib-bootstrap
 
@@ -28326,6 +28374,7 @@ configure-stage4-zlib:
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif zlib-bootstrap
 
@@ -28353,6 +28402,7 @@ configure-stageprofile-zlib:
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif zlib-bootstrap
 
@@ -28380,6 +28430,7 @@ configure-stagefeedback-zlib:
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif zlib-bootstrap
 
@@ -36750,393 +36801,6 @@ maintainer-clean-target-libjava:
 
 
 
-.PHONY: configure-target-ulibgcj maybe-configure-target-ulibgcj
-maybe-configure-target-ulibgcj:
-@if gcc-bootstrap
-configure-target-ulibgcj: stage_current
-@endif gcc-bootstrap
-@if target-ulibgcj
-maybe-configure-target-ulibgcj: configure-target-ulibgcj
-configure-target-ulibgcj: 
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	echo "Checking multilib configuration for ulibgcj..."; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/ulibgcj ; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/ulibgcj/multilib.tmp 2> /dev/null ; \
-	if test -r $(TARGET_SUBDIR)/ulibgcj/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/ulibgcj/multilib.tmp $(TARGET_SUBDIR)/ulibgcj/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/ulibgcj/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/ulibgcj/Makefile; \
-	    mv $(TARGET_SUBDIR)/ulibgcj/multilib.tmp $(TARGET_SUBDIR)/ulibgcj/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/ulibgcj/multilib.tmp $(TARGET_SUBDIR)/ulibgcj/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/ulibgcj/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/ulibgcj ; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo Configuring in $(TARGET_SUBDIR)/ulibgcj; \
-	cd "$(TARGET_SUBDIR)/ulibgcj" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/ulibgcj/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	srcdiroption="--srcdir=$${topdir}/ulibgcj"; \
-	libsrcdir="$$s/ulibgcj"; \
-	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
-	  || exit 1
-@endif target-ulibgcj
-
-
-
-
-
-.PHONY: all-target-ulibgcj maybe-all-target-ulibgcj
-maybe-all-target-ulibgcj:
-@if gcc-bootstrap
-all-target-ulibgcj: stage_current
-@endif gcc-bootstrap
-@if target-ulibgcj
-TARGET-target-ulibgcj=all
-maybe-all-target-ulibgcj: all-target-ulibgcj
-all-target-ulibgcj: configure-target-ulibgcj
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/ulibgcj && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-ulibgcj))
-@endif target-ulibgcj
-
-
-
-
-
-.PHONY: check-target-ulibgcj maybe-check-target-ulibgcj
-maybe-check-target-ulibgcj:
-@if target-ulibgcj
-maybe-check-target-ulibgcj: check-target-ulibgcj
-
-check-target-ulibgcj:
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/ulibgcj && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
-
-@endif target-ulibgcj
-
-.PHONY: install-target-ulibgcj maybe-install-target-ulibgcj
-maybe-install-target-ulibgcj:
-@if target-ulibgcj
-maybe-install-target-ulibgcj: install-target-ulibgcj
-
-install-target-ulibgcj: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/ulibgcj && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
-
-@endif target-ulibgcj
-
-# Other targets (info, dvi, etc.)
-
-.PHONY: maybe-info-target-ulibgcj info-target-ulibgcj
-maybe-info-target-ulibgcj:
-@if target-ulibgcj
-maybe-info-target-ulibgcj: info-target-ulibgcj
-
-info-target-ulibgcj: \
-    configure-target-ulibgcj 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing info in $(TARGET_SUBDIR)/ulibgcj" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/ulibgcj && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           info) \
-	  || exit 1
-
-@endif target-ulibgcj
-
-.PHONY: maybe-dvi-target-ulibgcj dvi-target-ulibgcj
-maybe-dvi-target-ulibgcj:
-@if target-ulibgcj
-maybe-dvi-target-ulibgcj: dvi-target-ulibgcj
-
-dvi-target-ulibgcj: \
-    configure-target-ulibgcj 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing dvi in $(TARGET_SUBDIR)/ulibgcj" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/ulibgcj && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           dvi) \
-	  || exit 1
-
-@endif target-ulibgcj
-
-.PHONY: maybe-html-target-ulibgcj html-target-ulibgcj
-maybe-html-target-ulibgcj:
-@if target-ulibgcj
-maybe-html-target-ulibgcj: html-target-ulibgcj
-
-html-target-ulibgcj: \
-    configure-target-ulibgcj 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing html in $(TARGET_SUBDIR)/ulibgcj" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/ulibgcj && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           html) \
-	  || exit 1
-
-@endif target-ulibgcj
-
-.PHONY: maybe-TAGS-target-ulibgcj TAGS-target-ulibgcj
-maybe-TAGS-target-ulibgcj:
-@if target-ulibgcj
-maybe-TAGS-target-ulibgcj: TAGS-target-ulibgcj
-
-TAGS-target-ulibgcj: \
-    configure-target-ulibgcj 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing TAGS in $(TARGET_SUBDIR)/ulibgcj" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/ulibgcj && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           TAGS) \
-	  || exit 1
-
-@endif target-ulibgcj
-
-.PHONY: maybe-install-info-target-ulibgcj install-info-target-ulibgcj
-maybe-install-info-target-ulibgcj:
-@if target-ulibgcj
-maybe-install-info-target-ulibgcj: install-info-target-ulibgcj
-
-install-info-target-ulibgcj: \
-    configure-target-ulibgcj \
-    info-target-ulibgcj 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-info in $(TARGET_SUBDIR)/ulibgcj" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/ulibgcj && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           install-info) \
-	  || exit 1
-
-@endif target-ulibgcj
-
-.PHONY: maybe-install-html-target-ulibgcj install-html-target-ulibgcj
-maybe-install-html-target-ulibgcj:
-@if target-ulibgcj
-maybe-install-html-target-ulibgcj: install-html-target-ulibgcj
-
-install-html-target-ulibgcj: \
-    configure-target-ulibgcj \
-    html-target-ulibgcj 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-html in $(TARGET_SUBDIR)/ulibgcj" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/ulibgcj && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           install-html) \
-	  || exit 1
-
-@endif target-ulibgcj
-
-.PHONY: maybe-installcheck-target-ulibgcj installcheck-target-ulibgcj
-maybe-installcheck-target-ulibgcj:
-@if target-ulibgcj
-maybe-installcheck-target-ulibgcj: installcheck-target-ulibgcj
-
-installcheck-target-ulibgcj: \
-    configure-target-ulibgcj 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing installcheck in $(TARGET_SUBDIR)/ulibgcj" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/ulibgcj && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           installcheck) \
-	  || exit 1
-
-@endif target-ulibgcj
-
-.PHONY: maybe-mostlyclean-target-ulibgcj mostlyclean-target-ulibgcj
-maybe-mostlyclean-target-ulibgcj:
-@if target-ulibgcj
-maybe-mostlyclean-target-ulibgcj: mostlyclean-target-ulibgcj
-
-mostlyclean-target-ulibgcj: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing mostlyclean in $(TARGET_SUBDIR)/ulibgcj" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/ulibgcj && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           mostlyclean) \
-	  || exit 1
-
-@endif target-ulibgcj
-
-.PHONY: maybe-clean-target-ulibgcj clean-target-ulibgcj
-maybe-clean-target-ulibgcj:
-@if target-ulibgcj
-maybe-clean-target-ulibgcj: clean-target-ulibgcj
-
-clean-target-ulibgcj: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing clean in $(TARGET_SUBDIR)/ulibgcj" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/ulibgcj && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           clean) \
-	  || exit 1
-
-@endif target-ulibgcj
-
-.PHONY: maybe-distclean-target-ulibgcj distclean-target-ulibgcj
-maybe-distclean-target-ulibgcj:
-@if target-ulibgcj
-maybe-distclean-target-ulibgcj: distclean-target-ulibgcj
-
-distclean-target-ulibgcj: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing distclean in $(TARGET_SUBDIR)/ulibgcj" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/ulibgcj && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           distclean) \
-	  || exit 1
-
-@endif target-ulibgcj
-
-.PHONY: maybe-maintainer-clean-target-ulibgcj maintainer-clean-target-ulibgcj
-maybe-maintainer-clean-target-ulibgcj:
-@if target-ulibgcj
-maybe-maintainer-clean-target-ulibgcj: maintainer-clean-target-ulibgcj
-
-maintainer-clean-target-ulibgcj: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/ulibgcj/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/ulibgcj" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/ulibgcj && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	           maintainer-clean) \
-	  || exit 1
-
-@endif target-ulibgcj
-
-
-
-
-
 .PHONY: configure-target-zlib maybe-configure-target-zlib
 maybe-configure-target-zlib:
 @if gcc-bootstrap
@@ -40963,7 +40627,6 @@ configure-target-gperf: stage_last
 configure-target-examples: stage_last
 configure-target-libffi: stage_last
 configure-target-libjava: stage_last
-configure-target-ulibgcj: stage_last
 configure-target-zlib: stage_last
 configure-target-boehm-gc: stage_last
 configure-target-qthreads: stage_last
@@ -40987,7 +40650,6 @@ configure-target-gperf: maybe-all-gcc
 configure-target-examples: maybe-all-gcc
 configure-target-libffi: maybe-all-gcc
 configure-target-libjava: maybe-all-gcc
-configure-target-ulibgcj: maybe-all-gcc
 configure-target-zlib: maybe-all-gcc
 configure-target-boehm-gc: maybe-all-gcc
 configure-target-qthreads: maybe-all-gcc
@@ -41011,9 +40673,6 @@ configure-target-libffi: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libjava: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libjava: maybe-all-target-libstdc++-v3
-
-configure-target-ulibgcj: maybe-all-target-newlib maybe-all-target-libgloss
-configure-target-ulibgcj: maybe-all-target-libstdc++-v3
 
 configure-target-libmudflap: maybe-all-target-newlib maybe-all-target-libgloss
 
@@ -41460,6 +41119,14 @@ all-stage3-ld: maybe-all-stage3-intl
 all-stage4-ld: maybe-all-stage4-intl
 all-stageprofile-ld: maybe-all-stageprofile-intl
 all-stagefeedback-ld: maybe-all-stagefeedback-intl
+configure-opcodes: maybe-configure-intl
+
+configure-stage1-opcodes: maybe-configure-stage1-intl
+configure-stage2-opcodes: maybe-configure-stage2-intl
+configure-stage3-opcodes: maybe-configure-stage3-intl
+configure-stage4-opcodes: maybe-configure-stage4-intl
+configure-stageprofile-opcodes: maybe-configure-stageprofile-intl
+configure-stagefeedback-opcodes: maybe-configure-stagefeedback-intl
 all-opcodes: maybe-all-bfd
 
 all-stage1-opcodes: maybe-all-stage1-bfd
@@ -41476,6 +41143,14 @@ all-stage3-opcodes: maybe-all-stage3-libiberty
 all-stage4-opcodes: maybe-all-stage4-libiberty
 all-stageprofile-opcodes: maybe-all-stageprofile-libiberty
 all-stagefeedback-opcodes: maybe-all-stagefeedback-libiberty
+all-opcodes: maybe-all-intl
+
+all-stage1-opcodes: maybe-all-stage1-intl
+all-stage2-opcodes: maybe-all-stage2-intl
+all-stage3-opcodes: maybe-all-stage3-intl
+all-stage4-opcodes: maybe-all-stage4-intl
+all-stageprofile-opcodes: maybe-all-stageprofile-intl
+all-stagefeedback-opcodes: maybe-all-stagefeedback-intl
 all-dejagnu: maybe-all-tcl
 all-dejagnu: maybe-all-expect
 all-dejagnu: maybe-all-tk
@@ -41553,8 +41228,6 @@ all-target-libjava: maybe-all-target-zlib
 all-target-libjava: maybe-all-target-boehm-gc
 all-target-libjava: maybe-all-target-qthreads
 all-target-libjava: maybe-all-target-libffi
-configure-target-ulibgcj: maybe-configure-target-boehm-gc
-all-target-ulibgcj: maybe-all-target-boehm-gc
 configure-target-libobjc: maybe-configure-target-boehm-gc
 all-target-libobjc: maybe-all-target-libiberty
 all-target-libobjc: maybe-all-target-boehm-gc

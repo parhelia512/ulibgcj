@@ -667,7 +667,7 @@ extern void debug_points_to_info_for (tree);
 extern bool may_be_aliased (tree);
 extern bool is_aliased_with (tree, tree);
 extern struct ptr_info_def *get_ptr_info (tree);
-extern void new_type_alias (tree, tree);
+extern void new_type_alias (tree, tree, tree);
 extern void count_uses_and_derefs (tree, tree, unsigned *, unsigned *, bool *);
 static inline subvar_t get_subvars_for_var (tree);
 static inline tree get_subvar_at (tree, unsigned HOST_WIDE_INT);
@@ -789,6 +789,8 @@ struct tree_niter_desc
 
 /* In tree-vectorizer.c */
 void vectorize_loops (struct loops *);
+extern bool vect_can_force_dr_alignment_p (tree, unsigned int);
+extern tree get_vectype_for_scalar_type (tree);
 
 /* In tree-ssa-phiopt.c */
 bool empty_block_p (basic_block);

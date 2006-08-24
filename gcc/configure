@@ -1526,7 +1526,17 @@ esac
 
 
 # Determine the target- and build-specific subdirectories
-  # Prefix 'build-' so this never conflicts with target_subdir.
+
+# post-stage1 host modules use a different CC_FOR_BUILD so, in order to
+# have matching libraries, they should use host libraries: Makefile.tpl
+# arranges to pass --with-build-libsubdir=$(HOST_SUBDIR).
+# However, they still use the build modules, because the corresponding
+# host modules (e.g. bison) are only built for the host when bootstrap
+# finishes. So:
+# - build_subdir is where we find build modules, and never changes.
+# - build_libsubdir is where we find build libraries, and can be overridden.
+
+# Prefix 'build-' so this never conflicts with target_subdir.
 build_subdir="build-${build_noncanonical}"
 
 # Check whether --with-build-libsubdir or --without-build-libsubdir was given.
@@ -7641,7 +7651,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:7644: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:7654: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[4-9]*)
@@ -15044,6 +15054,39 @@ if test $gcc_cv_as_ix86_cmov_sun_syntax = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_AS_IX86_CMOV_SUN_SYNTAX 1
+_ACEOF
+
+fi
+
+    echo "$as_me:$LINENO: checking assembler for ffreep mnemonic" >&5
+echo $ECHO_N "checking assembler for ffreep mnemonic... $ECHO_C" >&6
+if test "${gcc_cv_as_ix86_ffreep+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_ix86_ffreep=no
+  if test x$gcc_cv_as != x; then
+    echo 'ffreep %st(1)' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_ix86_ffreep=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_ix86_ffreep" >&5
+echo "${ECHO_T}$gcc_cv_as_ix86_ffreep" >&6
+if test $gcc_cv_as_ix86_ffreep = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_IX86_FFREEP 1
 _ACEOF
 
 fi

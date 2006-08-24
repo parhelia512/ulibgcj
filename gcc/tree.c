@@ -1161,6 +1161,47 @@ build_complex (tree type, tree real, tree imag)
   return t;
 }
 
+/* Return a constant of arithmetic type TYPE which is the
+   multiplicative identity of the set TYPE.  */
+
+tree
+build_one_cst (tree type)
+{
+  switch (TREE_CODE (type))
+    {
+    case INTEGER_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
+    case POINTER_TYPE: case REFERENCE_TYPE:
+    case OFFSET_TYPE:
+      return build_int_cst (type, 1);
+
+    case REAL_TYPE:
+      return build_real (type, dconst1);
+
+    case VECTOR_TYPE:
+      {
+	tree scalar, cst;
+	int i;
+
+	scalar = build_one_cst (TREE_TYPE (type));
+
+	/* Create 'vect_cst_ = {cst,cst,...,cst}'  */
+	cst = NULL_TREE;
+	for (i = TYPE_VECTOR_SUBPARTS (type); --i >= 0; )
+	  cst = tree_cons (NULL_TREE, scalar, cst);
+
+	return build_vector (type, cst);
+      }
+
+    case COMPLEX_TYPE:
+      return build_complex (type,
+			    build_one_cst (TREE_TYPE (type)),
+			    fold_convert (TREE_TYPE (type), integer_zero_node));
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Build a BINFO with LEN language slots.  */
 
 tree
@@ -2882,11 +2923,11 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
       break;
 
     default:
-      if (TREE_CODE_CLASS (code) == tcc_unary
+      if ((TREE_CODE_CLASS (code) == tcc_unary || code == VIEW_CONVERT_EXPR)
 	  && node && !TYPE_P (node)
 	  && TREE_CONSTANT (node))
 	TREE_CONSTANT (t) = 1;
-      if (TREE_CODE_CLASS (code) == tcc_unary
+      if ((TREE_CODE_CLASS (code) == tcc_unary || code == VIEW_CONVERT_EXPR)
 	  && node && TREE_INVARIANT (node))
 	TREE_INVARIANT (t) = 1;
       if (TREE_CODE_CLASS (code) == tcc_reference
@@ -3408,7 +3449,6 @@ is_attribute_with_length_p (const char *attr, int attr_len, tree ident)
       gcc_assert (attr[1] == '_');
       gcc_assert (attr[attr_len - 2] == '_');
       gcc_assert (attr[attr_len - 1] == '_');
-      gcc_assert (attr[1] == '_');
       if (ident_len == attr_len - 4
 	  && strncmp (attr + 2, p, attr_len - 4) == 0)
 	return 1;
@@ -3456,6 +3496,28 @@ lookup_attribute (const char *attr_name, tree list)
     }
 
   return NULL_TREE;
+}
+
+/* Remove any instances of attribute ATTR_NAME in LIST and return the
+   modified list.  */
+
+tree
+remove_attribute (const char *attr_name, tree list)
+{
+  tree *p;
+  size_t attr_len = strlen (attr_name);
+
+  for (p = &list; *p; )
+    {
+      tree l = *p;
+      gcc_assert (TREE_CODE (TREE_PURPOSE (l)) == IDENTIFIER_NODE);
+      if (is_attribute_with_length_p (attr_name, attr_len, TREE_PURPOSE (l)))
+	*p = TREE_CHAIN (l);
+      else
+	p = &TREE_CHAIN (l);
+    }
+
+  return list;
 }
 
 /* Return an attribute list that is the union of a1 and a2.  */
@@ -3644,9 +3706,18 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
       return NULL_TREE;
     }
 
+  if (TREE_CODE (node) != FUNCTION_DECL
+      && TREE_CODE (node) != VAR_DECL)
+    {
+      *no_add_attrs = true;
+      warning (OPT_Wattributes, "%qs attribute ignored",
+	       IDENTIFIER_POINTER (name));
+      return NULL_TREE;
+    }
+
   /* Report error on dllimport ambiguities seen now before they cause
      any damage.  */
-  if (is_attribute_p ("dllimport", name))
+  else if (is_attribute_p ("dllimport", name))
     {
       /* Honor any target-specific overrides. */ 
       if (!targetm.valid_dllimport_attribute_p (node))
@@ -5095,7 +5166,11 @@ build_array_type (tree elt_type, tree index_type)
   
   if (index_type == 0)
     {
-      layout_type (t);
+      tree save = t;
+      hashcode = iterative_hash_object (TYPE_HASH (elt_type), hashcode);
+      t = type_hash_canon (hashcode, t);
+      if (save == t)
+	layout_type (t);
       return t;
     }
 

@@ -1,3 +1,45 @@
+2006-08-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* MAINTAINERS (Various Maintainers): Add self as RTL opt. maintainer.
+
+2006-07-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config.guess: Import from src (was more updated).
+	* config.sub: Likewise.
+
+2006-07-22  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* configure.in: Allow mingw32 and cygwin targets to build cross-gdb.
+	* configure: Regenerated.
+
+2006-07-18  Paolo Bonzini  <bonzini@gnu.org>
+
+        * Makefile.tpl (configure-stageN-MODULE): Pass --with-build-libsubdir
+        for stages after the first.
+
+2006-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.def: Add dependencies for configure-opcodes
+	on configure-intl and all-opcodes on all-intl.
+	* Makefile.in: Regenerated.
+
+2006-07-13  Ben Elliston  <bje@au.ibm.com>
+
+	* MAINTAINERS (Various Maintainers): Add myself as dfp maintainer.
+
+2006-07-06  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Port to hosts whose 'sort' and 'tail' implementations
+	treat operands with leading '+' as file names, as POSIX
+	has required since 2001.  However, make sure the code still
+	works on pre-POSIX hosts.
+	* ltmain.sh: Don't assume "sort +2" is equivalent to
+	"sort -k 3", since POSIX 1003.1-2001 no longer requires this.
+
+2006-07-05  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* MAINTAINERS (Various Maintainers): Add myself as reload maintainer.
+
 2006-07-04  Peter O'Gorman  <peter@pogma.com>
 
 	* ltconfig: chmod 644 before ranlib during install.

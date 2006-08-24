@@ -876,10 +876,8 @@ add_init_expr_to_sym (const char *name, gfc_expr ** initp,
 	      sym->ts.cl->next = gfc_current_ns->cl_list;
 	      gfc_current_ns->cl_list = sym->ts.cl;
 
-	      if (init->expr_type == EXPR_CONSTANT)
-		sym->ts.cl->length =
-			gfc_int_expr (init->value.character.length);
-	      else if (init->expr_type == EXPR_ARRAY)
+	      if (sym->attr.flavor == FL_PARAMETER
+		    && init->expr_type == EXPR_ARRAY)
 		sym->ts.cl->length = gfc_copy_expr (init->ts.cl->length);
 	    }
 	  /* Update initializer character length according symbol.  */
@@ -1172,6 +1170,20 @@ variable_decl (int elem)
   if (gfc_current_state () != COMP_DERIVED
       && build_sym (name, cl, &as, &var_locus) == FAILURE)
     {
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+
+  /* An interface body specifies all of the procedure's characteristics and these
+     shall be consistent with those specified in the procedure definition, except
+     that the interface may specify a procedure that is not pure if the procedure
+     is defined to be pure(12.3.2).  */
+  if (current_ts.type == BT_DERIVED
+	&& gfc_current_ns->proc_name->attr.if_source == IFSRC_IFBODY
+	&& current_ts.derived->ns != gfc_current_ns)
+    {
+      gfc_error ("the type of '%s' at %C has not been declared within the "
+		 "interface", name);
       m = MATCH_ERROR;
       goto cleanup;
     }

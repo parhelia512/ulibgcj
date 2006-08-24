@@ -220,6 +220,8 @@ public class OutputStreamWriter extends Writer
 /*#if not ULIBGCJ*/
 	// Always write -- if we are close()ing then we want to make
 	// sure the converter is flushed.
+	if (work == null)
+	  work = new char[100];
 	writeChars(work, 0, wcount);
 	wcount = 0;
 /*#endif*/

@@ -207,6 +207,9 @@ profile feedback	Jan Hubicka		jh@suse.cz
 type-safe vectors	Nathan Sidwell		nathan@codesourcery.com
 alias analysis		Daniel Berlin		dberlin@dberlin.org
 alias analysis		Diego Novillo		dnovillo@redhat.com
+reload			Ulrich Weigand		uweigand@de.ibm.com
+dfp.c, related		Ben Elliston		bje@au.ibm.com
+RTL optimizers		Eric Botcazou		ebotcazou@libertysurf.fr
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
@@ -273,6 +276,7 @@ Bernardo Innocenti				bernie@develer.com
 Daniel Jacobowitz				dan@debian.org
 Andreas Jaeger					aj@suse.de
 Fariborz Jahanian				fjahanian@apple.com
+Phillip Jordan					phillip.m.jordan@gmail.com
 Klaus Kaempf					kkaempf@progis.de
 Victor Kaplansky				victork@il.ibm.com
 Brendan Kehoe					brendan@zen.org
@@ -291,7 +295,7 @@ Chris Lattner					sabre@nondot.org
 Terry Laurenzo					tlaurenzo@gmail.com
 Marc Lehmann					pcg@goof.com
 Alan Lehotsky					apl@alum.mit.edu
-James Lemke					jwlemke@wasabisystems.com
+James Lemke					jim@lemke.org
 Kriang Lerdsuwanakij				lerdsuwa@users.sourceforge.net
 Warren Levy					warrenl@cruzio.com
 Don Lindsay					dlindsay@redhat.com

@@ -1,3 +1,841 @@
+2006-08-24  Jan Hubicka  <jh@suse.cz>
+
+	PR debug/26881
+	* gcc.dg/debug/pr26881.c: New file.
+
+2006-08-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28788
+	* gfortran.dg/used_types_4.f90: New test.
+	* gfortran.dg/derived_init_2.f90: Modify to check sibling
+	association of derived types.
+	* gfortran.dg/used_types_2.f90: Add module cleanup.
+	* gfortran.dg/used_types_3.f90: The same.
+
+	PR fortran/28771
+	* gfortran.dg/assumed_charlen_in_main.f90: Modify to check
+	fix of regression.
+
+2006-08-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR 28813
+	* gfortran.dg/direct_io_6.f90: Remove test.
+
+2006-08-23  Stuart Hastings  <stuart@apple.com>
+
+	PR 28825
+	* gcc.target/i386/20060821-1.c: New.
+
+2006-08-23  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	gcc.dg/attr-invalid.c:  Insert an " |directive" substitution into 
+	dg-warning strings for dllimport.
+
+2006-08-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+        PR C++/28450
+	* g++.dg/ext/vector4.C: New test.
+	* g++.dg/ext/complex1.C: New test.
+
+2006-08-21  Geoffrey Keating  <geoffk@apple.com>
+
+	PR debug/28692
+	* gcc.dg/debug/const-1.c: New.
+	* gcc.dg/debug/const-2.c: New.
+	* gcc.dg/debug/dwarf2/const-1.c: New.
+	* gcc.dg/debug/dwarf2/const-2.c: New.
+	* gcc.dg/debug/dwarf2/const-2b.c: New.
+
+2006-08-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28776
+	* gcc.c-torture/compile/pr28776-1.c: New testcase.
+	* gcc.c-torture/compile/pr28776-2.c: Likewise.
+
+2006-08-21  Mark Shinwell  <shinwell@codesourcery.com>
+
+	* g++.dg/eh/arm-vfp-unwind.C: Correct order of DejaGNU directives.
+
+2006-08-21  Lee Millward  <lee.millward@codesourcery.com>
+
+        PR c++/26269
+        * g++.dg/other/error14.C: New test.
+
+        PR c++/28505
+        * g++.dg/parse/ctor7.C: New test.
+        * g++.dg/parse/ctor8.C: Likewise.
+
+	PR c++/28741
+        * g++.dg/template/void7.C: New test. 
+	
+2006-08-21  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/self_aggregate_with_zeros.adb: New test.
+	* gnat.dg/self_aggregate_with_array.adb: New test.
+
+2006-08-21  Mark Shinwell  <shinwell@codesourcery.com>
+ 
+ 	* g++.dg/eh/arm-vfp-unwind.C: New test.
+ 
+2006-08-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28341
+	* g++.dg/template/ref3.C: New test.
+	* g++.dg/template/nontype13.C: New test.
+
+	PR c++/28346
+	* g++.dg/template/ptrmem17.C: New test.
+
+2006-08-20  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/28648 c:
+	* gcc.dg/attr-invalid.c: Add tests for invalid dllimport.
+
+2006-08-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28630
+	* gfortran.dg/used_types_2.f90: New test.
+
+	PR fortran/28601
+	* gfortran.dg/used_types_3.f90: New test.
+
+	PR fortran/20886
+	* gfortran.dg/generic_actual_arg.f90: New test.
+
+	PR fortran/28735
+	* gfortran.dg/module_private_array_refs_1.f90: New test.
+
+	PR fortran/28762
+	* gfortran.dg/program_name_1.f90: New test.
+
+	PR fortran/28425
+	* gfortran.dg/derived_constructor_comps_1.f90: New test.
+
+	PR fortran/28496
+	* gfortran.dg/array_initializer_2.f90: New test.
+
+	PR fortran/18111
+	* gfortran.dg/unused_artificial_dummies_1.f90: New test. 
+
+	PR fortran/28600
+	* gfortran.dg/assumed_charlen_function_4.f90: New test.
+
+	PR fortran/28771
+	* gfortran.dg/assumed_charlen_in_main.f90: New test.
+
+	PR fortran/28660
+	* gfortran.dg/dependent_decls_1.f90: New test.
+
+2006-08-19  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/25217
+	* gfortran.dg/derived_init_2.f90: New.
+
+2006-08-17  J"orn Rennecke  <joern.rennecke@st.com>
+
+	* gcc.c-torture/execute/pr28289.c: New test.
+
+2006-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/28744
+	* gcc.dg/attr-externally-visible-1.c: New test.
+	* gcc.dg/attr-externally-visible-2.c: New test.
+	* g++.dg/parse/attr-externally-visible-1.C: New test.
+	* g++.dg/parse/attr-externally-visible-2.C: New test.
+
+2006-08-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28606
+	* g++.dg/parse/dtor11.C: New test.
+
+2006-08-17  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	PR rtl-optimization/28489
+	* gcc.c-torture/compile/pr28489.c: New test.
+
+2006-08-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28710
+	* g++.dg/template/redecl4.C: New test.
+
+	PR c++/28711
+	* g++.dg/template/ctor8.C: New test.
+
+2006-08-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	* PR c++/28573
+	* g++.dg/parse/offsetof6.C: New test.
+	* g++.dg/parse/offsetof6.C: New test.
+	* g++.dg/parse/offsetof7.C: New test.
+
+2006-08-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/28602
+	* gfortran.dg/gomp/gomp.exp: Return if check_effective_target_fopenmp
+	is false.
+
+2006-08-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/28302
+	* g++.dg/ext/vector3.C: New test.
+
+2006-08-16  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR gcov/profile/26570
+	* gcc.dg/pr26570.c: New test.
+
+2006-08-16  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/27697
+	* gcc.dg/qual-component-1.c: New test.
+
+2006-08-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28593
+	* g++.dg/parse/new3.C: New test.
+
+2006-08-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/25828
+	* gfortran.dg/streamio_1.f90: New test.
+	* gfortran.dg/streamio_2.f90: New test.
+	* gfortran.dg/streamio_3.f90: New test.
+	* gfortran.dg/streamio_4.f90: New test.
+	* gfortran.dg/streamio_5.f90: New test.
+	* gfortran.dg/streamio_6.f90: New test.
+	* gfortran.dg/streamio_7.f90: New test.
+	* gfortran.dg/streamio_8.f90: New test.
+
+2006-08-15  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR c/28287
+	* gcc.dg/attr-invalid.c: Add tests for invalid weak attribute.
+
+2006-08-15  Lee Millward  <lee.millward@codesourcery.com>
+
+	PR c++/28594
+	* g++.dg/template/void6.C: New test.
+	
+2006-08-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c/28649
+	* gcc.dg/parse-error-1.c: New test.
+	* gcc.dg/parse-error-2.c: New test.
+	* gcc.dg/cpp/digraph2.c: Add error-marker.
+	* gcc.dg/noncompile/920923-1.c: Likewise.
+
+2006-08-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/27490
+	* gcc.dg/sizeof-2.c: New testcase.
+
+	PR c/27489
+	* gcc.dg/switch-A.c: New testcase.
+
+2006-08-14  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c++/28288
+	PR c++/14556
+	* g++.old-deja/g++.warn/compare1.C: Delete.
+	* g++.dg/opt/pr7503-2.C: Delete.
+	* g++.dg/opt/pr7503-3.C: Delete.
+	* g++.dg/opt/pr7503-4.C: Delete.
+	* g++.dg/opt/pr7503-5.C: Delete.
+	* g++.dg/opt/max1.C: Delete.
+	* g++.dg/warn/minmax.C: Delete.
+	* g++.dg/expr/minmax.C: New test.
+
+2006-08-14  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/28703
+	* gcc.c-torture/execute/pr28651.c: Do not use argc
+	to avoid optimization, instead forbid inlining.
+
+2006-08-14  Richard Sandiford  <richard@codesourcery.com>
+
+	PR rtl-optimization/28634
+	* gcc.c-torture/execute/ieee/pr28634.c: New test.
+
+2006-08-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c/27184
+	* gcc.dg/torture/pr27184.c: New test.
+
+2006-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/pr27827.c: Only compile on ilp32 target.
+
+2006-08-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/stat_1.f90: Make test pass when run under sudo.
+	* gfortran.dg/stat_2.f90: Likewise.
+	* gfortran.dg/chmod_1.f90: Likewise.
+	* gfortran.dg/chmod_2.f90: Likewise.
+	* gfortran.dg/chmod_3.f90: Likewise.
+
+2006-08-11  David Edelsohn  <edelsohn@gnu.org>
+
+	* gfortran.dg/direct_io_6.f90: Skip on *-*-aix*.
+
+2006-08-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* g++.dg/opt/pr23454-2.C: New test.
+
+2006-08-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28651
+	* gcc.c-torture/execute/pr28651.c: New testcase.
+
+2006-08-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/static_initializer.ads: New test.
+
+2006-08-10  Paul Brook  <paul@codesourcery.com>
+
+	* gcc.target/arm/cond-asm.c: New test.
+
+2006-08-10  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/26197
+	* g++.dg/vect/param-max-aliased-pr26197.cc: New test.
+	* g++.dg/vect/vect.exp: Compile the new tests with
+	--param max-aliased-vops=0.
+
+2006-08-09  Lee Millward  <lee.millward@codesourcery.com>
+
+	PR c++/28637
+	* g++.dg/template/void3.C: New test.
+
+	PR c++/28638
+	* g++.dg/template/void4.C: New test.
+
+	PR c++/28640
+	* g++.dg/template/void5.C: New test.
+	
+2006-08-07  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* g++.dg/ext/visibility/class1.C (dg-require-visibility): Move
+	after dg-do compile.
+
+2006-08-07  Victor Kaplansky <victork@il.ibm.com>
+
+	PR tree-optimizations/26969
+	* gcc.dg/vect/vect.exp: Compile tests prefixed with
+	"unswitch-loops" with -funswitch-loops.
+	* gcc.dg/vect/unswitch-loops-pr26969.c: New test.
+
+2006-08-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/sparc-getcontext-1.c: Fix typo.
+	* g++.dg/eh/spbp.C: Skip on Solaris 2.5.1 and 2.6 too.
+	* g++.dg/other/unused1.C: Likewise.  Also match "asci?z".
+	* objc.dg/dwarf-1.m: Likewise.
+	* objc.dg/dwarf-2.m: Likewise.
+	* obj-c++.dg/dwarf-2.mm: Likewise.
+
+2006-08-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* objc.dg/dwarf-1.m: Skip on 32-bit hppa hpux.
+	* objc.dg/dwarf-2.m: Likewise.
+	* obj-c++.dg/dwarf-2.mm: Likewise.
+
+	PR libfortran/28603
+	* gfortran.dg/direct_io_6.f90: Skip on hppa*-*-hpux*.
+
+	PR testsuite/27611
+	* g++.dg/other/unused1.C: Skip on hppa*-*-hpux* if not hppa*64*-*-*.
+
+	PR testsuite/27033
+	* g++.dg/eh/spbp.C: Skip on hppa*-*-hpux* if not hppa*64*-*-*.
+
+2006-08-06  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/27827
+	* gcc.target/i386/pr27827.c: New testcase.
+
+2006-08-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28590
+	* gfortran.dg/sequence_types_1.f90: New test.
+
+2006-08-05  Steven G. Kargl <kargls@comcast.nt>
+
+	PR fortran/28548
+	* gfortran.dg/elemental_optional_args_1.f90: dg-error becomes
+	dg-warning.  Add -pedantic option.
+
+2006-08-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c/28502
+	* gcc.dg/proto-1.c: New test.
+
+	PR c/27721
+	* gcc.dg/lvalue-4.c: New test.
+
+	PR c/28136
+	* gcc.dg/init-bad-5.c: New test.
+
+2006-08-03  Lee Millward  <lee.millward@codesourcery.com>
+
+	PR c++/28347
+	* g++.dg/ext/typedef-init.C: Add new test for typedef 
+	initialization inside templates. Adjust existing error markers.
+
+2006-08-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28148
+	* g++.dg/init/ptrmem3.C: New test.
+
+2006-08-03  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/27770
+	* lib/target-support.exp: New target keyword "section_anchors". 
+	* gcc.dg/vect/vect.exp: Add -fsection-anchors to compilation of some
+	tests.
+	* gcc.dg/vect/section-anchors-pr27770.c: New test.
+	* gcc.dg/vect/vect-69.c: Removed. Replaced by:
+	* gcc.dg/vect/section-anchors-vect-69.c: New test.
+	* gcc.dg/vect/no-section-anchors-vect-69.c: New test.
+	
+2006-08-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/20060801-1.c: Add missing '}'.
+
+2006-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27508
+	* g++.dg/parse/dtor9.C: New test.
+	* g++.dg/parse/dtor10.C: New test.
+	* g++.dg/other/error7.C: Adjust error-marker.
+
+	PR c++/28274
+	* g++.dg/other/default5.C: New test.
+
+2006-08-02  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/tree-ssa/copyprop-1.C: XFAIL.
+
+2006-08-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28557
+	* g++.dg/template/conv9.C: New test.
+
+2006-08-02  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR debug/28063
+	* gcc.dg/debug/dwarf2/dwarf-merge.c: New test.
+	* lib/target-supports.exp (get_compiler_messages): Add WANT_OUTPUT.
+	Optionally return assembly text.  Update callers.
+	(check_no_compiler_messages): Update verbose messages.
+	(check_no_messages_and_pattern): New.
+	(check_effective_target_string_merging): New.
+
+2006-08-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28250
+	* g++.dg/eh/catch4.C: New test.
+
+	PR c++/28257
+	* g++.dg/other/qual1.C: New test.
+
+	PR c++/28259
+	* g++.dg/inherit/error2.C: New test.
+
+	PR c++/28267
+	* g++.dg/other/new1.C: New test.
+
+	* g++.dg/warn/pr23075.C: Remove obsolete test.
+	* g++.old-deja/g++.brendan/crash52.C: Remove dg-warning marker.
+	* g++.old-deja/g++.jason/report.C: Remove dg-warning marker.
+
+2006-07-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28523
+	* g++.dg/eh/cast1.C: New test.
+
+2006-08-01  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/28452
+	* gfortran.dg/random_3.f90:  New test.
+
+2006-08-01  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c++/28432
+	* g++.dg/other/pr28304.C: Change expected error message.
+	* g++.dg/other/pr28432.C: New test.
+
+2006-08-01  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c++/28256
+	* g++.dg/init/brace2.C: Change expected error message, add empty init.
+
+2006-08-01  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR debug/23336
+	* lib/gcc-dg.exp (gcc-dg-debug-runtest): Suppress new tests
+	at -g1.
+	* gcc.dg/debug/enum-1.c, g++.dg/debug/enum-1.C,
+	g++.dg/debug/enum-2.C: New.
+
+2006-07-31  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/6634
+	* g++.dg/parse/long1.C: Add more tests.
+
+2006-07-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/lrshift_1.c: New file.
+
+2006-07-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/28335
+	* gfortran.dg/no_unit_error_1.f90: New test.
+
+2006-07-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/28335
+	* gfortran.dg/no_unit_error_1.f90: Delete test.
+	* gfortran.dg/no_unit_error_2.f90: Delete test.
+
+2006-07-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/chmod_3.f90: New test.
+	* gfortran.dg/ltime_gmtime_1.f90: New test.
+	* gfortran.dg/ltime_gmtime_2.f90: New test.
+	* gfortran.dg/lrshift_1.f90: New test.
+	* gfortran.dg/chmod_1.f90: New test.
+	* gfortran.dg/chmod_2.f90: New test.
+
+2006-07-28  Lee Millward  <lee.millward@codesourcery.com>
+
+        PR c++/27668
+        * g++.dg/template/crash55.C: New test.
+
+        PR c++/27962
+        * g++.dg/template/nontype16.C: New test.
+
+        * g++.dg/template/void2.C: Adjust error markers.
+        * g++.dg/template/nontype5.C: Adjust error markers.
+	
+2006-07-27  Arjan van de Ven <arjan@linux.intel.com>
+
+	* gcc.target/i386/stack-prot-kernel.c: New test.
+
+2006-07-27  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-55.c: New test case.
+
+2006-07-26  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR rtl-optimization/27907
+	* gcc.c-torture/compile/pr27907.c: New test.
+
+2006-07-26  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/mclock.f90: New test.
+	* gfortran.dg/int_conv_1.f90: New test.
+	* gfortran.dg/stat_1.f90: New test.
+	* gfortran.dg/stat_2.f90: New test.
+
+2006-07-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/28335
+	* gfortran.dg/no_unit_error_1.f90: New test.
+	* gfortran.dg/no_unit_error_2.f90: New test.
+	* gfortran.dg/temporary_1.f90: Remove extraneous CLOSE.
+
+2006-07-25  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/28473
+	* gcc.dg/fold-convround-1.c: New test case.
+
+2006-07-24  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.dg/arithmetic_if.f90:  Fix comments.
+
+2006-07-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27572
+	* g++.dg/other/typedef1.C: New test.
+	* g++.dg/template/typedef4.C: New test.
+	* g++.dg/template/typedef5.C: New test.
+
+2006-07-24  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/28416
+	* gfortran.dg/allocatable_dummy_3.f90: New.
+
+2006-07-24  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/28439
+	* gfortran.dg/arithmetic_if.f90:  New test.
+
+2006-07-24  Uros Bizjak  <uros@kss-loka.si>
+
+	* gcc.dg/visibility-11.c: Enlarge test array to 1024 bytes to
+	avoid memcpy optimization.
+	
+2006-07-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/25289
+	* gfortran.dg/direct_io_6.f90: New test.
+
+2006-07-24  Jan Hubicka  <jh@suse.cz>
+
+	PR c/25795
+	PR c++/27369
+	* gcc.dg/pr25795.c: New test.
+	* gcc.dg/pr25795-1.c: New test.
+
+2006-07-23  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/fold-cond-1.c: Increase test case portability by checking
+	that "g ? 1 : h" doesn't match, instead of checking for "(g | h) != 0"
+	which may be transformed to "g || h" on some platforms.
+
+2006-07-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28025
+	* g++.dg/template/friend45.C: New test.
+
+2006-07-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/28339
+	* gfortran.dg/arrayio_8.f90: New test.
+
+2006-07-21  Mike Stump  <mrs@apple.com>
+
+	* g++.dg/ext/visibility/fvisibility-inlines-hidden-3.C: New test.
+
+	* gcc.c-torture/unsorted/dump-noaddr.x: Fix test case name.
+
+2006-07-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28250
+	* g++.dg/eh/catch3.C: New test.
+
+	PR c++/28363
+	* g++.dg/template/defarg10.C: New test.
+
+2006-07-20  Paul Brook  <paul@codesourcery.com>
+
+	PR 27363
+	* gcc.dg/pr27363.c: New test.
+
+2006-07-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28338
+	* g++.dg/init/ref13.C: New test.
+
+2006-07-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR obj-c++/28434
+	* obj-c++.dg/proto-error-1.mm: New test.
+
+2006-07-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28337
+	* g++.dg/template/string1.C: New test.
+
+2006-07-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28048
+	* g++.dg/template/defarg9.C: New test.
+
+	PR c++/28235
+	* g++.dg/template/static27.C: New test.
+
+2006-07-18  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 28410
+	* gcc.dg/tree-ssa/pr28410.c: New test.
+
+2006-07-18  Lee Millward  <lee.millward@gmail.com>
+
+	PR c++/28258
+	* g++/dg/other/error13.C: New test.
+
+	PR c++/28260
+	* g++.dg/template/friend44.C: New test.
+	
+2006-07-18  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c++/27495
+	* g++.dg/other/pr27495.C: New.
+
+2006-07-18  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/outer_agg_bitfield_constructor.adb: New test.
+	* gnat.dg/nested_agg_bitfield_constructor.adb: New test.
+	
+2006-07-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c/28286
+	* gcc.dg/pragma-pack-4.c: New test.
+
+2006-07-17  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c++/28291
+	* g++.dg/ext/pr28291.C: New test.
+
+2006-07-17  Richard Sandiford  <richard@codesourcery.com>
+
+	PR middle-end/28403
+	* gcc.c-torture/execute/pr28403.c: New test.
+
+2006-07-17  Richard Sandiford  <richard@codesourcery.com>
+
+	PR middle-end/28402
+	* gcc.dg/pr28402.c: New test.
+
+2006-07-17  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c++/28304
+	* g++.dg/other/pr28304.C: New test.
+
+2006-07-17  J"orn Rennecke  <joern.rennecke@st.com>
+
+	PR other/28251
+	gcc.c-torture/unsorted/dump-noaddr.c: New test.
+	gcc.c-torture/unsorted/dump-noaddr.x: New driver.
+
+2006-07-17  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/28238
+	* g++.dg/tree-ssa/pr28238.C: New testcase.
+
+2006-07-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28250
+	* g++.dg/eh/catch1.C: New test.
+	* g++.dg/eh/catch2.C: New test.
+
+2006-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/28370
+	* g++.dg/template/anon3.C: New test.
+
+2006-07-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/20844
+	* gfortran.dg/io_constaints_2.f90: Add the test for ADVANCE
+	specifiers requiring an explicit format tag..
+
+	PR fortran/28201
+	* gfortran.dg/generic_5: New test.
+
+	PR fortran/20893
+	* gfortran.dg/elemental_optional_args_1.f90: New test.
+
+2006-07-16  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/assert.ads: New file.
+	* gnat.dg/controlled_record.ads: Likewise.
+	* gnat.dg/controlled_record.adb: Likewise.
+
+2006-07-15  Lee Millward  <lee.millward@gmail.com>
+
+	PR c++/28292
+	* g++.dg/other/error12.C: New test.
+
+	PR c++/28269
+	* g++.dg/template/crash54.C: New test.
+	
+2006-07-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28249
+	* g++.dg/parse/catch1.C: New test.
+
+	PR c++/28294
+	* g++.dg/ext/offsetof1.C: Add test with function pointer arithmetic.
+
+	PR c++/28387
+	* g++.dg/ext/attrib24.C: New test.
+
+2006-07-14  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28343
+	* g++.dg/ext/asmspec1.C: New test.
+
+2006-07-13  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/gcc-dg.exp (tool_load): Wrapper to support shouldfail tests.
+	(dg-test): Support shouldfail tests.
+	* lib/target-supports-dg.exp (dg-shouldfail): New.
+	* gcc.test-framework/test-framework.awk: Handle shouldfail tests.
+	* gcc.test-framework/dg-do-run-sf-exp-F.c: New test.
+	* gcc.test-framework/dg-do-run-sf-exp-P.c: New test.
+	* gcc.test-framework/dg-do-run-sft-exp-F.c: New test.
+	* gcc.test-framework/dg-do-run-sft-exp-P.c: New test.
+	* gcc.test-framework/dg-dox-run-sf-exp-XF.c: New test.
+	* gcc.test-framework/dg-dox-run-sf-exp-XP.c: New test.
+
+2006-07-13  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.target/i386/memcpy-1.c: New.
+
+2006-07-12  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.dg/ext/visibility/fvisibility-inlines-hidden-2.C: New.
+
+2006-07-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25097
+	* gfortran.dg/present_1.f90: New test.
+
+	PR fortran/20903
+	* gfortran.dg/interface_derived_type_1.f90: New test.
+
+2006-07-11  Feng Wang  <fengwang@nudt.edu.cn>
+
+	PR fortran/28213
+	* gfortran.dg/hollerith4.f90: Test hollerith constants used in I/O
+	list.
+
+2006-07-07  Lee Millward  <lee.millward@gmail.com>
+
+	PR c++/27820
+	* g++.dg/other/label1.C: New test.
+	
+2006-07-07   Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28268
+	* gcc.dg/torture/pr28268.c: New testcase.
+
+2006-07-07  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c++/27019
+	* g++.dg/ext/pr27019.C: New.
+
+2006-07-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/28187
+	* gcc.dg/pr28187.c: New testcase.
+
+2006-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/address_conversion.adb: New test.
+	* gnat.dg/boolean_subtype.adb: Likewise.
+	* gnat.dg/frame_overflow.adb: Likewise.
+	* gnat.dg/pointer_array.adb: Likewise.
+	* gnat.dg/pointer_conversion.adb: Likewise.
+
+2006-07-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28237
+	PR fortran/23420
+	* gfortran.dg/print_fmt_5.f90: New test.
+
+2006-07-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/28129
+	* gfortran.dg/bounds_check_4.f90: New test.
+
+2006-07-05  Richard Guenther  <rguenther@suse.de>
+
+	PR target/28158
+	* gfortran.dg/pr28158.f90: New testcase.
+
 2006-07-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/28162
@@ -34,7 +872,7 @@
 
 2006-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* gnat.dg/gnat.dg/string_slice.adb: New test.
+	* gnat.dg/string_slice.adb: New test.
 
 2006-07-01  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 

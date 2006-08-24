@@ -154,6 +154,11 @@ public class Thread implements Runnable
   UncaughtExceptionHandler exceptionHandler;
 /*#endif*/
 
+  /** The access control state for this thread.  Package accessible
+    * for use by java.security.VMAccessControlState's native method.
+    */
+  Object accessControlState = null;
+  
   // This describes the top-most interpreter frame for this thread.
   RawData interp_frame;
 
@@ -1163,6 +1168,19 @@ public class Thread implements Runnable
      * @param exc the uncaught exception.
      */
     void uncaughtException(Thread thr, Throwable exc);
+  }
+
+  /**
+   * Returns the current state of the thread.  This
+   * is designed for monitoring thread behaviour, rather
+   * than for synchronization control.
+   *
+   * @return the current thread state.
+   */
+  public String getState()
+  {
+    // FIXME - Provide real implementation.
+    return "NEW";
   }
 /*#endif*/
 }

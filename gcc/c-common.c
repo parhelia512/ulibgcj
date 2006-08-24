@@ -976,11 +976,11 @@ unsigned_conversion_warning (tree result, tree operand)
 
 /* Print a warning about casts that might indicate violation
    of strict aliasing rules if -Wstrict-aliasing is used and
-   strict aliasing mode is in effect. otype is the original
-   TREE_TYPE of expr, and type the type we're casting to. */
+   strict aliasing mode is in effect. OTYPE is the original
+   TREE_TYPE of EXPR, and TYPE the type we're casting to. */
 
 void
-strict_aliasing_warning(tree otype, tree type, tree expr)
+strict_aliasing_warning (tree otype, tree type, tree expr)
 {
   if (flag_strict_aliasing && warn_strict_aliasing
       && POINTER_TYPE_P (type) && POINTER_TYPE_P (otype)
@@ -4082,20 +4082,6 @@ handle_packed_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
 	*node = build_variant_type_copy (*node);
       TYPE_PACKED (*node) = 1;
-      if (TYPE_MAIN_VARIANT (*node) == *node)
-	{
-	  /* If it is the main variant, then pack the other variants
-	     too. This happens in,
-
-	     struct Foo {
-	       struct Foo const *ptr; // creates a variant w/o packed flag
-	     } __ attribute__((packed)); // packs it now.
-	   */
-	  tree probe;
-
-	  for (probe = *node; probe; probe = TYPE_NEXT_VARIANT (probe))
-	    TYPE_PACKED (probe) = 1;
-	}
     }
   else if (TREE_CODE (*node) == FIELD_DECL)
     {
@@ -4315,26 +4301,15 @@ handle_externally_visible_attribute (tree *pnode, tree name,
 {
   tree node = *pnode;
 
-  if ((!TREE_STATIC (node) && TREE_CODE (node) != FUNCTION_DECL)
-      || !TREE_PUBLIC (node))
+  if (TREE_CODE (node) == FUNCTION_DECL || TREE_CODE (node) == VAR_DECL)
     {
-      warning (OPT_Wattributes,
-	       "%qE attribute have effect only on public objects", name);
-      *no_add_attrs = true;
-    }
-  else if (TREE_CODE (node) == FUNCTION_DECL)
-    {
-      struct cgraph_node *n = cgraph_node (node);
-      n->local.externally_visible = true;
-      if (n->local.finalized)
-	cgraph_mark_needed_node (n);
-    }
-  else if (TREE_CODE (node) == VAR_DECL)
-    {
-      struct cgraph_varpool_node *n = cgraph_varpool_node (node);
-      n->externally_visible = true;
-      if (n->finalized)
-	cgraph_varpool_mark_needed_node (n);
+      if ((!TREE_STATIC (node) && TREE_CODE (node) != FUNCTION_DECL
+	   && !DECL_EXTERNAL (node)) || !TREE_PUBLIC (node))
+	{
+	  warning (OPT_Wattributes,
+		   "%qE attribute have effect only on public objects", name);
+	  *no_add_attrs = true;
+	}
     }
   else
     {
@@ -4762,12 +4737,17 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
    struct attribute_spec.handler.  */
 
 static tree
-handle_weak_attribute (tree *node, tree ARG_UNUSED (name),
+handle_weak_attribute (tree *node, tree name,
 		       tree ARG_UNUSED (args),
 		       int ARG_UNUSED (flags),
 		       bool * ARG_UNUSED (no_add_attrs))
 {
-  declare_weak (*node);
+  if (TREE_CODE (*node) == FUNCTION_DECL
+      || TREE_CODE (*node) == VAR_DECL)
+    declare_weak (*node);
+  else
+    warning (OPT_Wattributes, "%qE attribute ignored", name);
+    	
 
   return NULL_TREE;
 }
@@ -4841,6 +4821,16 @@ handle_weakref_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 			  int flags, bool *no_add_attrs)
 {
   tree attr = NULL_TREE;
+
+  /* We must ignore the attribute when it is associated with
+     local-scoped decls, since attribute alias is ignored and many
+     such symbols do not even have a DECL_WEAK field.  */
+  if (decl_function_context (*node) || current_function_decl)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
 
   /* The idea here is that `weakref("name")' mutates into `weakref,
      alias("name")', and weakref without arguments, in turn,
@@ -5992,15 +5982,18 @@ c_common_to_target_charset (HOST_WIDE_INT c)
 }
 
 /* Build the result of __builtin_offsetof.  EXPR is a nested sequence of
-   component references, with an INDIRECT_REF at the bottom; much like
-   the traditional rendering of offsetof as a macro.  Returns the folded
-   and properly cast result.  */
+   component references, with STOP_REF, or alternatively an INDIRECT_REF of
+   NULL, at the bottom; much like the traditional rendering of offsetof as a
+   macro.  Returns the folded and properly cast result.  */
 
 static tree
-fold_offsetof_1 (tree expr)
+fold_offsetof_1 (tree expr, tree stop_ref)
 {
   enum tree_code code = PLUS_EXPR;
   tree base, off, t;
+
+  if (expr == stop_ref && TREE_CODE (expr) != ERROR_MARK)
+    return size_zero_node;
 
   switch (TREE_CODE (expr))
     {
@@ -6011,11 +6004,22 @@ fold_offsetof_1 (tree expr)
       error ("cannot apply %<offsetof%> to static data member %qD", expr);
       return error_mark_node;
 
-    case INDIRECT_REF:
+    case CALL_EXPR:
+      error ("cannot apply %<offsetof%> when %<operator[]%> is overloaded");
+      return error_mark_node;
+
+    case INTEGER_CST:
+      gcc_assert (integer_zerop (expr));
       return size_zero_node;
 
+    case NOP_EXPR:
+    case INDIRECT_REF:
+      base = fold_offsetof_1 (TREE_OPERAND (expr, 0), stop_ref);
+      gcc_assert (base == error_mark_node || base == size_zero_node);
+      return base;
+
     case COMPONENT_REF:
-      base = fold_offsetof_1 (TREE_OPERAND (expr, 0));
+      base = fold_offsetof_1 (TREE_OPERAND (expr, 0), stop_ref);
       if (base == error_mark_node)
 	return base;
 
@@ -6032,7 +6036,7 @@ fold_offsetof_1 (tree expr)
       break;
 
     case ARRAY_REF:
-      base = fold_offsetof_1 (TREE_OPERAND (expr, 0));
+      base = fold_offsetof_1 (TREE_OPERAND (expr, 0), stop_ref);
       if (base == error_mark_node)
 	return base;
 
@@ -6054,10 +6058,10 @@ fold_offsetof_1 (tree expr)
 }
 
 tree
-fold_offsetof (tree expr)
+fold_offsetof (tree expr, tree stop_ref)
 {
   /* Convert back from the internal sizetype to size_t.  */
-  return convert (size_type_node, fold_offsetof_1 (expr));
+  return convert (size_type_node, fold_offsetof_1 (expr, stop_ref));
 }
 
 /* Print an error message for an invalid lvalue.  USE says

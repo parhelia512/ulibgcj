@@ -1041,5 +1041,17 @@ public final class Class
     // FIXME - provide real implementation.
     return new TypeVariable[0];
   }
+
+  /**
+   * Returns true if this class is an <code>Enum</code>.
+   *
+   * @return true if this is an enumeration class.
+   * @since 1.5
+   */
+  public boolean isEnum()
+  {
+    // FIXME - provide real implementation.
+    return false;
+  }
 /*#endif*/
 }

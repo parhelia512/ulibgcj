@@ -9942,10 +9942,13 @@ rtl_for_decl_init (tree init, tree type)
 	rtl = gen_rtx_CONST_STRING (VOIDmode,
 				    ggc_strdup (TREE_STRING_POINTER (init)));
     }
-  /* Although DWARF could easily handle other kinds of aggregates, we
-     have no way to represent such values as RTL constants, so skip
-     those.  */
-  else if (AGGREGATE_TYPE_P (type))
+  /* Other aggregates, and complex values, could be represented using
+     CONCAT: FIXME!  */
+  else if (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == COMPLEX_TYPE)
+    ;
+  /* Vectors only work if their mode is supported by the target.  
+     FIXME: generic vectors ought to work too.  */
+  else if (TREE_CODE (type) == VECTOR_TYPE && TYPE_MODE (type) == BLKmode)
     ;
   /* If the initializer is something that we know will expand into an
      immediate RTL constant, expand it now.  We must be careful not to
@@ -11457,6 +11460,7 @@ dwarf2out_abstract_function (tree decl)
 {
   dw_die_ref old_die;
   tree save_fn;
+  struct function *save_cfun;
   tree context;
   int was_abstract = DECL_ABSTRACT (decl);
 
@@ -11480,7 +11484,9 @@ dwarf2out_abstract_function (tree decl)
 
   /* Pretend we've just finished compiling this function.  */
   save_fn = current_function_decl;
+  save_cfun = cfun;
   current_function_decl = decl;
+  cfun = DECL_STRUCT_FUNCTION (decl);
 
   set_decl_abstract_flags (decl, 1);
   dwarf2out_decl (decl);
@@ -11488,6 +11494,7 @@ dwarf2out_abstract_function (tree decl)
     set_decl_abstract_flags (decl, 0);
 
   current_function_decl = save_fn;
+  cfun = save_cfun;
 }
 
 /* Helper function of premark_used_types() which gets called through
@@ -11531,7 +11538,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
   int declaration = (current_function_decl != decl
 		     || class_or_namespace_scope_p (context_die));
 
-  premark_used_types();
+  premark_used_types ();
 
   /* It is possible to have both DECL_ABSTRACT and DECLARATION be true if we
      started to generate the abstract instance of an inline, decided to output
@@ -13547,9 +13554,6 @@ dwarf2out_var_location (rtx loc_note)
   last_insn = loc_note;
   last_label = newloc->label;
   decl = NOTE_VAR_LOCATION_DECL (loc_note);
-  if (DECL_DEBUG_EXPR_IS_FROM (decl) && DECL_DEBUG_EXPR (decl) 
-      && DECL_P (DECL_DEBUG_EXPR (decl)))
-    decl = DECL_DEBUG_EXPR (decl); 
   add_var_loc_to_decl (decl, newloc);
 }
 
@@ -14040,6 +14044,7 @@ prune_unused_types_prune (dw_die_ref die)
   dw_die_ref c;
 
   gcc_assert (die->die_mark);
+  prune_unused_types_update_strings (die);
 
   if (! die->die_child)
     return;
@@ -14064,7 +14069,6 @@ prune_unused_types_prune (dw_die_ref die)
 
     if (c != prev->die_sib)
       prev->die_sib = c;
-    prune_unused_types_update_strings (c);
     prune_unused_types_prune (c);
   } while (c != die->die_child);
 }

@@ -1,3 +1,538 @@
+2006-08-22  Phillip Jordan  <phillip.m.jordan@gmail.com>
+
+	*include/tr1/boost_shared_ptr.h: Added locking policy to
+	tr1::shared_ptr<> and related classes.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/thread: New.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/thread/
+	lockfree_weaktoshared.cc: New.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/thread/
+	mutex_weaktoshared.cc: New.
+	*testsuite/tr1/2_general_utilities/memory/shared_ptr/assign/
+	shared_ptr_neg.cc: Modify.
+	
+2006-08-22  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random.tcc (subtract_with_carry_01<>::
+      	seed(_Gen&, false_type)): Fix _M_carry initialization.
+	
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/cons/default.cc: Qualify 1 as 1UL.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/cons/gen1.cc: Likewise.
+
+2006-08-22  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (class subtract_with_carry_01<>): Add.
+	* include/tr1/random.tcc (subtract_with_carry_01<>::
+	seed(unsigned long), subtract_with_carry_01<>::
+	seed(_Gen&, false_type), subtract_with_carry_01<>::
+	operator(), operator<<(std::basic_ostream<>&, const
+	subtract_with_carry_01<>&), operator>>(std::basic_istream<>&,
+	subtract_with_carry_01<>&)): Define.
+	* testsuite/tr1/5_numerical_facilities/random/ranlux3_01.cc:
+	New.
+	* testsuite/tr1/5_numerical_facilities/random/ranlux4_01.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/cons/seed1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/cons/seed2.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/cons/default.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/cons/gen1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/requirements/typedefs.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/operators/equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/operators/not_equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/operators/serialize.cc: Likewise.
+
+	* docs/html/ext/howto.html: Add two implemented TR1 issues.
+
+	* include/tr1/random.tcc (struct _To_Unsigned_Type<>): Move...
+	* include/tr1/random: ... here.
+	(class subtract_with_carry<>): Use it everywhere.
+
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/cons/seed1.cc: Qualify 1 as 1UL.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/cons/seed2.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/cons/default.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/cons/gen1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/requirements/typedefs.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/operators/equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/operators/not_equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/operators/serialize.cc: Likewise.
+
+	* include/tr1/random (class binomial_distribution<>): Reorder the
+	data members to save space.
+
+2006-08-20  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (gamma_distribution<>::_M_initialize,
+	gamma_distribution<>::_M_l_d): Add.
+	(gamma_distribution<>::gamma_distribution(const result_type&),
+	operator>>(std::basic_istream<>&, gamma_distribution&)): Use it.
+	include/tr1/random.tcc (gamma_distribution<>::_M_initialize):
+	Define.
+	(gamma_distribution<>::operator()): Adjust.
+
+	* include/tr1/random (geometric_distribution<>::_M_initialize): Add.
+	(geometric_distribution<>::geometric_distribution(const _RealType&),
+	operator>>(std::basic_istream<>&, geometric_distribution&)): Use it.
+
+2006-08-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (class binomial_distribution<>): Add.
+	* include/tr1/random.tcc (binomial_distribution<>::operator(),
+	operator<<(std::basic_ostream<>&, const binomial_distribution<>&),
+	operator>>(std::basic_istream<>&, binomial_distribution<>&,
+	binomial_distribution<>::_M_waiting(), binomial_distribution<>::
+	_M_initialize()): Define.
+	* testsuite/tr1/5_numerical_facilities/random/binomial_distribution/
+	requirements/typedefs.cc: New.
+
+	* include/tr1/random (geometric_distribution<>::
+	geometric_distribution(const _RealType&)): Fix DEBUG_ASSERT
+	limits.
+
+	* include/tr1/random (poisson_distribution): Add normal_distribution
+	member, adjust consistently; minor tweaks and rearrangements of the
+	arithmetic.
+	(operator>>(std::basic_istream<>&, poisson_distribution<>&)): Move
+	out of line.
+	* include/tr1/random.tcc: Adjust.
+
+	* include/tr1/random.tcc (normal_distribution<>::operator()): Minor
+	tweaks.
+
+2006-08-18  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28765
+	* include/ext/rc_string_base.h (_M_clear): New.
+	* include/ext/sso_string_base.h (_M_clear): Likewise.
+	* include/ext/vstring.h (clear): Use it.
+
+2006-08-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (poisson_distribution<>::_M_initialize): Add.
+	(poisson_distribution<>::poisson_distribution(const _RealType&):
+	Use it.
+	(operator>>(std::basic_istream<>&, poisson_distribution<>&)):
+	Likewise.
+	(poisson_distribution<>::_M_large): Remove.
+	* include/tr1/random.tcc (poisson_distribution<>::_M_initialize):
+	Define.
+	(operator<<(std::basic_ostream<>&, const poisson_distribution<>&)):
+	Do not output the constants.
+
+	* include/tr1/random (operator>>(std::basic_istream<>&,
+	gamma_distribution&)): Minor tweak.
+	
+	* include/tr1/random.tcc (poisson_distribution<>::operator()):
+	Minor tweak.
+
+	* include/tr1/random: Consistently, all data members private.
+
+2006-08-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random.tcc (mersenne_twister<>::operator()): Revert
+	last change (per gcc-patches/2006-08/msg00484.html).
+
+2006-08-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (class poisson_distribution<>): Add.
+	* include/tr1/random.tcc (poisson_distribution<>::operator(),
+	operator<<(std::basic_ostream<>&, const poisson_distribution<>&),
+	operator>>(std::basic_istream<>&, poisson_distribution<>&,
+	poisson_distribution<>::poisson_distribution(const _RealType&)):
+	Define.
+	* testsuite/tr1/5_numerical_facilities/random/poisson_distribution/
+	requirements/typedefs.cc: New.
+
+	* include/tr1/random.tcc (mersenne_twister<>::operator()): Tweak
+	a bit for efficiency.
+	
+	* include/tr1/random.tcc (operator<<(std::basic_ostream<>&,
+	const normal_distribution<>&), operator>>(std::basic_istream<>&,
+	normal_distribution<>&)): Do not output _M_saved unnecessarily.
+
+	* include/tr1/random: Trivial formatting fixes.
+	* include/tr1/cmath: Likewise.
+
+2006-08-11  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_bvector.h (__fill_bvector(_Bit_iterator,
+	_Bit_iterator, bool)): New.
+	(fill(_Bit_iterator, _Bit_iterator, const bool&)): Use it.
+
+2006-08-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random.tcc (gamma_distribution<>::operator()): Fixes
+	from the Errata of Devroye's book.
+
+2006-08-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_bvector.h (_Bit_iterator_base::_M_incr(ptrdiff_t)):
+	Tidy a bit, thus reducing generated code size.
+
+2006-08-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_bvector.h (vector<bool>::_M_copy_aligned): New.
+	(vector<bool>::vector(const vector&), operator=(const vector&),
+	reserve(size_type), _M_fill_insert(iterator, size_type, bool),
+	_M_insert_range(iterator, _ForwardIterator, _ForwardIterator,
+	std::forward_iterator_tag), _M_insert_aux(iterator, bool)): Use it.
+	* testsuite/performance/23_containers/copy_construct/
+	vector_bool.cc: New.
+
+	* testsuite/23_containers/vector/bool/cons/1.cc: New.
+	* testsuite/23_containers/vector/bool/cons/2.cc: Likewise.
+
+	* include/bits/stl_bvector.h (vector<bool>::_M_fill): Remove.
+	(fill(_Bit_iterator, _Bit_iterator, const bool&)): New.
+	(vector<bool>::_M_fill_insert(iterator, size_type, bool)): Adjust.
+
+	* include/bits/stl_bvector.h (_M_initialize_range(_InputIterator,
+	_InputIterator, std::input_iterator_tag)): Remove redundant
+	assignments.
+
+	* include/bits/stl_algo.h (find(istreambuf_iterator<>,
+	istreambuf_iterator<>, _CharT)): Adjust signature.
+	* include/bits/streambuf_iterator.h: Likewise.
+	* include/std/std_streambuf.h: Likewise.	
+
+2006-08-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h (fill(const _Deque_iterator<>&,
+	const _Deque_iterator<>&, const _Tp&)): Move...
+	* include/bits/deque.tcc: ... here.
+	* include/bits/stl_deque.h: Declare.
+
+2006-08-06  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/16611
+	* include/bits/stl_bvector.h (vector<bool>::operator[],
+	vector<bool>::operator[] const): Do not use iterator::operator+,
+	hand code.
+
+2006-08-05  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28587
+	* include/bits/stl_bvector.h (vector<bool>::_M_fill): New.
+	(vector<bool>::_M_fill_insert): Use it.
+	* testsuite/performance/23_containers/resize/vector_bool.cc: New.
+	
+	* testsuite/23_containers/vector/bool/modifiers/insert/1.cc: New.
+	* testsuite/23_containers/vector/bool/capacity/1.cc: Likewise.
+
+2006-08-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_queue.h (priority_queue<>::push,
+	priority_queue<>::pop): Remove try/catch, just follow the
+	letter of the Standard.
+
+2006-08-03  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_queue.h: Trivial formatting fixes.
+	* include/bits/stl_stack.h: Likewise.
+
+2006-08-01  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* docs/html/ext/tr1.html: Update.
+
+2006-07-31  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_put<>::_M_insert_float):
+	Find the decimal point in cs, instead of ws; tidy.
+
+2006-07-30  Roger Sayle  <roger@eyesopen.com>
+
+	* include/ext/codevt_specializations.h (__iconv_adaptor): Use
+	identifier _Tp instead of _T in template argument to avoid conflict.
+
+2006-07-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algo.h (stable_sort): Uglify the buf variable.
+	* include/bits/stl_tempbuf.h (_Temporary_buffer<>::
+	_M_initialize_buffer): Uglify the val parameter.
+
+2006-07-27  Benjamin Kosnik  <bkoz@wells.artheist.org>
+
+	PR libstdc++/19664 round 3	
+	* include/Makefile.am (tr1_headers): Add hashtable_policy.h.
+	* include/Makefile.in: Regenerate.
+	* include/tr1/hashtable: Move policy classes into...
+	* include/tr1/hashtable_policy.h: ... this. New.
+	
+	* src/globals_locale.cc: Move contents....
+	* src/locale_init.cc: ... to here, put in anonymous namespace.
+	* src/Makefile.am: Remove globals_locale.cc.
+	* src/Makefile.in: Regenerate.
+
+	* src/locale.cc: Convert __gnu_internal to anonymous namespace.
+	* src/debug.cc: Same.
+	* src/ext-inst.cc: Same.
+	* src/mt_allocator.cc: Same.
+	* src/pool_allocator.cc: Same.
+	
+	* include/tr1/random: Convert std::tr1::_Private to anonymous
+	namespace.
+	* include/tr1/random.tcc: Same.
+
+	* include/tr1/hashtable: Move ::Internal to std::tr1::detail and
+	enclose bits that can actually be internal in in anonymous
+	namespace.
+	* include/tr1/unordered_set: Adjust explicit qualifications for
+	namespace changes.
+	* include/tr1/unordered_map: Same.
+
+	* include/tr1/cmath: Convert __gnu_internal to nested detail namespace.
+
+	* include/bits/cpp_type_traits.h: Move __type_type into anonymous
+	namespace.
+	
+	* include/ext/rope: Change _Rope_constants to anonymous namespace.
+	* include/ext/ropeimpl.h: Same.
+	* src/ext-inst.cc: Same.
+
+2006-07-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/cinttypes: Simply protect everything with
+	_GLIBCXX_USE_C99_INTTYPES_TR1.
+	* include/tr1/cfenv: Likewise with _GLIBCXX_USE_C99_FENV_TR1.
+	* include/tr1/cstdint: Likewise with _GLIBCXX_USE_C99_STDINT_TR1.
+
+2006-07-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/tr1/random: Make include guards consistent.
+	* include/tr1/unordered_map: Same.
+	* include/tr1/hashtable: Same.
+	* include/tr1/unordered_set: Same.
+
+2006-07-21  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/26792
+	* configure.ac: Use GCC_CHECK_UNWIND_GETIPINFO to
+	define HAVE_GETIPINFO.
+	* aclocal.m4: Add include of ../config/unwind_ipinfo.m4.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* libmath/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* libsupc++/eh_personality.cc: Check HAVE_GETIPINFO.
+
+2006-07-21  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/19664 round 2	
+	* libsupc++/eh_personality.cc: Wrap extern "C" function
+	definitions in namespace __cxxabiv1.
+
+2006-07-21  David Daney  <ddaney@avtrex.com>
+
+	PR libgcj/28426
+	* acinclude.m4: Added a comment.
+
+2006-07-20  Benjamin Kosnik  <bkoz@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	
+	PR libstdc++/19664 round 1
+	* acinclude.m4 (GLIBCXX_ENABLE_VISIBILITY): Check it.
+	* configure.ac: Use it.
+	* configure: Regenerate.
+	* docs/html/configopts.html: Document it.
+	* include/Makefile.am: Slip in to c++config.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config (_GLIBCXX_VISIBILITY): New.
+	(_GLIBCXX_BEGIN_NAMESPACE): Use it.
+	(_GLIBCXX_END_NAMESPACE): Use it.
+	(_GLIBCXX_BEGIN_NESTED_NAMESPACE): Use it.
+	(_GLIBCXX_END_NESTED_NAMESPACE): Use it.		
+	* src/debug.cc: Mark __gnu_internal namespace with hidden
+	visibility attribute.
+	* src/ext-inst.cc: Same.
+	* src/globals_io.cc: Same.
+	* src/globals_locale.cc: Same.
+	* src/ios_init.cc: Same.
+	* src/locale.cc: Same.
+	* src/mt_allocator.cc: Same.
+	* src/pool_allocator.cc: Same.
+
+2006-07-16  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28277 (partial: valarray bits)
+	* include/std/std_valarray.h (valarray<>::shift(int),
+	valarray<>::cshift(int)): Avoid __builtin_alloca with no limit,
+	do the work in place.
+	* testsuite/26_numerics/valarray/28277.cc: New.
+
+2006-07-15  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28277 (partial: ostream bits 1)
+	* include/bits/ostream.tcc (operator<<(basic_ostream<_CharT>&,
+	const char*)): Avoid __builtin_alloca with no limit in the
+	widening.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	28277-1.cc: New.
+
+2006-07-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): New.
+	* configure.ac: Use it.
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+	* configure.host: Simplify.
+	* include/bits/atomicity.h: Adjust macros.
+	* config/cpu/generic/atomicity.h: Move...
+	* config/cpu/generic/atomicity_mutex: New.
+	* config/cpu/generic/atomicity_mutex/atomicity.h: ...here.
+	* config/cpu/generic/atomic_builtins: Rename...
+	* config/cpu/generic/atomicity_builtins: ...to this.
+	* config/cpu/generic/atomicity_builtins/atomicity.h: Moved.
+	* config/cpu/mips/atomicity.h: Comment MIPS II requirement.
+
+	* scripts/testsuite_flags.in: Make --cxxflags reflect CXXFLAGS.
+	
+2006-07-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (minstd_rand0, minstd_rand, ranlux3, ranlux4):
+	Use unsigned long as implementation-defined type.
+
+2006-07-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random.tcc (struct _To_Unsigned_Type): Add.
+	(subtract_with_carry<>::seed(_Gen&, false_type)): Use an
+	unsigned type in the loop, fix factor multiplier, take g
+	invocations modulo 2^32.
+
+	* include/tr1/random.tcc (subtract_with_carry<>::
+	seed(unsigned long)): Fix value == 0 special case.
+
+	* include/tr1/random (struct _Shift): Fix for large shifts.
+
+2006-07-13  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/performance/21_strings/string_copy_cons_and_dest.cc: New.
+
+2006-07-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/Makefile.am (pch*_output_anchor): Add.
+	(pch*_output): Use.
+	(CLEANFILES): Use.
+	* include/Makefile.in: Regenerate.
+	
+	* scripts/check_performance: Be verbose on compile error.
+
+2006-07-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/Makefile.am: Revert last change.
+	* include/Makefile.in: Same.
+
+2006-07-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/Makefile.am (pch_output): Don't precompile extc++.h.
+	(pch_output_dirs): Same.
+	* include/Makefile.in: Regenerate.
+
+	* testsuite/lib/libstdc++.exp: Test PCH with stdtr1c++.h.
+	
+2006-07-11  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/codecvt_specializations.h: Fix typo in commit
+	for libstdc++/28290.
+
+2006-07-11  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (collate<>::do_transform(
+	const _CharT*, const _CharT*)): Simplify previous fix for
+	libstdc++/28277, always allocate memory dynamically.
+
+2006-07-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28344
+	* include/tr1/random (gamma_distribution<>::
+	gamma_distribution(const result_type&)): Don't use __alpha as
+	parameter name, a predefined macro on Alpha systems.
+
+2006-07-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28290
+	* include/ext/codecvt_specializations.h: Fix, adding missing
+	includes and guards.
+
+2006-07-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28277 (partial: collate bits)
+	* include/bits/locale_facets.tcc (collate<>::do_transform(
+	const _CharT*, const _CharT*)): Avoid __builtin_alloca with no
+	limit; also avoid multiple calls (in a loop).
+	* testsuite/22_locale/collate/transform/char/28277.cc: New.
+	* testsuite/22_locale/collate/transform/wchar_t/28277.cc: Likewise.
+
+2006-07-10  Mike Stump  <mrs@apple.com>
+
+	* libsupc++/eh_globals.cc (~__eh_globals_init): Unset _M_init.
+
+2006-07-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/15448
+	* include/Makefile.am: Clean up pch rules.
+	* include/Makefile.in: Regenerate.
+
+2006-07-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (__int_to_char<>(_CharT*,
+	long, const _CharT*, ios_base::fmtflags), __int_to_char<>(_CharT*,
+	unsigned long, const _CharT*, ios_base::fmtflags),
+	__int_to_char<>(_CharT*, long long, const _CharT*, ios_base::fmtflags),
+	__int_to_char<>(_CharT*, unsigned long long, const _CharT*,
+	ios_base::fmtflags)): Remove.
+	(__int_to_char<>(_CharT*, _ValueT, const _CharT*, ios_base::fmtflags,
+	bool)): Adjust.
+	(num_put<>::_M_insert_int(_OutIter, ios_base&, _CharT, _ValueT)):
+	Likewise.
+
+2006-07-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (class gamma_distribution<>): Add.
+	* include/tr1/random.tcc (gamma_distribution<>::operator(),
+	operator<<(std::basic_ostream<>&, const gamma_distribution<>&)):
+	Define.
+	* testsuite/tr1/5_numerical_facilities/random/gamma_distribution/
+	requirements/typedefs.cc: New.
+
+2006-07-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/util/regression/trait/assoc/trait.hpp: Format.
+	* testsuite/util/regression/rand/priority_queue/
+	rand_regression_test.hpp: Same.
+	* testsuite/util/regression/rand/assoc/rand_regression_test.hpp: Same.
+	* testsuite/util/regression/rand/
+	assoc/container_rand_regression_test.hpp: Same.
+	* testsuite/util/regression/priority_queue/common_type.hpp: Same.
+	* testsuite/util/regression/assoc/common_type.hpp: Same.
+	* testsuite/util/regression/basic_type.hpp: Same.
+
+2006-07-05  Benjamin Kosnik  <bkoz@redhat.com>	
+
+	* include/Makefile.am (pch_output): New.
+	(clean-local): Use it.
+	* include/Makefile.in: Regenerate.
+
 2006-07-04  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (_Adaptor<>::operator()()): Cast 1 to
