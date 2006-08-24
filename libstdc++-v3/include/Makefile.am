@@ -591,6 +591,7 @@ tr1_headers = \
 	${tr1_srcdir}/functional \
 	${tr1_srcdir}/functional_iterate.h \
 	${tr1_srcdir}/hashtable \
+	${tr1_srcdir}/hashtable_policy.h \
 	${tr1_srcdir}/inttypes.h \
 	${tr1_srcdir}/limits.h \
 	${tr1_srcdir}/math.h \
@@ -763,25 +764,36 @@ thread_host_headers = \
 	${host_builddir}/gthr-tpf.h \
 	${host_builddir}/gthr-default.h
 
-pch1_input = ${host_builddir}/stdc++.h
-pch1_output_builddir = ${host_builddir}/stdc++.h.gch
-pch1_output_installdir = ${host_installdir}/stdc++.h.gch
+
 pch1_source = ${glibcxx_srcdir}/include/precompiled/stdc++.h
+pch1_output_builddir = ${host_builddir}/stdc++.h.gch
+pch1_output_anchor = ${host_builddir}/stdc++.h
+pch1_output_installdir = ${host_installdir}/stdc++.h.gch
+pch1a_output = ${pch1_output_builddir}/O0g.gch
+pch1b_output = ${pch1_output_builddir}/O2g.gch
+pch1_output = ${pch1a_output} ${pch1b_output}
 
-pch2_input = ${host_builddir}/stdtr1c++.h
-pch2_output_builddir = ${host_builddir}/stdtr1c++.h.gch
-pch2_output_installdir = ${host_installdir}/stdtr1c++.h.gch
 pch2_source = ${glibcxx_srcdir}/include/precompiled/stdtr1c++.h
+pch2_output_builddir = ${host_builddir}/stdtr1c++.h.gch
+pch2_output_anchor = ${host_builddir}/stdtr1c++.h
+pch2_output_installdir = ${host_installdir}/stdtr1c++.h.gch
+pch2_output = ${pch2_output_builddir}/O2g.gch
 
-pch3_input = ${host_builddir}/extc++.h
-pch3_output_builddir = ${host_builddir}/extc++.h.gch
-pch3_output_installdir = ${host_installdir}/extc++.h.gch
 pch3_source = ${glibcxx_srcdir}/include/precompiled/extc++.h
+pch3_output_builddir = ${host_builddir}/extc++.h.gch
+pch3_output_anchor = ${host_builddir}/extc++.h
+pch3_output_installdir = ${host_installdir}/extc++.h.gch
+pch3_output = ${pch3_output_builddir}/O2g.gch
 
-pch_input = ${pch1_input} ${pch2_input} ${pch3_input}
+
+pch_output = ${pch1_output} ${pch2_output} ${pch3_output}
+pch_output_dirs = \
+	${pch1_output_builddir} ${pch2_output_builddir} ${pch3_output_builddir}
+pch_output_anchors = \
+	${pch1_output_anchor} ${pch2_output_anchor} ${pch3_output_anchor}
 PCHFLAGS=-Winvalid-pch -Wno-deprecated -x c++-header $(CXXFLAGS)
 if GLIBCXX_BUILD_PCH
-pch_build = ${pch_input}
+pch_build = ${pch_output}
 pch_install = install-pch
 else
 pch_build =
@@ -972,19 +984,31 @@ else
 stamp-namespace-version:
 	echo 0 > stamp-namespace-version
 endif
+
+if ENABLE_VISIBILITY
+stamp-visibility:
+	echo 1 > stamp-visibility
+else
+stamp-visibility:
+	echo 0 > stamp-visibility
+endif
+
 ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 			      ${glibcxx_srcdir}/include/bits/c++config \
 			      stamp-${host_alias} \
 			      ${toplevel_srcdir}/gcc/DATESTAMP \
-			      stamp-namespace-version
+			      stamp-namespace-version \
+			      stamp-visibility
 	@date=`cat ${toplevel_srcdir}/gcc/DATESTAMP` ;\
 	nsa_version=`cat stamp-namespace-version` ;\
+	visibility=`cat stamp-visibility` ;\
 	ldbl_compat='' ;\
 	grep "^[ 	]*#[ 	]*define[ 	][ 	]*_GLIBCXX_LONG_DOUBLE_COMPAT[ 	][ 	]*1[ 	]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
 	&& ldbl_compat='s,^#undef _GLIBCXX_LONG_DOUBLE_COMPAT$$,#define _GLIBCXX_LONG_DOUBLE_COMPAT 1,' ;\
 	sed -e "s,define __GLIBCXX__,define __GLIBCXX__ $$date," \
 	-e "s,define _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION, define _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION $$nsa_version," \
+	-e "s,define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY, define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY $$visibility," \
 	-e "$$ldbl_compat" \
             < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \
@@ -1037,33 +1061,36 @@ ${host_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcxx_thread_h} \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
 	    < ${toplevel_srcdir}/gcc/${glibcxx_thread_h} > $@
 
-# Build a precompiled C++ include, stdc++.h.gch.
-${pch1_input}: ${allstamped} ${host_builddir}/c++config.h ${pch1_source}
-	touch ${pch1_input}; \
+# Build two precompiled C++ includes, stdc++.h.gch/*.gch
+${pch1a_output}: ${allstamped} ${host_builddir}/c++config.h ${pch1_source}
 	if [ ! -d "${pch1_output_builddir}" ]; then \
 	  mkdir -p ${pch1_output_builddir}; \
 	fi; \
-	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) ${pch1_source} -O0 -g -o ${pch1_output_builddir}/O0g.gch; \
-	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) ${pch1_source} -O2 -g -o ${pch1_output_builddir}/O2g.gch;
+	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O0 -g ${pch1_source} -o $@
+	touch ${pch1_output_anchor}
 
+${pch1b_output}: ${allstamped} ${host_builddir}/c++config.h ${pch1_source}
+	if [ ! -d "${pch1_output_builddir}" ]; then \
+	  mkdir -p ${pch1_output_builddir}; \
+	fi; \
+	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O2 -g ${pch1_source} -o $@
+	touch ${pch1_output_anchor}
 
-# Build a precompiled TR1 include, stdtr1c++.h.gch.
-${pch2_input}: ${allstamped} ${host_builddir}/c++config.h ${pch2_source} ${pch1_input}
-	touch ${pch2_input}; \
+# Build a precompiled TR1 include, stdtr1c++.h.gch/O2.gch
+${pch2_output}: ${pch2_source} ${pch1_output}
 	if [ ! -d "${pch2_output_builddir}" ]; then \
 	  mkdir -p ${pch2_output_builddir}; \
 	fi; \
-	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) ${pch2_source} -O2 -g -o ${pch2_output_builddir}/O2g.gch; 
+	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O2 -g ${pch2_source} -o $@
+	touch ${pch2_output_anchor}
 
-
-# Build a precompiled extension include, extc++.h.gch.
-${pch3_input}: ${allstamped} ${host_builddir}/c++config.h ${pch3_source} ${pch2_input}
-	touch ${pch3_input}; \
+# Build a precompiled extension include, extc++.h.gch/O2.gch
+${pch3_output}: ${pch3_source} ${pch2_output}
 	if [ ! -d "${pch3_output_builddir}" ]; then \
 	  mkdir -p ${pch3_output_builddir}; \
 	fi; \
-	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) ${pch3_source} -O2 -g -o ${pch3_output_builddir}/O2g.gch; 
-
+	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O2 -g ${pch3_source} -o $@
+	touch ${pch3_output_anchor}
 
 # For robustness sake (in light of junk files or in-source
 # configuration), copy from the build or source tree to the install
@@ -1169,9 +1196,15 @@ install-pch:
 	$(mkinstalldirs) $(DESTDIR)${pch2_output_installdir}
 	for file in ${pch2_output_builddir}/*; do \
 	  $(INSTALL_DATA) $$file $(DESTDIR)${pch2_output_installdir}; done
+	$(INSTALL_DATA) ${pch1_output_anchor} $(DESTDIR)${host_installdir}
+	$(INSTALL_DATA) ${pch2_output_anchor} $(DESTDIR)${host_installdir}
 
 # By adding these files here, automake will remove them for 'make clean'
-CLEANFILES = ${pch_input} ${pch_output_builddir}/*
+CLEANFILES = ${pch_output} ${pch_output_anchors}
+
+# To remove directories.
+clean-local:
+	rm -rf ${pch_output_dirs}
 
 # Stop implicit '.o' make rules from ever stomping on extensionless
 # headers, in the improbable case where some foolish, crack-addled

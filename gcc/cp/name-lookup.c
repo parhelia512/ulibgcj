@@ -569,6 +569,9 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 
   timevar_push (TV_NAME_LOOKUP);
 
+  if (x == error_mark_node)
+    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
+
   need_new_binding = 1;
 
   if (DECL_TEMPLATE_PARM_P (x))
@@ -602,9 +605,6 @@ pushdecl_maybe_friend (tree x, bool is_friend)
   if (name)
     {
       int different_binding_level = 0;
-
-      if (TREE_CODE (x) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (x))
-       check_default_args (x);
 
       if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
 	name = TREE_OPERAND (name, 0);
@@ -747,6 +747,9 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 		}
 	    }
 	}
+
+      if (TREE_CODE (x) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (x))
+	check_default_args (x);
 
       check_template_shadow (x);
 
@@ -3678,10 +3681,8 @@ unqualified_namespace_lookup (tree name, int flags)
 
       if (b)
 	{
-	  if (b->value && hidden_name_p (b->value))
-	    /* Ignore anticipated built-in functions and friends.  */
-	    ;
-	  else
+	  if (b->value
+	      && ((flags & LOOKUP_HIDDEN) || !hidden_name_p (b->value)))
 	    binding.value = b->value;
 	  binding.type = b->type;
 	}
@@ -3984,18 +3985,18 @@ lookup_name_real (tree name, int prefer_type, int nonclass, bool block_p,
 	  continue;
 
 	/* If this is the kind of thing we're looking for, we're done.  */
-	if (qualify_lookup (iter->value, flags)
-	    && !hidden_name_p (iter->value))
+	if (qualify_lookup (iter->value, flags))
 	  binding = iter->value;
 	else if ((flags & LOOKUP_PREFER_TYPES)
-		 && qualify_lookup (iter->type, flags)
-		 && !hidden_name_p (iter->type))
+		 && qualify_lookup (iter->type, flags))
 	  binding = iter->type;
 	else
 	  binding = NULL_TREE;
 
 	if (binding)
 	  {
+	    /* Only namespace-scope bindings can be hidden.  */
+	    gcc_assert (!hidden_name_p (binding));
 	    val = binding;
 	    break;
 	  }

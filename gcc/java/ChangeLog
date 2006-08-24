@@ -1,3 +1,37 @@
+2006-08-22  Andrew Haley  <aph@redhat.com>
+
+	* decl.c (java_add_stmt): Give the statement list a type.
+
+2006-08-16  Jakub Jelinek  <jakub@redhat.com>
+	    Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* jvspec.c (lang_specific_driver): Add -s-bc-abi when needed.
+
+2006-08-10  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR java/8923
+	* parse.y (build_incdec): Emit an error instead of an ICE if '++'
+	or '--' is used with a constant operand.
+	(java_complete_lhs): When processing a '++' or '--' expression,
+	don't call java_complete_tree but java_complete_lhs, so that a
+	static final variable operand is never replaced by its value. This
+	avoids an ICE later on.
+	(patch_unaryop): Fixed typo in comment.
+
+2006-07-28  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* Make-lang.in: Use $(HEADER_H) instead of header.h in dependencies.
+
+2006-07-12  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* builtins.c (check_for_builtin): If a builtin could result in a
+	direct call being generated, don't use it if flag_indirect_dispatch
+	is set.
+
+2006-07-12  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* gcj.texi (Invocation): Corrections for Invocation API example.
+
 2006-07-04  Andrew Haley  <aph@redhat.com>
 
 	* class.c (build_fieldref_cache_entry): Set DECL_IGNORED_P on the

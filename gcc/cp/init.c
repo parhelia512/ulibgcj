@@ -178,7 +178,8 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
        items with static storage duration that are not otherwise
        initialized are initialized to zero.  */
     ;
-  else if (SCALAR_TYPE_P (type))
+  else if (SCALAR_TYPE_P (type)
+	   || TREE_CODE (type) == COMPLEX_TYPE)
     init = convert (type, integer_zero_node);
   else if (CLASS_TYPE_P (type))
     {
@@ -248,6 +249,8 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
       /* Build a constructor to contain the initializations.  */
       init = build_constructor (type, v);
     }
+  else if (TREE_CODE (type) == VECTOR_TYPE)
+    init = fold_convert (type, integer_zero_node);
   else
     gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
 
@@ -2063,7 +2066,7 @@ build_new (tree placement, tree type, tree nelts, tree init,
   tree orig_nelts;
   tree orig_init;
 
-  if (type == error_mark_node)
+  if (placement == error_mark_node || type == error_mark_node)
     return error_mark_node;
 
   orig_placement = placement;

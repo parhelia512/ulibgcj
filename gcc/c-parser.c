@@ -919,6 +919,9 @@ c_parser_skip_to_end_of_block_or_statement (c_parser *parser)
 	  c_parser_skip_to_pragma_eol (parser);
 	  parser->error = save_error;
 	  continue;
+
+	default:
+	  break;
 	}
 
       c_parser_consume_token (parser);
@@ -2161,7 +2164,19 @@ c_parser_typeof_specifier (c_parser *parser)
 	 is evaluated, this can be evaluated.  For now, we avoid
 	 evaluation when the context might.  */
       if (!skip_evaluation && was_vm)
-	c_finish_expr_stmt (expr.value);
+	{
+	  tree e = expr.value;
+
+	  /* If the expression is not of a type to which we cannot assign a line
+	     number, wrap the thing in a no-op NOP_EXPR.  */
+	  if (DECL_P (e) || CONSTANT_CLASS_P (e))
+	    e = build1 (NOP_EXPR, void_type_node, e);
+
+	  if (EXPR_P (e))
+	    SET_EXPR_LOCATION (e, input_location);
+
+	  add_stmt (e);
+	}
       pop_maybe_used (was_vm);
     }
   c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
@@ -3483,6 +3498,8 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	  last_stmt = true;
 	  c_parser_statement_after_labels (parser);
 	}
+
+      parser->error = false;
     }
   if (last_label)
     error ("label at end of compound statement");
@@ -5186,7 +5203,7 @@ c_parser_postfix_expression (c_parser *parser)
 	    if (type == error_mark_node)
 	      offsetof_ref = error_mark_node;
 	    else
-	      offsetof_ref = build1 (INDIRECT_REF, type, NULL);
+	      offsetof_ref = build1 (INDIRECT_REF, type, null_pointer_node);
 	    /* Parse the second argument to __builtin_offsetof.  We
 	       must have one identifier, and beyond that we want to
 	       accept sub structure and sub array references.  */
@@ -5228,7 +5245,7 @@ c_parser_postfix_expression (c_parser *parser)
 	      c_parser_error (parser, "expected identifier");
 	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				       "expected %<)%>");
-	    expr.value = fold_offsetof (offsetof_ref);
+	    expr.value = fold_offsetof (offsetof_ref, NULL_TREE);
 	    expr.original_code = ERROR_MARK;
 	  }
 	  break;
@@ -5429,7 +5446,7 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
   struct c_expr expr;
   start_init (NULL_TREE, NULL, 0);
   type = groktypename (type_name);
-  if (C_TYPE_VARIABLE_SIZE (type))
+  if (type != error_mark_node && C_TYPE_VARIABLE_SIZE (type))
     {
       error ("compound literal has variable size");
       type = error_mark_node;

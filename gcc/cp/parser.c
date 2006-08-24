@@ -1150,8 +1150,6 @@ static const cp_parser_binary_operations_map_node binops[] = {
   { CPP_GREATER, GT_EXPR, PREC_RELATIONAL_EXPRESSION },
   { CPP_LESS_EQ, LE_EXPR, PREC_RELATIONAL_EXPRESSION },
   { CPP_GREATER_EQ, GE_EXPR, PREC_RELATIONAL_EXPRESSION },
-  { CPP_MIN, MIN_EXPR, PREC_RELATIONAL_EXPRESSION },
-  { CPP_MAX, MAX_EXPR, PREC_RELATIONAL_EXPRESSION },
 
   { CPP_EQ_EQ, EQ_EXPR, PREC_EQUALITY_EXPRESSION },
   { CPP_NOT_EQ, NE_EXPR, PREC_EQUALITY_EXPRESSION },
@@ -1855,16 +1853,6 @@ cp_parser_is_keyword (cp_token* token, enum rid keyword)
   return token->keyword == keyword;
 }
 
-/* A minimum or maximum operator has been seen.  As these are
-   deprecated, issue a warning.  */
-
-static inline void
-cp_parser_warn_min_max (void)
-{
-  if (warn_deprecated && !in_system_header)
-    warning (OPT_Wdeprecated, "minimum/maximum operators are deprecated");
-}
-
 /* If not parsing tentatively, issue a diagnostic of the form
       FILE:LINE: MESSAGE before TOKEN
    where TOKEN is the next token in the input stream.  MESSAGE
@@ -1948,6 +1936,49 @@ cp_parser_simulate_error (cp_parser* parser)
       return true;
     }
   return false;
+}
+
+/* Check for repeated decl-specifiers.  */
+
+static void
+cp_parser_check_decl_spec (cp_decl_specifier_seq *decl_specs)
+{
+  cp_decl_spec ds;
+
+  for (ds = ds_first; ds != ds_last; ++ds)
+    {
+      unsigned count = decl_specs->specs[(int)ds];
+      if (count < 2)
+	continue;
+      /* The "long" specifier is a special case because of "long long".  */
+      if (ds == ds_long)
+	{
+	  if (count > 2)
+	    error ("%<long long long%> is too long for GCC");
+	  else if (pedantic && !in_system_header && warn_long_long)
+	    pedwarn ("ISO C++ does not support %<long long%>");
+	}
+      else if (count > 1)
+	{
+	  static const char *const decl_spec_names[] = {
+	    "signed",
+	    "unsigned",
+	    "short",
+	    "long",
+	    "const",
+	    "volatile",
+	    "restrict",
+	    "inline",
+	    "virtual",
+	    "explicit",
+	    "friend",
+	    "typedef",
+	    "__complex",
+	    "__thread"
+	  };
+	  error ("duplicate %qs", decl_spec_names[(int)ds]);
+	}
+    }
 }
 
 /* This function is called when a type is defined.  If type
@@ -2062,8 +2093,9 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree scope, tree id)
   /* If the lookup found a template-name, it means that the user forgot
   to specify an argument list. Emit a useful error message.  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
-    error ("invalid use of template-name %qE without an argument list",
-      decl);
+    error ("invalid use of template-name %qE without an argument list", decl);
+  else if (TREE_CODE (id) == BIT_NOT_EXPR)
+    error ("invalid use of destructor %qD as a type", id);
   else if (!parser->scope)
     {
       /* Issue an error message.  */
@@ -2156,8 +2188,7 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
       cp_parser_abort_tentative_parse (parser);
       return false;
     }
-  if (!cp_parser_parse_definitely (parser)
-      || TREE_CODE (id) != IDENTIFIER_NODE)
+  if (!cp_parser_parse_definitely (parser) || TREE_CODE (id) == TYPE_DECL)
     return false;
 
   /* Emit a diagnostic for the invalid type.  */
@@ -3373,9 +3404,27 @@ cp_parser_unqualified_id (cp_parser* parser,
 	object_scope = parser->object_scope;
 	qualifying_scope = parser->qualifying_scope;
 
+	/* Check for invalid scopes.  */
+	if (scope == error_mark_node)
+	  {
+	    if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	      cp_lexer_consume_token (parser->lexer);
+	    return error_mark_node;
+	  }
+	if (scope && TREE_CODE (scope) == NAMESPACE_DECL)
+	  {
+	    if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
+	      error ("scope %qT before %<~%> is not a class-name", scope);
+	    cp_parser_simulate_error (parser);
+	    if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	      cp_lexer_consume_token (parser->lexer);
+	    return error_mark_node;
+	  }
+	gcc_assert (!scope || TYPE_P (scope));
+
 	/* If the name is of the form "X::~X" it's OK.  */
 	token = cp_lexer_peek_token (parser->lexer);
-	if (scope && TYPE_P (scope)
+	if (scope
 	    && token->type == CPP_NAME
 	    && (cp_lexer_peek_nth_token (parser->lexer, 2)->type
 		== CPP_OPEN_PAREN)
@@ -3457,7 +3506,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	   destructor is the same as the name of the qualifying
 	   class.  That allows us to keep parsing after running
 	   into ill-formed destructor names.  */
-	if (type_decl == error_mark_node && scope && TYPE_P (scope))
+	if (type_decl == error_mark_node && scope)
 	  return build_nt (BIT_NOT_EXPR, scope);
 	else if (type_decl == error_mark_node)
 	  return error_mark_node;
@@ -3468,6 +3517,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
 	      error ("declaration of %<~%T%> as member of %qT",
 		     type_decl, scope);
+	    cp_parser_simulate_error (parser);
 	    return error_mark_node;
 	  }
 
@@ -3954,9 +4004,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
 
 	/* Only type conversions to integral or enumeration types
 	   can be used in constant-expressions.  */
-	if (parser->integral_constant_expression_p
-	    && !dependent_type_p (type)
-	    && !INTEGRAL_OR_ENUMERATION_TYPE_P (type)
+	if (!cast_valid_in_integral_constant_expression_p (type)
 	    && (cp_parser_non_integral_constant_expression
 		(parser,
 		 "a cast to a type other than an integral or "
@@ -4028,12 +4076,12 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
 	    /* Look for the `)' token.  */
 	    cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
 	  }
+	/* Restore the saved message.  */
+	parser->type_definition_forbidden_message = saved_message;
 	/* `typeid' may not appear in an integral constant expression.  */
 	if (cp_parser_non_integral_constant_expression(parser,
 						       "`typeid' operator"))
 	  return error_mark_node;
-	/* Restore the saved message.  */
-	parser->type_definition_forbidden_message = saved_message;
       }
       break;
 
@@ -5440,9 +5488,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p)
 
 	  /* Only type conversions to integral or enumeration types
 	     can be used in constant-expressions.  */
-	  if (parser->integral_constant_expression_p
-	      && !dependent_type_p (type)
-	      && !INTEGRAL_OR_ENUMERATION_TYPE_P (type)
+	  if (!cast_valid_in_integral_constant_expression_p (type)
 	      && (cp_parser_non_integral_constant_expression
 		  (parser,
 		   "a cast to a type other than an integral or "
@@ -5555,8 +5601,6 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p)
     {
       /* Get an operator token.  */
       token = cp_lexer_peek_token (parser->lexer);
-      if (token->type == CPP_MIN || token->type == CPP_MAX)
-	cp_parser_warn_min_max ();
 
       new_prec = TOKEN_PRECEDENCE (token);
 
@@ -5809,16 +5853,6 @@ cp_parser_assignment_operator_opt (cp_parser* parser)
 
     case CPP_OR_EQ:
       op = BIT_IOR_EXPR;
-      break;
-
-    case CPP_MIN_EQ:
-      op = MIN_EXPR;
-      cp_parser_warn_min_max ();
-      break;
-
-    case CPP_MAX_EQ:
-      op = MAX_EXPR;
-      cp_parser_warn_min_max ();
       break;
 
     default:
@@ -7376,7 +7410,6 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 			      int* declares_class_or_enum)
 {
   bool constructor_possible_p = !parser->in_declarator_p;
-  cp_decl_spec ds;
 
   /* Clear DECL_SPECS.  */
   clear_decl_specs (decl_specs);
@@ -7559,41 +7592,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
       flags |= CP_PARSER_FLAGS_OPTIONAL;
     }
 
-  /* Check for repeated decl-specifiers.  */
-  for (ds = ds_first; ds != ds_last; ++ds)
-    {
-      unsigned count = decl_specs->specs[(int)ds];
-      if (count < 2)
-	continue;
-      /* The "long" specifier is a special case because of "long long".  */
-      if (ds == ds_long)
-	{
-	  if (count > 2)
-	    error ("%<long long long%> is too long for GCC");
-	  else if (pedantic && !in_system_header && warn_long_long)
-	    pedwarn ("ISO C++ does not support %<long long%>");
-	}
-      else if (count > 1)
-	{
-	  static const char *const decl_spec_names[] = {
-	    "signed",
-	    "unsigned",
-	    "short",
-	    "long",
-	    "const",
-	    "volatile",
-	    "restrict",
-	    "inline",
-	    "virtual",
-	    "explicit",
-	    "friend",
-	    "typedef",
-	    "__complex",
-	    "__thread"
-	  };
-	  error ("duplicate %qs", decl_spec_names[(int)ds]);
-	}
-    }
+  cp_parser_check_decl_spec (decl_specs);
 
   /* Don't allow a friend specifier with a class definition.  */
   if (decl_specs->specs[(int) ds_friend] != 0
@@ -8306,27 +8305,6 @@ cp_parser_operator (cp_parser* parser)
       /* Look for the matching `]'.  */
       cp_parser_require (parser, CPP_CLOSE_SQUARE, "`]'");
       return ansi_opname (ARRAY_REF);
-
-      /* Extensions.  */
-    case CPP_MIN:
-      id = ansi_opname (MIN_EXPR);
-      cp_parser_warn_min_max ();
-      break;
-
-    case CPP_MAX:
-      id = ansi_opname (MAX_EXPR);
-      cp_parser_warn_min_max ();
-      break;
-
-    case CPP_MIN_EQ:
-      id = ansi_assopname (MIN_EXPR);
-      cp_parser_warn_min_max ();
-      break;
-
-    case CPP_MAX_EQ:
-      id = ansi_assopname (MAX_EXPR);
-      cp_parser_warn_min_max ();
-      break;
 
     default:
       /* Anything else is an error.  */
@@ -10239,11 +10217,17 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	}
     }
 
+  if (type == error_mark_node)
+    return error_mark_node;
+
   /* Allow attributes on forward declarations of classes.  */
   if (attributes)
     {
-      if (tag_type != enum_type && CLASSTYPE_TEMPLATE_INSTANTIATION (type)
-	  && ! processing_explicit_instantiation)
+      if (TREE_CODE (type) == TYPENAME_TYPE)
+	warning (OPT_Wattributes,
+		 "attributes ignored on uninstantiated type");
+      else if (tag_type != enum_type && CLASSTYPE_TEMPLATE_INSTANTIATION (type)
+	       && ! processing_explicit_instantiation)
 	warning (OPT_Wattributes,
 		 "attributes ignored on template instantiation");
       else if (is_declaration && cp_parser_declares_only_class_p (parser))
@@ -12030,6 +12014,8 @@ cp_parser_type_specifier_seq (cp_parser* parser,
       if (is_condition && !is_cv_qualifier)
 	flags |= CP_PARSER_FLAGS_NO_USER_DEFINED_TYPES;
     }
+
+  cp_parser_check_decl_spec (type_specifier_seq);
 }
 
 /* Parse a parameter-declaration-clause.
@@ -14330,7 +14316,6 @@ cp_parser_handler (cp_parser* parser)
 static tree
 cp_parser_exception_declaration (cp_parser* parser)
 {
-  tree decl;
   cp_decl_specifier_seq type_specifiers;
   cp_declarator *declarator;
   const char *saved_message;
@@ -14363,16 +14348,10 @@ cp_parser_exception_declaration (cp_parser* parser)
   /* Restore the saved message.  */
   parser->type_definition_forbidden_message = saved_message;
 
-  if (type_specifiers.any_specifiers_p)
-    {
-      decl = grokdeclarator (declarator, &type_specifiers, CATCHPARM, 1, NULL);
-      if (decl == NULL_TREE)
-	error ("invalid catch parameter");
-    }
-  else
-    decl = NULL_TREE;
+  if (!type_specifiers.any_specifiers_p)
+    return error_mark_node;
 
-  return decl;
+  return grokdeclarator (declarator, &type_specifiers, CATCHPARM, 1, NULL);
 }
 
 /* Parse a throw-expression.
@@ -15712,13 +15691,11 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
      conversions to integral or enumeration type can be used".  */
   if (TREE_CODE (type) == TYPE_DECL)
     type = TREE_TYPE (type);
-  if (cast != error_mark_node && !dependent_type_p (type)
-      && !INTEGRAL_OR_ENUMERATION_TYPE_P (type))
-    {
-      if (cp_parser_non_integral_constant_expression
-	  (parser, "a call to a constructor"))
-	return error_mark_node;
-    }
+  if (cast != error_mark_node
+      && !cast_valid_in_integral_constant_expression_p (type)
+      && (cp_parser_non_integral_constant_expression
+	  (parser, "a call to a constructor")))
+    return error_mark_node;
   return cast;
 }
 
