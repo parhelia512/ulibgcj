@@ -39,9 +39,11 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+/*#endif*/
 
 /**
  * Thrown whenever a reflective method tries to do something that the

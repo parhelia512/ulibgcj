@@ -2266,7 +2266,6 @@ public final class Character
     return String.valueOf(ch);
   }
 
-/*#if not ULIBGCJ*/
   /**
    * Determines if a character is a Unicode lowercase letter. For example,
    * <code>'a'</code> is lowercase.
@@ -2280,10 +2279,16 @@ public final class Character
    * @see #toLowerCase(char)
    * @see #getType(char)
    */
+/*#if ULIBGCJ
+  public static boolean isLowerCase(char ch) {
+    return ch >= 'a' && ch <= 'z';
+  }  
+  #else*/
   public static boolean isLowerCase(char ch)
   {
     return getType(ch) == LOWERCASE_LETTER;
   }
+/*#endif*/
 
   /**
    * Determines if a character is a Unicode lowercase letter. For example,
@@ -2318,11 +2323,18 @@ public final class Character
    * @see #toUpperCase(char)
    * @see #getType(char)
    */
+/*#if ULIBGCJ
+  public static boolean isUpperCase(char ch) {
+    return ch >= 'A' && ch <= 'Z';
+  }  
+  #else*/
   public static boolean isUpperCase(char ch)
   {
     return getType(ch) == UPPERCASE_LETTER;
   }
+/*#endif*/
 
+/*#if not ULIBGCJ*/
   /**
    * Determines if a character is a Unicode uppercase letter. For example,
    * <code>'A'</code> is uppercase.  Unlike isUpperCase(char), this method
@@ -2360,6 +2372,7 @@ public final class Character
   {
     return getType(ch) == TITLECASE_LETTER;
   }
+/*#endif*/
 
   /**
    * Determines if a character is a Unicode titlecase letter. For example,
@@ -2394,11 +2407,18 @@ public final class Character
    * @see #forDigit(int, int)
    * @see #getType(char)
    */
+/*#if ULIBGCJ
+  public static boolean isDigit(char ch) {
+    return (ch >= '0' && ch <= '9');
+  }  
+  #else*/
   public static boolean isDigit(char ch)
   {
     return getType(ch) == DECIMAL_DIGIT_NUMBER;
   }
+/*#endif*/
 
+/*#if not ULIBGCJ*/
   /**
    * Determines if a character is a Unicode decimal digit. For example,
    * <code>'0'</code> is a digit.  Unlike isDigit(char), this method
@@ -2437,6 +2457,7 @@ public final class Character
   {
     return getType(ch) != UNASSIGNED;
   }
+/*#endif*/
 
   /**
    * Determines if a character is part of the Unicode Standard. This is an
@@ -2478,6 +2499,11 @@ public final class Character
    * @see #isUnicodeIdentifierStart(char)
    * @see #isUpperCase(char)
    */
+/*#if ULIBGCJ
+  public static boolean isLetter(char ch) {
+    return isLowerCase(ch) || isUpperCase(ch);
+  }  
+  #else*/
   public static boolean isLetter(char ch)
   {
     return ((1 << getType(ch))
@@ -2487,6 +2513,7 @@ public final class Character
                | (1 << MODIFIER_LETTER)
                | (1 << OTHER_LETTER))) != 0;
   }
+/*#endif*/
 
   /**
    * Determines if a character is a Unicode letter. Not all letters have case,
@@ -2534,6 +2561,11 @@ public final class Character
    * @see #isLetter(char)
    * @see #isUnicodeIdentifierPart(char)
    */
+/*#if ULIBGCJ
+  public static boolean isLetterOrDigit(char ch) {
+    return isLetter(ch) || isDigit(ch);
+  }  
+  #else*/
   public static boolean isLetterOrDigit(char ch)
   {
     return ((1 << getType(ch))
@@ -2544,7 +2576,9 @@ public final class Character
                | (1 << OTHER_LETTER)
                | (1 << DECIMAL_DIGIT_NUMBER))) != 0;
   }
+/*#endif*/
 
+/*#if not ULIBGCJ*/
   /**
    * Determines if a character is a Unicode letter or a Unicode digit. This
    * is the combination of isLetter and isDigit.  Unlike isLetterOrDigit(char),
@@ -3154,7 +3188,6 @@ public final class Character
                               | (1 << ('\f' - 1)))) != 0;
   }
 
-/*#if not ULIBGCJ*/
   /**
    * Determines if a character is a Unicode space character. This includes
    * SPACE_SEPARATOR, LINE_SEPARATOR, and PARAGRAPH_SEPARATOR.
@@ -3166,6 +3199,11 @@ public final class Character
    * @see #isWhitespace(char)
    * @since 1.1
    */
+/*#if ULIBGCJ
+  public static boolean isSpaceChar(char ch) {
+    return isSpace(ch);
+  }  
+  #else*/
   public static boolean isSpaceChar(char ch)
   {
     return ((1 << getType(ch))

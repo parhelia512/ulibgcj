@@ -33,6 +33,7 @@ details.  */
 # endif
 #else
 #include "fdlibm.h"
+#endif//JV_ULIBGCJ
 
 jdouble java::lang::Math::cos(jdouble x)
 {
@@ -42,7 +43,7 @@ jdouble java::lang::Math::cos(jdouble x)
 jdouble java::lang::Math::sin(jdouble x)
 {
   return (jdouble)::sin((double)x);
-}  
+}
 
 jdouble java::lang::Math::tan(jdouble x)
 {
@@ -89,23 +90,23 @@ jdouble java::lang::Math::pow(jdouble y, jdouble x)
   return (jdouble)::pow((double)y, (double)x);
 }  
 
+#ifndef JV_ULIBGCJ
 jdouble java::lang::Math::IEEEremainder(jdouble y, jdouble x)
 {
   return (jdouble)::__ieee754_remainder((double)y, (double)x);
 }  
+#endif//JV_ULIBGCJ
 
 jdouble java::lang::Math::rint(jdouble x)
 {
   return (jdouble)::rint((double)x);
 }
-#endif//JV_ULIBGCJ
 
 jdouble java::lang::Math::floor(jdouble x)
 {
   return (jdouble)::floor((double)x);
 }  
 
-#ifndef JV_ULIBGCJ
 jdouble java::lang::Math::ceil(jdouble x)
 {
   return (jdouble)::ceil((double)x);
@@ -151,6 +152,7 @@ jdouble java::lang::Math::tanh(jdouble x)
   return (jdouble)::tanh((double)x);
 }
 
+#ifndef JV_ULIBGCJ
 static inline int
 floatToIntBits (jfloat value)
 {

@@ -559,6 +559,7 @@ public final class Math
     return VMMath.pow(a,b);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Get the IEEE 754 floating point remainder on two numbers. This is the
    * value of <code>x - y * <em>n</em></code>, where <em>n</em> is the closest
@@ -577,6 +578,7 @@ public final class Math
   {
     return VMMath.IEEEremainder(x,y);
   }
+/*#endif*/
 
   /**
    * Take the nearest integer that is that is greater than or equal to the

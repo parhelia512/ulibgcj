@@ -301,7 +301,6 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 
   switch (pool->tags[index])
     {
-#ifndef JV_ULIBGCJ
     case JV_CONSTANT_Class:
       {
 	_Jv_Utf8Const *name = pool->data[index].utf8;
@@ -353,7 +352,6 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 	  }
       }
       break;
-#endif//JV_ULIBGCJ
 
     case JV_CONSTANT_String:
       {
@@ -364,7 +362,6 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
       }
       break;
 
-#ifndef JV_ULIBGCJ
     case JV_CONSTANT_Fieldref:
       {
 	_Jv_ushort class_index, name_and_type_index;
@@ -507,11 +504,8 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 	pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
       }
       break;
-#endif//JV_ULIBGCJ
 
-#ifdef JV_ULIBGCJ
     default: JvAssert(0);
-#endif//JV_ULIBGCJ
     }
   return pool->data[index];
 }
@@ -1687,7 +1681,6 @@ _Jv_Linker::ensure_class_linked (jclass klass)
 
       _Jv_Constants *pool = &klass->constants;
 
-#ifndef JV_ULIBGCJ
       // Compiled classes require that their class constants be
       // resolved here.  However, interpreted classes need their
       // constants to be resolved lazily.  If we resolve an
@@ -1707,7 +1700,6 @@ _Jv_Linker::ensure_class_linked (jclass klass)
 		resolve_pool_entry (klass, index, true);
 	    }
 	}
-#endif//JV_ULIBGCJ
 
       // Resolve the remaining constant pool entries.
       for (int index = 1; index < pool->size; ++index)

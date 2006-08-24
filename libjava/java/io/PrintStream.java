@@ -38,7 +38,9 @@ exception statement from your version. */
 
 package java.io;
 
+/*#if not ULIBGCJ*/
 import gnu.gcj.convert.UnicodeToBytes;
+/*#endif*/
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
@@ -65,6 +67,9 @@ public class PrintStream extends FilterOutputStream
    * from the other, and we want to maximize performance. */
 
   // Line separator string.
+/*#if ULIBGCJ
+  private static final char[] line_separator = new char[] { '\n' };
+  #else*/
   private static final char[] line_separator
     = System.getProperty("line.separator").toCharArray();
   
@@ -74,6 +79,7 @@ public class PrintStream extends FilterOutputStream
   char[] work = new char[100];
   // Work buffer of bytes where we temporarily keep converter output.
   byte[] work_bytes = new byte[100];
+/*#endif*/
 
   /**
    * This boolean indicates whether or not an error has ever occurred
@@ -115,10 +121,13 @@ public class PrintStream extends FilterOutputStream
   {
     super (out);
 
+/*#if not ULIBGCJ*/
     converter = UnicodeToBytes.getDefaultEncoder();
+/*#endif*/
     this.auto_flush = auto_flush;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * This method intializes a new <code>PrintStream</code> object to write
    * to the specified output sink.  This constructor also allows "auto-flush"
@@ -142,6 +151,7 @@ public class PrintStream extends FilterOutputStream
     converter = UnicodeToBytes.getEncoder (encoding);
     this.auto_flush = auto_flush;
   }
+/*#endif*/
 
   /**
    * This method checks to see if an error has occurred on this stream.  Note
@@ -179,10 +189,12 @@ public class PrintStream extends FilterOutputStream
 	flush();
 	out.close();
       }
+/*#if not ULIBGCJ*/
     catch (InterruptedIOException iioe)
       {
 	Thread.currentThread().interrupt();
       }
+/*#endif*/
     catch (IOException e)
       {
 	setError ();
@@ -199,10 +211,12 @@ public class PrintStream extends FilterOutputStream
       {
 	out.flush();
       }
+/*#if not ULIBGCJ*/
     catch (InterruptedIOException iioe)
       {
 	Thread.currentThread().interrupt();
       }
+/*#endif*/
     catch (IOException e)
       {
 	setError ();
@@ -219,10 +233,12 @@ public class PrintStream extends FilterOutputStream
 	if (auto_flush)
 	  flush();
       }
+/*#if not ULIBGCJ*/
     catch (InterruptedIOException iioe)
       {
 	Thread.currentThread().interrupt();
       }
+/*#endif*/
     catch (IOException e)
       {
 	setError ();
@@ -240,10 +256,12 @@ public class PrintStream extends FilterOutputStream
 	if (auto_flush)
 	  flush();
       }
+/*#if not ULIBGCJ*/
     catch (InterruptedIOException iioe)
       {
 	Thread.currentThread().interrupt();
       }
+/*#endif*/
     catch (IOException e)
       {
 	setError ();
@@ -253,6 +271,11 @@ public class PrintStream extends FilterOutputStream
   private void writeChars(char[] buf, int offset, int count)
     throws IOException
   {
+/*#if ULIBGCJ
+    byte[] buffer = new byte[count];
+    for (int i = 0; i < count; ++i) buffer[i] = (byte) buf[offset + i];
+    out.write(buffer);
+  #else*/
     do
       {
 	converter.setOutput(work_bytes, 0);
@@ -262,11 +285,17 @@ public class PrintStream extends FilterOutputStream
 	out.write(work_bytes, 0, converter.count);
       }
     while (count > 0 || converter.havePendingBytes());
+/*#endif*/
   }
 
   private void writeChars(String str, int offset, int count)
     throws IOException
   {
+/*#if ULIBGCJ
+    byte[] buffer = new byte[count];
+    for (int i = 0; i < count; ++i) buffer[i] = (byte) str.charAt(offset + i);
+    out.write(buffer);
+  #else*/
     do
       {
 	converter.setOutput(work_bytes, 0);
@@ -276,8 +305,10 @@ public class PrintStream extends FilterOutputStream
 	out.write(work_bytes, 0, converter.count);
       }
     while (count > 0 || converter.havePendingBytes());
+/*#endif*/
   }
 
+/*#if not ULIBGCJ*/
   /**
    * This methods prints a boolean value to the stream.  <code>true</code>
    * values are printed as "true" and <code>false</code> values are printed
@@ -345,6 +376,7 @@ public class PrintStream extends FilterOutputStream
   {
     print(obj == null ? "null" : obj.toString(), false);
   }
+/*#endif*/
 
   /**
    * This method prints a <code>String</code> to the stream.  The actual
@@ -357,6 +389,7 @@ public class PrintStream extends FilterOutputStream
     print(str == null ? "null" : str, false);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * This method prints a char to the stream.  The actual value printed is
    * determined by the character encoding in use.
@@ -368,6 +401,7 @@ public class PrintStream extends FilterOutputStream
     work[0] = ch;
     print(work, 0, 1, false);
   }
+/*#endif*/
 
   /**
    * This method prints an array of characters to the stream.  The actual
@@ -390,6 +424,7 @@ public class PrintStream extends FilterOutputStream
     print(line_separator, 0, line_separator.length, false);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * This methods prints a boolean value to the stream.  <code>true</code>
    * values are printed as "true" and <code>false</code> values are printed
@@ -469,6 +504,7 @@ public class PrintStream extends FilterOutputStream
   {
     print(obj == null ? "null" : obj.toString(), true);
   }
+/*#endif*/
 
   /**
    * This method prints a <code>String</code> to the stream.  The actual
@@ -483,6 +519,7 @@ public class PrintStream extends FilterOutputStream
     print (str == null ? "null" : str, true);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * This method prints a char to the stream.  The actual value printed is
    * determined by the character encoding in use.
@@ -496,6 +533,7 @@ public class PrintStream extends FilterOutputStream
     work[0] = ch;
     print(work, 0, 1, true);
   }
+/*#endif*/
 
   /**
    * This method prints an array of characters to the stream.  The actual
@@ -526,10 +564,12 @@ public class PrintStream extends FilterOutputStream
         if (auto_flush && (oneByte == '\n'))
           flush ();
       }
+/*#if not ULIBGCJ*/
     catch (InterruptedIOException iioe)
       {
 	Thread.currentThread ().interrupt ();
       }
+/*#endif*/
     catch (IOException e)
       {
         setError ();
@@ -553,10 +593,12 @@ public class PrintStream extends FilterOutputStream
         if (auto_flush)
           flush ();
       }
+/*#if not ULIBGCJ*/
     catch (InterruptedIOException iioe)
       {
 	Thread.currentThread ().interrupt ();
       }
+/*#endif*/
     catch (IOException e)
       {
         setError ();

@@ -160,19 +160,28 @@ java::lang::System::getenv0 (jstring name)
 
 #ifdef JV_ULIBGCJ
 void
-java::lang::System$Output::print (jstring s)
+java::lang::System$Output::write (jbyteArray b, jint offset, jint length)
 {
-  jchar* chars = _Jv_GetStringChars (s);
-  for (jsize i = 0; i < s->length(); ++i) {
-    putchar((char) chars[i]);
+  for (jint i = offset; i < offset + length; ++i) {
+    putchar((char) elements(b)[i]);
   }
 }
 
 void
-java::lang::System$Output::println (jstring s)
+java::lang::System$Output::write (jint v)
 {
-  java::lang::System$Output::print (s);
-  putchar('\n');
+  putchar((char) v);
+}
+
+void
+java::lang::System$Output::flush ()
+{
   fflush(stdout);
+}
+
+void
+java::lang::System::exit (jint status)
+{
+  ::exit(status);
 }
 #endif//JV_ULIBGCJ

@@ -39,8 +39,10 @@ exception statement from your version. */
 
 package java.util;
 
+/*#if not ULIBGCJ*/
 import java.io.Serializable;
 import java.lang.reflect.Array;
+/*#endif*/
 
 /**
  * This class contains various static utility methods performing operations on
@@ -75,6 +77,7 @@ public class Arrays
   }
 
 
+/*#if not ULIBGCJ*/
 // binarySearch
   /**
    * Perform a binary search of a byte array for a key. The array must be
@@ -898,6 +901,7 @@ public class Arrays
     for (int i = fromIndex; i < toIndex; i++)
       a[i] = val;
   }
+/*#endif*/
 
   /**
    * Fill an array with an Object value.
@@ -934,6 +938,7 @@ public class Arrays
   }
 
 
+/*#if not ULIBGCJ*/
 // sort
   // Thanks to Paul Fisher (rao@gnu.org) for finding this quicksort algorithm
   // as specified by Sun and porting it to Java. The algorithm is an optimised
@@ -2913,7 +2918,9 @@ public class Arrays
    * @status updated to 1.4
    */
   private static final class ArrayList extends AbstractList
+/*#if not ULIBGCJ*/
     implements Serializable, RandomAccess
+/*#endif*/
   {
     // We override the necessary methods, plus others which will be much
     // more efficient with direct iteration rather than relying on iterator().
@@ -3058,4 +3065,5 @@ public class Arrays
       return array;
     }
   }
+/*#endif*/
 }

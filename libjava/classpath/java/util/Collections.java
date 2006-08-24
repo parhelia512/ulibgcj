@@ -39,7 +39,9 @@ exception statement from your version. */
 
 package java.util;
 
+/*#if not ULIBGCJ*/
 import java.io.Serializable;
+/*#endif*/
 
 /**
  * Utility class consisting of static methods that operate on, or return
@@ -80,6 +82,7 @@ public class Collections
    */
   private static final int LARGE_LIST_SIZE = 16;
 
+/*#if not ULIBGCJ*/
   /**
    * Determines if a list should be treated as a sequential-access one.
    * Rather than the old method of JDK 1.3 of assuming only instanceof
@@ -94,6 +97,7 @@ public class Collections
   {
     return ! (l instanceof RandomAccess) && l.size() > LARGE_LIST_SIZE;
   }
+/*#endif*/
 
   /**
    * This class is non-instantiable.
@@ -102,6 +106,7 @@ public class Collections
   {
   }
 
+/*#if not ULIBGCJ*/
   /**
    * An immutable, serializable, empty Set.
    * @see Serializable
@@ -727,6 +732,7 @@ public class Collections
         i2.set(i1.next());
       }
   }
+/*#endif*/
 
   /**
    * Returns an Enumeration over a collection. This allows interoperability
@@ -765,6 +771,7 @@ public class Collections
     };
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Replace every element of a list with a given value. This method runs in
    * linear time.
@@ -1959,6 +1966,7 @@ public class Collections
   {
     l.set(i, l.set(j, l.get(i)));
   }
+/*#endif*/
 
 
   /**
@@ -2002,7 +2010,11 @@ public class Collections
    * @author Eric Blake (ebb9@email.byu.edu)
    */
   static class SynchronizedCollection
+  /*#if ULIBGCJ
+    implements Collection
+    #else*/
     implements Collection, Serializable
+  /*#endif*/
   {
     /**
      * Compatible with JDK 1.4.
@@ -2440,8 +2452,10 @@ public class Collections
    */
   public static List synchronizedList(List l)
   {
+    /*#if not ULIBGCJ*/
     if (l instanceof RandomAccess)
       return new SynchronizedRandomAccessList(l);
+    /*#endif*/
     return new SynchronizedList(l);
   }
 
@@ -2761,7 +2775,10 @@ public class Collections
    * @author Eric Blake (ebb9@email.byu.edu)
    */
   private static final class SynchronizedRandomAccessList
-    extends SynchronizedList implements RandomAccess
+    extends SynchronizedList
+/*#if not ULIBGCJ*/
+    implements RandomAccess
+/*#endif*/
   {
     /**
      * Compatible with JDK 1.4.
@@ -3000,7 +3017,12 @@ public class Collections
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static class SynchronizedMap implements Map, Serializable
+  private static class SynchronizedMap
+  /*#if ULIBGCJ
+    implements Map
+    #else*/
+    implements Map, Serializable
+  /*#endif*/
   {
     /**
      * Compatible with JDK 1.4.
@@ -3593,6 +3615,7 @@ public class Collections
     }
   } // class SynchronizedSet
 
+/*#if not ULIBGCJ*/
   /**
    * Returns a synchronized (thread-safe) sorted map wrapper backed by the
    * given map. Notice that element access through the collection views,
@@ -5491,4 +5514,6 @@ public class Collections
       return new UnmodifiableSortedSet(ss.tailSet(fromElement));
     }
   } // class UnmodifiableSortedSet
+
+/*#endif*/
 } // class Collections

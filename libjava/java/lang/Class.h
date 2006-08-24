@@ -643,7 +643,9 @@ private:
   };
   // Pointer to the class that represents an array of this class.
   jclass arrayclass;
-#ifndef JV_ULIBGCJ
+#ifdef JV_ULIBGCJ
+  void* dummy;
+#else
   // Security Domain to which this class belongs (or null).
   java::security::ProtectionDomain *protectionDomain;
 #endif//JV_ULIBGCJ

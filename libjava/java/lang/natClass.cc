@@ -85,7 +85,6 @@ details.  */
 
 using namespace gcj;
 
-#ifndef JV_ULIBGCJ
 jclass
 java::lang::Class::forName (jstring className, jboolean initialize,
                             java::lang::ClassLoader *loader)
@@ -99,8 +98,10 @@ java::lang::Class::forName (jstring className, jboolean initialize,
 
   _Jv_Utf8Const *name = _Jv_makeUtf8Const (buffer, length);
 
+#ifndef JV_ULIBGCJ
   if (! _Jv_VerifyClassName (name))
     throw new java::lang::ClassNotFoundException (className);
+#endif//JV_ULIBGCJ
 
   jclass klass = (buffer[0] == '[' 
 		  ? _Jv_FindClassFromSignature (name->chars(), loader)
@@ -120,13 +121,14 @@ java::lang::Class::forName (jstring className)
 {
   java::lang::ClassLoader *loader = NULL;
 
+#ifndef JV_ULIBGCJ
   jclass caller = _Jv_StackTrace::GetCallingClass (&Class::class$);
   if (caller)
     loader = caller->getClassLoaderInternal();
+#endif//JV_ULIBGCJ
 
   return forName (className, true, loader);
 }
-#endif//JV_ULIBGCJ
 
 java::lang::ClassLoader *
 java::lang::Class::getClassLoader (void)

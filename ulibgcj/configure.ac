@@ -10,7 +10,7 @@ AM_INIT_AUTOMAKE(1.9.0)
 
 AC_CONFIG_SRCDIR([../libjava/java/lang/System.java])
 
-AC_CONFIG_HEADERS([include/config.h])
+AC_CONFIG_HEADERS([include/config.h gcj/libgcj-config.h])
 
 GCC_NO_EXECUTABLES
 
@@ -20,6 +20,8 @@ AM_PROG_GCJ
 AM_PROG_CC_C_O
 
 AC_CHECK_PROGS(PERL, perl, false)
+
+TL_AC_GXX_INCLUDE_DIR
 
 # most of the following was taken from libjava/configure.ac.
 
@@ -77,10 +79,12 @@ AC_ARG_ENABLE(java-gc,
 
 GCLIBS=
 GCINCS=
+GCSPEC=
 JC1GCSPEC=
 case "$GC" in
  boehm)
     AC_MSG_RESULT(boehm)
+    GCSPEC='-lgc'
     JC1GCSPEC='-fuse-boehm-gc'
     GCLIBS=../boehm-gc/.libs/libgcjgc_convenience.a
     GCINCS='-I$(top_srcdir)/../boehm-gc/include -I../boehm-gc/include'
@@ -100,6 +104,7 @@ esac
 AC_CONFIG_LINKS(include/java-gc.h:${libjava}/include/${GCHDR})
 AC_SUBST(GCLIBS)
 AC_SUBST(GCINCS)
+AC_SUBST(GCSPEC)
 AC_SUBST(JC1GCSPEC)
 AM_CONDITIONAL(USING_BOEHMGC, test "${GC}" = boehm)
 AM_CONDITIONAL(USING_NOGC, test "${GC}" = no)
@@ -299,8 +304,7 @@ AC_DEFINE(JV_ULIBGCJ, 1, [Define if micro-libgcj is to be built])
 
 AC_DEFINE(HAVE_MEMMOVE, 1, [Define if memmove is available])
 
-mkdir -p gcj
-test -f gcj/libgcj-config.h || echo > gcj/libgcj-config.h
+test -f libgcj.spec || echo > libgcj.spec
 
 AC_CHECK_HEADERS([unistd.h bstring.h sys/time.h string.h sys/types.h \
 		  pwd.h sys/config.h stdint.h langinfo.h locale.h \

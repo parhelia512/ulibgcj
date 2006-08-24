@@ -22,13 +22,13 @@ Building with micro-libgcj enabled
 
 To build GCC with micro-libgcj enabled, specify --enable-micro-libgcj
 in your configure command.  The following example assumes you have the
-micro-libgcj -patched GCC source tree in a directory called
-gcc-ulibgcj and that you are building within a sibling directory
-called gcc-build.
+micro-libgcj-patched GCC source tree in a directory called gcc-ulibgcj
+and that you are building within a sibling directory called gcc-build.
 
  $ cd gcc-build
  $ ../gcc-ulibgcj/configure \
-  CFLAGS="-Os -g" CXXFLAGS="-Os -g" GCJFLAGS="-Os -g" \
+  CFLAGS="-Os -g -fPIC" CXXFLAGS="-Os -g -fPIC" GCJFLAGS="-Os -g -fPIC" \
+  CPPFLAGS="-fPIC" \
   --prefix=/usr/local/gcc-ulibgcj \
   --enable-languages=c,c++,java \
   --enable-threads \
@@ -38,6 +38,7 @@ called gcc-build.
   --disable-multilib \
   --without-libidn \
   --disable-tls \
+  --without-x \
   --enable-java-gc=boehm \
   --enable-hash-synchronization \
   --disable-libgcj \
@@ -56,7 +57,7 @@ above configure command with something like the following.  Here we
 assume you have already installed the binutils, mingw-runtime, and
 w32api packages from mingw.org into /usr/local/mingw32.
 
- $ ../gcc-4.1.1/configure \
+ $ ../gcc-ulibgcj/configure \
   CFLAGS="-Os -g" CXXFLAGS="-Os -g" GCJFLAGS="-Os -g" \
   --prefix=/usr/local/mingw32 \
   --target=mingw32 \
@@ -70,6 +71,7 @@ w32api packages from mingw.org into /usr/local/mingw32.
   --disable-multilib \
   --without-libidn \
   --disable-tls \
+  --without-x \
   --enable-sjlj-exceptions \
   --enable-java-gc=boehm \
   --enable-hash-synchronization \
@@ -80,15 +82,11 @@ w32api packages from mingw.org into /usr/local/mingw32.
 Linking with micro-libgcj
 -------------------------
 
-The simplest way to link your program with micro-libgcj is to use g++,
-since it won't try to link against the standard libgcj automatically.
-The trick is to provide a simple C++ driver program to initialize the
-runtime and invoke the main method of your Java class.  For example:
+Assuming you have a micro-libgcj-enabled build of gcc installed under
+/usr/local/gcc-ulibgcj, the following example should produce a binary
+which is statically linked to libulibgcj.a:
 
- $ gcj --bootclasspath libulibgcj.jar -c Hello.java -o Hello.o
- $ gcj -C Hello.java
- $ gcjh Hello
- $ g++ -c Hello.cpp -o Hello-cpp.o
- $ g++ -lpthread Hello.o Hello-cpp.o libulibgcj.a libgc.a -o Hello
+ $ /usr/local/gcc-ulibgcj/bin/gcj --main=Hello Hello.java -o hello
 
-See the code in ulibgcj/test for more examples.
+Dynamic linking is not currently supported, but could probably be made
+to work without too much trouble.

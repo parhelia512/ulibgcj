@@ -74,10 +74,8 @@ details.  */
 #include <java/lang/VMThrowable.h>
 #include <java/lang/VMClassLoader.h>
 #include <java/lang/reflect/Modifier.h>
-#ifndef JV_ULIBGCJ
 #include <java/io/PrintStream.h>
 #include <java/lang/UnsatisfiedLinkError.h>
-#endif//JV_ULIBGCJ
 #include <java/lang/VirtualMachineError.h>
 #ifndef JV_ULIBGCJ
 #include <gnu/gcj/runtime/ExtensionClassLoader.h>
@@ -890,9 +888,6 @@ _Jv_FindClassFromSignature (char *sig, java::lang::ClassLoader *loader,
       break;
     case 'L':
       {
-#ifdef JV_ULIBGCJ
-        throw new java::lang::ClassNotFoundException();
-#else
 	char *save = ++sig;
 	while (*sig && *sig != ';')
 	  ++sig;
@@ -903,7 +898,6 @@ _Jv_FindClassFromSignature (char *sig, java::lang::ClassLoader *loader,
 	    result = _Jv_FindClass (name, loader);
 	  }
 	break;
-#endif
       }
     default:
       // Do nothing -- bad signature.
@@ -1528,10 +1522,13 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
     }
 #endif//JV_ULIBGCJ
 
+#ifdef JV_ULIBGCJ
+  _Jv_InitClass (&java::lang::System::class$);
+#endif//JV_ULIBGCJ
+
   return 0;
 }
 
-#ifndef JV_ULIBGCJ
 void
 _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
              const char **argv, bool is_jar)
@@ -1540,7 +1537,9 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
   _Jv_SetArgs (argc, argv);
 #endif
 
+#ifndef JV_ULIBGCJ
   java::lang::Runtime *runtime = NULL;
+#endif//JV_ULIBGCJ
 
   try
     {
@@ -1550,9 +1549,11 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
 	  exit (1);
 	}
 
+#ifndef JV_ULIBGCJ
       // Get the Runtime here.  We want to initialize it before searching
       // for `main'; that way it will be set up if `main' is a JNI method.
       runtime = java::lang::Runtime::getRuntime ();
+#endif//JV_ULIBGCJ
 
 #ifdef DISABLE_MAIN_ARGS
       arg_vec = JvConvertArgv (0, 0);
@@ -1560,12 +1561,14 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
       arg_vec = JvConvertArgv (argc - 1, argv + 1);
 #endif
 
+#ifndef JV_ULIBGCJ
       using namespace gnu::java::lang;
       if (klass)
 	main_thread = new MainThread (klass, arg_vec);
       else
 	main_thread = new MainThread (JvNewStringUTF (name),
 				      arg_vec, is_jar);
+#endif//JV_ULIBGCJ
     }
   catch (java::lang::Throwable *t)
     {
@@ -1573,19 +1576,39 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
         ("Exception during runtime initialization"));
 #ifndef JV_ULIBGCJ
       t->printStackTrace();
-#endif//JV_ULIBGCJ
       if (runtime)
 	java::lang::Runtime::exitNoChecksAccessor (1);
+#endif//JV_ULIBGCJ
       // In case the runtime creation failed.
       ::exit (1);
     }
 
+#ifdef JV_ULIBGCJ
+  JvAttachCurrentThread(NULL, NULL);
+
+  Utf8Const* msig = _Jv_makeUtf8Const ("([Ljava.lang.String;)V", 22);
+  Utf8Const* mname = _Jv_makeUtf8Const ("main", 4);
+
+  _Jv_Method* method = _Jv_LookupDeclaredMethod (klass, mname, msig);
+  JvAssert(method);
+  
+  typedef void (*Procedure)(jobject);
+  Procedure real = (Procedure) method->ncode;
+  try {
+    real(arg_vec);
+  } catch (java::lang::Throwable* t) {
+    java::lang::System::err->println (t->toString());
+  }
+
+  JvDetachCurrentThread();
+#else
   _Jv_AttachCurrentThread (main_thread);
   _Jv_ThreadRun (main_thread);
 
   // If we got here then something went wrong, as MainThread is not
   // supposed to terminate.
   ::exit (1);
+#endif//JV_ULIBGCJ
 }
 
 void
@@ -1600,7 +1623,6 @@ JvRunMain (jclass klass, int argc, const char **argv)
 {
   _Jv_RunMain (klass, NULL, argc, argv, false);
 }
-#endif//JV_ULIBGCJ
 
 
 
