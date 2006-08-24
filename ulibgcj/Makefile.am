@@ -273,7 +273,6 @@ headerflags = -d headers --classpath classes --bootclasspath processed
 
 headers/java/lang/Object.h headers/java/lang/Class.h: headers/%.h: @srcdir@/../libjava/%.h
 	@mkdir -p $(dir $(@))
-	echo "#define JV_ULIBGCJ 1" >$(@)
 	cat $(<) >>$(@)
 
 headers/java/lang/ClassLoader.h: classes/java/lang/ClassLoader.class

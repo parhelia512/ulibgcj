@@ -50,7 +50,8 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../config.guess \
 	$(srcdir)/../install-sh $(srcdir)/../missing \
 	$(srcdir)/../mkinstalldirs $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/libgcj.spec.in \
-	$(top_srcdir)/configure $(top_srcdir)/include/config.h.in
+	$(top_srcdir)/configure $(top_srcdir)/gcj/libgcj-config.h.in \
+	$(top_srcdir)/include/config.h.in
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
@@ -63,7 +64,8 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
-CONFIG_HEADER = $(top_builddir)/include/config.h
+CONFIG_HEADER = $(top_builddir)/include/config.h \
+	$(top_builddir)/gcj/libgcj-config.h
 CONFIG_CLEAN_FILES = libgcj.spec include/platform.h include/java-gc.h \
 	include/java-threads.h include/java-signal.h \
 	include/java-signal-aux.h sysdep/locks.h
@@ -103,7 +105,7 @@ am_libulibgcj_a_OBJECTS = prims.$(OBJEXT) exception.$(OBJEXT) \
 	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
 	$(am__objects_8)
 libulibgcj_a_OBJECTS = $(am_libulibgcj_a_OBJECTS)
-DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include
+DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include -I$(top_builddir)/gcj
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -516,8 +518,18 @@ $(top_srcdir)/include/config.h.in:  $(am__configure_deps)
 	rm -f include/stamp-h1
 	touch $@
 
+gcj/libgcj-config.h: gcj/stamp-h2
+	@if test ! -f $@; then \
+	  rm -f gcj/stamp-h2; \
+	  $(MAKE) gcj/stamp-h2; \
+	else :; fi
+
+gcj/stamp-h2: $(top_srcdir)/gcj/libgcj-config.h.in $(top_builddir)/config.status
+	@rm -f gcj/stamp-h2
+	cd $(top_builddir) && $(SHELL) ./config.status gcj/libgcj-config.h
+
 distclean-hdr:
-	-rm -f include/config.h include/stamp-h1
+	-rm -f include/config.h include/stamp-h1 gcj/libgcj-config.h gcj/stamp-h2
 libgcj.spec: $(top_builddir)/config.status $(srcdir)/libgcj.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 install-ulibgcjLIBRARIES: $(ulibgcj_LIBRARIES)
@@ -692,7 +704,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/. $(distdir)/.. $(distdir)/../config $(distdir)/include
+	$(mkdir_p) $(distdir)/. $(distdir)/.. $(distdir)/../config $(distdir)/gcj $(distdir)/include
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -954,7 +966,6 @@ $(libulibgcj_a_OBJECTS): $(java_headers)
 
 headers/java/lang/Object.h headers/java/lang/Class.h: headers/%.h: @srcdir@/../libjava/%.h
 	@mkdir -p $(dir $(@))
-	echo "#define JV_ULIBGCJ 1" >$(@)
 	cat $(<) >>$(@)
 
 headers/java/lang/ClassLoader.h: classes/java/lang/ClassLoader.class

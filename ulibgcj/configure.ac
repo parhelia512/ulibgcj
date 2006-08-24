@@ -10,7 +10,7 @@ AM_INIT_AUTOMAKE(1.9.0)
 
 AC_CONFIG_SRCDIR([../libjava/java/lang/System.java])
 
-AC_CONFIG_HEADERS([include/config.h])
+AC_CONFIG_HEADERS([include/config.h gcj/libgcj-config.h])
 
 GCC_NO_EXECUTABLES
 
@@ -293,8 +293,6 @@ AC_DEFINE(JV_ULIBGCJ, 1, [Define if micro-libgcj is to be built])
 
 AC_DEFINE(HAVE_MEMMOVE, 1, [Define if memmove is available])
 
-mkdir -p gcj
-test -f gcj/libgcj-config.h || echo > gcj/libgcj-config.h
 test -f libgcj.spec || echo > libgcj.spec
 
 AC_CHECK_HEADERS([unistd.h bstring.h sys/time.h string.h sys/types.h \

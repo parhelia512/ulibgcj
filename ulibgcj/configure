@@ -2375,7 +2375,7 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 
 
 
-ac_config_headers="$ac_config_headers include/config.h"
+ac_config_headers="$ac_config_headers include/config.h gcj/libgcj-config.h"
 
 
 
@@ -4978,8 +4978,6 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 
-mkdir -p gcj
-test -f gcj/libgcj-config.h || echo > gcj/libgcj-config.h
 test -f libgcj.spec || echo > libgcj.spec
 
 
@@ -6500,6 +6498,7 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "include/config.h") CONFIG_HEADERS="$CONFIG_HEADERS include/config.h" ;;
+    "gcj/libgcj-config.h") CONFIG_HEADERS="$CONFIG_HEADERS gcj/libgcj-config.h" ;;
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "include/platform.h") CONFIG_LINKS="$CONFIG_LINKS include/platform.h:${libjava}/include/${PLATFORMH}" ;;
     "include/java-gc.h") CONFIG_LINKS="$CONFIG_LINKS include/java-gc.h:${libjava}/include/${GCHDR}" ;;
