@@ -184,7 +184,9 @@ public class PrintStream extends FilterOutputStream
   {
     try
       {
+/*#if not ULIBGCJ*/
 	converter.setFinished();
+/*#endif*/
 	writeChars(new char[0], 0, 0);
 	flush();
 	out.close();

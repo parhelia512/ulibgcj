@@ -38,10 +38,12 @@ exception statement from your version. */
 
 package java.util;
 
+/*#if not ULIBGCJ*/
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+/*#endif*/
 
 /**
  * This class provides a hashtable-backed implementation of the
@@ -91,7 +93,11 @@ import java.io.Serializable;
  * @status updated to 1.4
  */
 public class IdentityHashMap extends AbstractMap
+/*#if ULIBGCJ
+  implements Map
+  #else*/
   implements Map, Serializable, Cloneable
+/*#endif*/
 {
   /** The default capacity. */
   private static final int DEFAULT_CAPACITY = 21;
@@ -196,6 +202,7 @@ public class IdentityHashMap extends AbstractMap
       }
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Creates a shallow copy where keys and values are not cloned.
    */
@@ -214,6 +221,7 @@ public class IdentityHashMap extends AbstractMap
         return null;
       }
   }
+/*#endif*/
 
   /**
    * Tests whether the specified key is in this map.  Unlike normal Maps,
@@ -883,6 +891,7 @@ public class IdentityHashMap extends AbstractMap
     }
   } // class IdentityEntry
 
+/*#if not ULIBGCJ*/
   /**
    * Reads the object from a serial stream.
    *
@@ -929,4 +938,5 @@ public class IdentityHashMap extends AbstractMap
           }
       }
   }
+/*#endif*/
 }

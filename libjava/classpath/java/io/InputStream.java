@@ -48,7 +48,10 @@ package java.io;
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Warren Levy (warrenl@cygnus.com)
   */
-public abstract class InputStream implements Closeable
+public abstract class InputStream
+/*#if not ULIBGCJ*/
+  implements Closeable
+/*#endif*/
 {
   /**
    * Default, no-arg, public constructor

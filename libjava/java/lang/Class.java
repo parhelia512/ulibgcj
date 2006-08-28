@@ -130,7 +130,11 @@ public final class Class
   private static Class forName (String className, Class caller)
     throws ClassNotFoundException
   {
+/*#if ULIBGCJ
+    return forName(className);
+  #else*/
     return forName(className, true, caller.getClassLoaderInternal());
+/*#endif*/
   }
 
 /*#if not ULIBGCJ*/

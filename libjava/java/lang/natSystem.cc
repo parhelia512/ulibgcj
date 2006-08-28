@@ -20,6 +20,11 @@ details.  */
 #include <java/lang/System.h>
 #ifdef JV_ULIBGCJ
 #include <java/lang/System$Output.h>
+#include <java/lang/System$Input.h>
+#include <java/io/InputStream.h>
+#include <java/io/OutputStream.h>
+#include <java/io/IOException.h>
+#include <java/io/EOFException.h>
 #endif//JV_ULIBGCJ
 #include <java/lang/Class.h>
 #include <java/lang/ArrayStoreException.h>
@@ -159,24 +164,106 @@ java::lang::System::getenv0 (jstring name)
 #endif//JV_ULIBGCJ
 
 #ifdef JV_ULIBGCJ
+inline void
+doWrite(int fd, const void* p, int c)
+{
+  int r = JV_ULIBGCJ_WRITE(fd, p, c);
+  if (r == -1) {
+    throw new java::io::IOException;    
+  }
+}
+
+inline void
+doClose(int fd)
+{
+  int r = JV_ULIBGCJ_CLOSE(fd);
+  if (r == -1) {
+    throw new java::io::IOException;    
+  }
+}
+
+inline int
+doRead(int fd, void* p, int c)
+{
+  return JV_ULIBGCJ_READ(fd, p, c);
+}
+
 void
 java::lang::System$Output::write (jbyteArray b, jint offset, jint length)
 {
-  for (jint i = offset; i < offset + length; ++i) {
-    putchar((char) elements(b)[i]);
-  }
+  doWrite(fd, elements(b) + offset, length);
 }
 
 void
 java::lang::System$Output::write (jint v)
 {
-  putchar((char) v);
+  char c = v;
+  doWrite(fd, &c, 1);
 }
 
 void
 java::lang::System$Output::flush ()
 {
-  fflush(stdout);
+  // do nothing
+}
+
+void
+java::lang::System$Output::close ()
+{
+  if (not closed) {
+    doClose(fd);
+    closed = true;
+  }
+}
+
+java::io::OutputStream*
+java::lang::System$Output::standardOut ()
+{
+  return new java::lang::System$Output(1);
+}
+
+java::io::OutputStream*
+java::lang::System$Output::standardErr ()
+{
+  return new java::lang::System$Output(2);
+}
+
+jint
+java::lang::System$Input::read (jbyteArray b, jint offset, jint length)
+{
+  int r = doRead(fd, elements(b) + offset, length);
+  if (r == -1) {
+    throw new java::io::IOException;    
+  }
+  return r;
+}
+
+jint
+java::lang::System$Input::read ()
+{
+  char c;
+  int r = doRead(fd, &c, 1);
+  if (r == 0) {
+    return -1;
+  } else if (r == -1) {
+    throw new java::io::IOException;
+  }
+  return r;
+}
+
+void
+java::lang::System$Input::close ()
+{
+  if (not closed) {
+    doClose(fd);
+    closed = true;
+  }
+}
+
+java::io::InputStream*
+java::lang::System$Input::standardIn ()
+{
+  return new java::lang::System$Input(0);
 }
 
 void

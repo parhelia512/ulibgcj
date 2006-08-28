@@ -206,6 +206,9 @@ extern "Java"
       class Readable;
       class Runnable;
       class Runtime;
+#ifdef JV_ULIBGCJ
+      class Runtime$ConcreteProcess;
+#endif
       class RuntimeException;
       class RuntimePermission;
       class SecurityContext;
@@ -221,7 +224,10 @@ extern "Java"
       class StringBuilder;
       class StringIndexOutOfBoundsException;
       class System;
+#ifdef JV_ULIBGCJ
       class System$Output;
+      class System$Input;
+#endif
       class Thread;
       class Thread$UncaughtExceptionHandler;
       class ThreadDeath;

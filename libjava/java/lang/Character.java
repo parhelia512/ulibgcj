@@ -2290,6 +2290,7 @@ public final class Character
   }
 /*#endif*/
 
+/*#if not ULIBGCJ*/
   /**
    * Determines if a character is a Unicode lowercase letter. For example,
    * <code>'a'</code> is lowercase.  Unlike isLowerCase(char), this method
@@ -2309,6 +2310,7 @@ public final class Character
   {
     return getType(codePoint) == LOWERCASE_LETTER;
   }
+/*#endif*/
 
   /**
    * Determines if a character is a Unicode uppercase letter. For example,
@@ -2372,7 +2374,6 @@ public final class Character
   {
     return getType(ch) == TITLECASE_LETTER;
   }
-/*#endif*/
 
   /**
    * Determines if a character is a Unicode titlecase letter. For example,
@@ -2394,6 +2395,7 @@ public final class Character
   {
     return getType(codePoint) == TITLECASE_LETTER;
   }
+/*#endif*/
 
   /**
    * Determines if a character is a Unicode decimal digit. For example,
@@ -2457,7 +2459,6 @@ public final class Character
   {
     return getType(ch) != UNASSIGNED;
   }
-/*#endif*/
 
   /**
    * Determines if a character is part of the Unicode Standard. This is an
@@ -2480,6 +2481,7 @@ public final class Character
   {
     return getType(codePoint) != UNASSIGNED;
   }
+/*#endif*/
 
   /**
    * Determines if a character is a Unicode letter. Not all letters have case,
@@ -2513,7 +2515,6 @@ public final class Character
                | (1 << MODIFIER_LETTER)
                | (1 << OTHER_LETTER))) != 0;
   }
-/*#endif*/
 
   /**
    * Determines if a character is a Unicode letter. Not all letters have case,
@@ -2545,6 +2546,7 @@ public final class Character
                | (1 << MODIFIER_LETTER)
                | (1 << OTHER_LETTER))) != 0;
   }
+/*#endif*/
 
   /**
    * Determines if a character is a Unicode letter or a Unicode digit. This
@@ -2932,7 +2934,6 @@ public final class Character
                                || (ch <= '\u001B' && ch >= '\u000E')))
       || getType(ch) == FORMAT;
   }
-/*#endif*/
 
   /**
    * Determines if a character is ignorable in a Unicode identifier. This
@@ -2959,6 +2960,7 @@ public final class Character
         || (codePoint >= 0x007F && codePoint <= 0x009F)
             || getType(codePoint) == FORMAT);
   }
+/*#endif*/
 
   /**
    * Converts a Unicode character into its lowercase equivalent mapping.
@@ -2975,6 +2977,7 @@ public final class Character
    */
   public static native char toLowerCase(char ch);
 
+/*#if not ULIBGCJ*/
   /**
    * Converts a Unicode character into its lowercase equivalent mapping.
    * If a mapping does not exist, then the character passed is returned.
@@ -2992,6 +2995,7 @@ public final class Character
    * @since 1.5
    */
   public static native int toLowerCase(int codePoint);
+/*#endif*/
 
   /**
    * Converts a Unicode character into its uppercase equivalent mapping.
@@ -3130,7 +3134,6 @@ public final class Character
    * @since 1.1
    */
   public static native int getNumericValue(char ch);
-/*#endif*/
 
   /**
    * Returns the Unicode numeric value property of a character. For example,
@@ -3163,6 +3166,7 @@ public final class Character
    * @since 1.5
    */
   public static native int getNumericValue(int codePoint);
+/*#endif*/
 
   /**
    * Determines if a character is a ISO-LATIN-1 space. This is only the five
@@ -3213,6 +3217,7 @@ public final class Character
   }
 /*#endif*/
 
+/*#if not ULIBGCJ*/
   /**
    * Determines if a character is a Unicode space character. This includes
    * SPACE_SEPARATOR, LINE_SEPARATOR, and PARAGRAPH_SEPARATOR.  Unlike
@@ -3232,6 +3237,7 @@ public final class Character
                | (1 << LINE_SEPARATOR)
                | (1 << PARAGRAPH_SEPARATOR))) != 0;
   }
+/*#endif*/
 
   /**
    * Determines if a character is Java whitespace. This includes Unicode
@@ -3384,7 +3390,6 @@ public final class Character
    * @since 1.1
    */
   public static native int getType(char ch);
-/*#endif*/
 
   /**
    * Returns the Unicode general category property of a character.  Supports
@@ -3425,6 +3430,7 @@ public final class Character
    * @since 1.5
    */
   public static native int getType(int codePoint);
+/*#endif*/
 
   /**
    * Converts a digit into a character which represents that digit

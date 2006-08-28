@@ -50,12 +50,16 @@ gnu/gcj/Core.java \
 gnu/gcj/RawData.java \
 gnu/gcj/RawDataManaged.java \
 gnu/gcj/runtime/StringBuffer.java \
+gnu/gcj/runtime/NameFinder.java \
 gnu/java/net/protocol/core/CoreInputStream.java \
 gnu/java/net/URLParseError.java \
 java/io/InputStreamReader.java \
 java/io/BufferedReader.java \
-java/io/FilterInputStream.java \
+java/io/BufferedWriter.java \
 java/io/BufferedInputStream.java \
+java/io/BufferedOutputStream.java \
+java/io/FilterInputStream.java \
+java/io/EOFException.java \
 java/io/Reader.java \
 java/io/Writer.java \
 java/io/PrintWriter.java \
@@ -110,9 +114,12 @@ java/lang/Number.java \
 java/lang/NumberFormatException.java \
 java/lang/Object.java \
 java/lang/OutOfMemoryError.java \
+java/lang/Process.java \
 java/lang/Runnable.java \
+java/lang/Runtime.java \
 java/lang/RuntimeException.java \
 java/lang/Short.java \
+java/lang/StackTraceElement.java \
 java/lang/String.java \
 java/lang/StringBuffer.java \
 java/lang/StringBuilder.java \
@@ -142,6 +149,7 @@ java/util/EventObject.java \
 java/util/HashSet.java \
 java/util/HashMap.java \
 java/util/Hashtable.java \
+java/util/IdentityHashMap.java \
 java/util/Iterator.java \
 java/util/List.java \
 java/util/ListIterator.java \
@@ -169,7 +177,24 @@ java/lang/natStringBuffer.cc \
 java/lang/natStringBuilder.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
-java/lang/natVMClassLoader.cc
+java/lang/natVMClassLoader.cc \
+java/lang/natVMThrowable.cc
+
+if USING_POSIX_PLATFORM
+native_sources += natRuntimePosix.cc
+AM_CXXFLAGS += \
+	-DJV_ULIBGCJ_WRITE=write \
+	-DJV_ULIBGCJ_READ=read \
+	-DJV_ULIBGCJ_CLOSE=close
+endif
+
+if USING_WIN32_PLATFORM
+native_sources += natRuntimeWin32.cc
+AM_CXXFLAGS += \
+	-DJV_ULIBGCJ_WRITE=_write \
+	-DJV_ULIBGCJ_READ=_read \
+	-DJV_ULIBGCJ_CLOSE=_close
+endif
 
 BUILT_SOURCES = $(java_headers)
 
@@ -177,7 +202,8 @@ libulibgcj_a_SOURCES = \
 prims.cc \
 exception.cc \
 defineclass.cc \
-link.cc
+link.cc \
+stacktrace.cc
 
 libulibgcj_a_LIBADD = $(objects) $(native_objects)
 
@@ -297,6 +323,7 @@ headers/java/lang/Thread.h: classes/java/lang/Thread.class
 		-prepend 'java::lang::Thread* _Jv_AttachCurrentThread (jstring name, java::lang::ThreadGroup* group);' \
 		-prepend 'java::lang::Thread* _Jv_AttachCurrentThreadAsDaemon (jstring name, java::lang::ThreadGroup* group);' \
 		-prepend 'jint _Jv_DetachCurrentThread ();' \
+		-prepend '_Jv_Thread_t* _Jv_ThreadGetData (java::lang::Thread* thread);' \
 		-friend '_Jv_JNIEnv * ::_Jv_GetCurrentJNIEnv ();' \
 		-friend 'void ::_Jv_SetCurrentJNIEnv (_Jv_JNIEnv *env);' \
 		-friend 'void ::_Jv_ThreadRun (java::lang::Thread* thread);' \
@@ -304,6 +331,7 @@ headers/java/lang/Thread.h: classes/java/lang/Thread.class
 		-friend 'java::lang::Thread* ::_Jv_AttachCurrentThread (jstring name, java::lang::ThreadGroup* group);' \
 		-friend 'java::lang::Thread* ::_Jv_AttachCurrentThreadAsDaemon (jstring name, java::lang::ThreadGroup* group);' \
 		-friend 'jint (::_Jv_DetachCurrentThread) ();' \
+		-friend '_Jv_Thread_t* ::_Jv_ThreadGetData (java::lang::Thread* thread);' \
 		java/lang/Thread
 
 headers/java/lang/String.h: classes/java/lang/String.class

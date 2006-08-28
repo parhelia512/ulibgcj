@@ -180,7 +180,9 @@ public class OutputStreamWriter extends Writer
       {
 	if (out != null)
 	  {
+/*#if not ULIBGCJ*/
 	    converter.setFinished();
+/*#endif*/
 	    flush();
 	    out.close();
 	    out = null;

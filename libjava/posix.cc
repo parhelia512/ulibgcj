@@ -22,9 +22,7 @@ details.  */
 #endif
 
 #include <jvm.h>
-#ifndef JV_ULIBGCJ
 #include <java-stack.h>
-#endif//JV_ULIBGCJ
 #include <java/lang/Thread.h>
 #ifndef JV_ULIBGCJ
 #include <java/io/InterruptedIOException.h>
@@ -215,6 +213,7 @@ _Jv_select (int n, fd_set *readfds, fd_set  *writefds,
   return 0;
 #endif
 }
+#endif//JV_ULIBGCJ
 
 // Given an address, find the object that defines it and the nearest
 // defined symbol to that address.  Returns 0 if no object defines this
@@ -243,5 +242,3 @@ _Jv_platform_dladdr (void *addr, _Jv_AddrInfo *info)
 
   return ret_val;
 }
-
-#endif//JV_ULIBGCJ

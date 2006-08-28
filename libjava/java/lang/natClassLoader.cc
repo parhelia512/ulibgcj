@@ -68,9 +68,9 @@ static jclass system_class_list;
 // initialized the system class loader; it lets us know that we should
 // no longer pay attention to the system abi flag.
 #define SYSTEM_LOADER_INITIALIZED ((jclass) -1)
+#endif//JV_ULIBGCJ
 
 static jclass loaded_classes[HASH_LEN];
-#endif//JV_ULIBGCJ
 
 // This is the root of a linked list of classes
 static jclass stack_head;
@@ -308,6 +308,7 @@ _Jv_RegisterClassHookDefault (jclass klass)
 	{
 	  // If you get this, it means you have the same class in two
 	  // different libraries.
+#undef TEXT
 #define TEXT "Duplicate class registration: "
 	  // We size-limit MESSAGE so that you can't trash the stack.
 	  char message[200];

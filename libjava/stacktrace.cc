@@ -13,7 +13,9 @@ details.  */
 
 #include <jvm.h>
 #include <gcj/cni.h>
+#ifndef JV_ULIBGCJ
 #include <java-interp.h>
+#endif//JV_ULIBGCJ
 #include <java-stack.h>
 
 #include <stdio.h>
@@ -21,11 +23,15 @@ details.  */
 #include <java/lang/Boolean.h>
 #include <java/lang/Class.h>
 #include <java/lang/Long.h>
+#ifndef JV_ULIBGCJ
 #include <java/security/AccessController.h>
+#endif//JV_ULIBGCJ
 #include <java/util/ArrayList.h>
 #include <java/util/IdentityHashMap.h>
+#ifndef JV_ULIBGCJ
 #include <gnu/classpath/jdwp/Jdwp.h>
 #include <gnu/java/lang/MainThread.h>
+#endif//JV_ULIBGCJ
 #include <gnu/gcj/runtime/NameFinder.h>
 #include <gnu/gcj/runtime/StringBuffer.h>
 
@@ -329,10 +335,12 @@ _Jv_StackTrace::GetStackTraceElements (_Jv_StackTrace *trace,
           && strcmp (frame->meth->name->chars(), "fillInStackTrace") == 0)
 	start_idx = i + 1;
 
+#ifndef JV_ULIBGCJ
       // End the trace at the application's main() method if we see call_main.
       if (frame->klass == &gnu::java::lang::MainThread::class$
           && strcmp (frame->meth->name->chars(), "call_main") == 0)
 	end_idx = i - 1;
+#endif//JV_ULIBGCJ
     }
   
   const jboolean remove_unknown 
@@ -375,6 +383,7 @@ _Jv_StackTrace::GetStackTraceElements (_Jv_StackTrace *trace,
   return (JArray<StackTraceElement *>*) list->toArray (array);
 }
 
+#ifndef JV_ULIBGCJ
 struct CallingClassTraceData
 {
   jclass checkClass;    
@@ -615,3 +624,5 @@ _Jv_StackTrace::GetAccessControlStack (void)
   
   return result;
 }
+
+#endif//JV_ULIBGCJ
