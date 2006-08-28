@@ -131,13 +131,12 @@ public final class Class
     throws ClassNotFoundException
   {
 /*#if ULIBGCJ
-    return forName(className);
+    return forName(className, true, null);
   #else*/
     return forName(className, true, caller.getClassLoaderInternal());
 /*#endif*/
   }
 
-/*#if not ULIBGCJ*/
   /**
    * Use the specified classloader to load and link a class. If the loader
    * is null, this uses the bootstrap class loader (provide the security
@@ -166,6 +165,7 @@ public final class Class
 				      ClassLoader loader)
     throws ClassNotFoundException;
   
+/*#if not ULIBGCJ*/
   /**
    * Get all the public member classes and interfaces declared in this
    * class or inherited from superclasses. This returns an array of length
