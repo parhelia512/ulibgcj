@@ -5441,7 +5441,7 @@ target_configargs=${baseargs}
 # sorts of decisions they want to make on this basis.  Please consider
 # this option to be deprecated.  FIXME.
 if test x${is_cross_compiler} = xyes ; then
-  target_configargs="--with-cross-host=${host_alias} ${target_configargs}"
+  target_configargs="--with-cross-host=${host} ${target_configargs}"
 fi
 
 # Default to --enable-multilib.
