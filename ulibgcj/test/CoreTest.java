@@ -10,14 +10,28 @@ public class CoreTest implements Runnable {
     uselessArray[0] = new IndexOutOfBoundsException();
   }
 
+  public static void trouble() {
+    System.err.println("trouble!");
+    System.exit(-1);
+  }
+
   public static void main(String[] args) {
     System.out.println("a useless constant: " + SOME_USELESS_CONSTANT);
+
+    try {
+      System.out.println("Object class: " +
+                         Class.forName("java.lang.Object").getName());
+    } catch (Exception e) {
+      System.err.println(e.toString());
+      trouble();
+    }
 
     System.out.println("making thrower");
     Thrower t = new Thrower();
     System.out.println("calling Thrower.throwSomething");
     try {
       t.throwSomething();
+      trouble();
     } catch (Throwable e) {
       System.out.println("as expected, caught " + e);
     }
@@ -27,7 +41,7 @@ public class CoreTest implements Runnable {
       for (int i = 0; i < 6; ++i) {
         array[i] = array;
       }
-      System.out.println(" *** you should never see this *** ");
+      trouble();
     } catch (ArrayIndexOutOfBoundsException e) {
       System.out.println("as expected, caught: " + e);
     }
@@ -35,6 +49,7 @@ public class CoreTest implements Runnable {
     try {
       Object o = null;
       o.toString();
+      trouble();
     } catch (NullPointerException e) {
       System.out.println("as expected, caught: " + e);
     }
@@ -54,11 +69,11 @@ public class CoreTest implements Runnable {
         test.wait();
       }
     } catch (Throwable e) {
-      System.out.println("caught " + e);
+      System.err.println("caught " + e);
     }
 
     if (test.trouble)
-      System.out.println("trouble!");
+      trouble();
     else
       System.out.println("Everybody has won, and all must have prizes!");
   }
