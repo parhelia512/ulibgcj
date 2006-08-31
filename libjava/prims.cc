@@ -1445,7 +1445,9 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
   try {
     real(arg_vec);
   } catch (java::lang::Throwable* t) {
-    java::lang::System::err->println (t->toString());
+    for (; t; t = t->getCause()) {
+      java::lang::System::err->println (t->toString());
+    }
   }
 
   JvDetachCurrentThread();
