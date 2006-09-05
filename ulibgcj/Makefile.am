@@ -198,6 +198,7 @@ libulibgcj_a_SOURCES += win32.cc
 endif
 
 if USING_DARWIN_CRT
+AM_CXXFLAGS += -DJV_ULIBGCJ_DARWIN
 libulibgcj_a_SOURCES += darwin.cc
 endif
 
