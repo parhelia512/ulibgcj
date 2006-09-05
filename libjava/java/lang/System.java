@@ -383,6 +383,8 @@ public final class System
    */
 /*#if ULIBGCJ
   public static String getProperty(String key, String def) {
+    if ("file.separator".equals(key)) return "/";
+    if ("line.separator".equals(key)) return "\n";
     return def;
   }  
   #else*/
