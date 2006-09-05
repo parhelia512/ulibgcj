@@ -607,7 +607,6 @@ public final class Math
     return (long) floor(a + 0.5d);
   }
 
-/*#if not ULIBGCJ*/
   /**
    * Get a random number.  This behaves like Random.nextDouble(), seeded by
    * System.currentTimeMillis() when first called. In other words, the number
@@ -620,6 +619,9 @@ public final class Math
    * @see Random#nextDouble()
    * @see System#currentTimeMillis()
    */
+/*#if ULIBGCJ
+  public static native double random();
+  #else*/
   public static synchronized double random()
   {
     if (rand == null)
