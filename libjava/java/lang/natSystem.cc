@@ -234,6 +234,8 @@ java::lang::System$Input::read (jbyteArray b, jint offset, jint length)
   int r = doRead(fd, elements(b) + offset, length);
   if (r == -1) {
     throw new java::io::IOException;    
+  } else if (r == 0) {
+    r = -1;
   }
   return r;
 }
