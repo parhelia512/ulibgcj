@@ -344,7 +344,12 @@ libgcj-$(gcc_version).jar: $(classes)
 
 clean:
 	rm -rf $(libulibgcj_a_OBJECTS) objects classes headers processed \
-		libulibgcj.a libgcj-$(gcc_version).jar hello core-test
+		libulibgcj.a libgcj-$(gcc_version).jar hello core-test javadoc
+
+.PHONY: javadoc
+javadoc: $(processed_java_sources)
+	javadoc -sourcepath processed java.lang java.util java.io \
+		java.lang.reflect	-d javadoc
 
 ## tests and examples #########################################################
 
