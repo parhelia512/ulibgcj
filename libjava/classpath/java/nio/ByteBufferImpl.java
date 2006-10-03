@@ -53,6 +53,7 @@ final class ByteBufferImpl extends ByteBuffer
     this.readOnly = readOnly;
   }
   
+/*#if not ULIBGCJ*/
   public CharBuffer asCharBuffer ()
   {
     return new CharViewBufferImpl (this, remaining() >> 1);
@@ -82,6 +83,7 @@ final class ByteBufferImpl extends ByteBuffer
   {
     return new DoubleViewBufferImpl (this, remaining() >> 3);
   }
+/*#endif*/
 
   public boolean isReadOnly ()
   {
@@ -333,6 +335,7 @@ final class ByteBufferImpl extends ByteBuffer
     return this;
   }
 
+/*#if not ULIBGCJ*/
   public float getFloat ()
   {
     return ByteBufferHelper.getFloat (this, order());
@@ -376,4 +379,5 @@ final class ByteBufferImpl extends ByteBuffer
     ByteBufferHelper.putDouble (this, index, value, order());
     return this;
   }
+/*#endif*/
 }
