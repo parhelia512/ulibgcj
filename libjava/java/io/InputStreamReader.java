@@ -38,9 +38,11 @@ exception statement from your version. */
 
 package java.io;
 
+/*#if not ULIBGCJ*/
 import gnu.gcj.convert.*;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+/*#endif*/
 
 /**
  * This class reads characters from a byte input stream.   The characters
@@ -89,6 +91,9 @@ import java.nio.charset.CharsetDecoder;
  */
 public class InputStreamReader extends Reader
 {
+/*#if ULIBGCJ
+  InputStream in;
+  #else*/
   BufferedInputStream in;
 
   // Buffer of chars read from in and converted but not consumed.
@@ -103,7 +108,13 @@ public class InputStreamReader extends Reader
    * translation of bytes from the underlying stream.
    */
   BytesToUnicode converter;
+/*#endif*/
 
+/*#if ULIBGCJ
+  public InputStreamReader(InputStream in) {
+    this.in = in;
+  }
+  #else*/
   /**
    * This method initializes a new instance of <code>InputStreamReader</code>
    * to read from the specified stream using the default encoding.
@@ -167,6 +178,7 @@ public class InputStreamReader extends Reader
     converter = decoder;
     converter.setInput(this.in.buf, 0, 0);
   }
+/*#endif*/
 
   /**
    * This method closes this stream, as well as the underlying 
@@ -181,11 +193,14 @@ public class InputStreamReader extends Reader
 	if (in != null)
 	  in.close();
 	in = null;
+/*#if not ULIBGCJ*/
 	work = null;
 	wpos = wcount = 0;
+/*#endif*/
       }
   }
 
+/*#if not ULIBGCJ*/
   /**
    * This method returns the name of the encoding that is currently in use
    * by this object.  If the stream has been closed, this method is allowed
@@ -197,6 +212,7 @@ public class InputStreamReader extends Reader
   {
     return in != null ? converter.getName() : null;
   }
+/*#endif*/
 
   /**
    * This method checks to see if the stream is read to be read.  It
@@ -216,8 +232,10 @@ public class InputStreamReader extends Reader
 	if (in == null)
 	  throw new IOException("Stream closed");
 
+/*#if not ULIBGCJ*/
 	if (wpos < wcount)
 	  return true;
+/*#endif*/
 
 	// According to the spec, an InputStreamReader is ready if its
 	// input buffer is not empty (above), or if bytes are
@@ -249,6 +267,13 @@ public class InputStreamReader extends Reader
 	if (length == 0)
 	  return 0;
 
+/*#if ULIBGCJ
+	byte[] bytes = new byte[length];
+	int read = in.read(bytes);
+	for (int i = 0; i < read; ++i)
+          buf[offset + i] = (char) (bytes[i] & 0xFF);
+	return read;
+  #else*/
 	int wavail = wcount - wpos;
 	if (wavail <= 0)
 	  {
@@ -261,6 +286,7 @@ public class InputStreamReader extends Reader
 	System.arraycopy(work, wpos, buf, offset, length);
 	wpos += length;
 	return length;
+/*#endif*/
       }
   }
 
@@ -278,6 +304,9 @@ public class InputStreamReader extends Reader
 	if (in == null)
 	  throw new IOException("Stream closed");
 
+/*#if ULIBGCJ
+        return in.read();
+  #else*/
 	int wavail = wcount - wpos;
 	if (wavail <= 0)
 	  {
@@ -292,9 +321,11 @@ public class InputStreamReader extends Reader
 	  }
 
 	return work[wpos++];
+/*#endif*/
       }
   }
 
+/*#if not ULIBGCJ*/
   // Read more bytes and convert them into the specified buffer.
   // Returns the number of converted characters or -1 on EOF.
   private int refill(char[] buf, int offset, int length) throws IOException
@@ -329,4 +360,5 @@ public class InputStreamReader extends Reader
 	  }
       }
   }
+/*#endif*/
 }

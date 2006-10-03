@@ -16,9 +16,13 @@ details.  */
 #include <jvm.h>
 #include <java/lang/Throwable.h>
 #include <java/lang/ref/Reference.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/ref/SoftReference.h>
+#endif// not JV_ULIBGCJ
 #include <java/lang/ref/WeakReference.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/ref/PhantomReference.h>
+#endif// not JV_ULIBGCJ
 #include <java/lang/ref/ReferenceQueue.h>
 
 static void finalize_reference (jobject ref);
@@ -212,10 +216,13 @@ add_to_hash (java::lang::ref::Reference *the_reference)
   n->reference = the_reference;
 
   enum weight w = PHANTOM;
+#ifndef JV_ULIBGCJ
   if (java::lang::ref::SoftReference::class$.isInstance (the_reference))
     w = SOFT;
-  else if (java::lang::ref::WeakReference::class$.isInstance (the_reference))
-    w = WEAK;
+  else
+#endif// not JV_ULIBGCJ
+    if (java::lang::ref::WeakReference::class$.isInstance (the_reference))
+      w = WEAK;
   n->weight = w;
 
   object_list **link = &item->next;

@@ -38,10 +38,11 @@ exception statement from your version. */
 
 package java.io;
 
+/*#if not ULIBGCJ*/
 import java.util.Formatter;
 import java.util.Locale;
-
 import gnu.gcj.convert.UnicodeToBytes;
+/*#endif*/
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
@@ -61,7 +62,10 @@ import gnu.gcj.convert.UnicodeToBytes;
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Tom Tromey (tromey@cygnus.com)
  */
-public class PrintStream extends FilterOutputStream implements Appendable
+public class PrintStream extends FilterOutputStream
+/*#if not ULIBGCJ*/
+  implements Appendable
+/*#endif*/
 {
   /* Notice the implementation is quite similar to OutputStreamWriter.
    * This leads to some minor duplication, because neither inherits
@@ -71,12 +75,14 @@ public class PrintStream extends FilterOutputStream implements Appendable
   private static final char[] line_separator
     = System.getProperty("line.separator").toCharArray();
   
+/*#if not ULIBGCJ*/
   UnicodeToBytes converter;
 
   // Work buffer of characters for converter.
   char[] work = new char[100];
   // Work buffer of bytes where we temporarily keep converter output.
   byte[] work_bytes = new byte[100];
+/*#endif*/
 
   /**
    * This boolean indicates whether or not an error has ever occurred
@@ -118,10 +124,13 @@ public class PrintStream extends FilterOutputStream implements Appendable
   {
     super (out);
 
+/*#if not ULIBGCJ*/
     converter = UnicodeToBytes.getDefaultEncoder();
+/*#endif*/
     this.auto_flush = auto_flush;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * This method intializes a new <code>PrintStream</code> object to write
    * to the specified output sink.  This constructor also allows "auto-flush"
@@ -145,6 +154,7 @@ public class PrintStream extends FilterOutputStream implements Appendable
     converter = UnicodeToBytes.getEncoder (encoding);
     this.auto_flush = auto_flush;
   }
+/*#endif*/
 
   /**
    * This method checks to see if an error has occurred on this stream.  Note
@@ -180,10 +190,12 @@ public class PrintStream extends FilterOutputStream implements Appendable
 	flush();
 	out.close();
       }
+/*#if not ULIBGCJ*/
     catch (InterruptedIOException iioe)
       {
 	Thread.currentThread().interrupt();
       }
+/*#endif*/
     catch (IOException e)
       {
 	setError ();
@@ -200,10 +212,12 @@ public class PrintStream extends FilterOutputStream implements Appendable
       {
 	out.flush();
       }
+/*#if not ULIBGCJ*/
     catch (InterruptedIOException iioe)
       {
 	Thread.currentThread().interrupt();
       }
+/*#endif*/
     catch (IOException e)
       {
 	setError ();
@@ -220,10 +234,12 @@ public class PrintStream extends FilterOutputStream implements Appendable
 	if (auto_flush)
 	  flush();
       }
+/*#if not ULIBGCJ*/
     catch (InterruptedIOException iioe)
       {
 	Thread.currentThread().interrupt();
       }
+/*#endif*/
     catch (IOException e)
       {
 	setError ();
@@ -241,10 +257,12 @@ public class PrintStream extends FilterOutputStream implements Appendable
 	if (auto_flush)
 	  flush();
       }
+/*#if not ULIBGCJ*/
     catch (InterruptedIOException iioe)
       {
 	Thread.currentThread().interrupt();
       }
+/*#endif*/
     catch (IOException e)
       {
 	setError ();
@@ -254,6 +272,11 @@ public class PrintStream extends FilterOutputStream implements Appendable
   private void writeChars(char[] buf, int offset, int count)
     throws IOException
   {
+/*#if ULIBGCJ
+    byte[] buffer = new byte[count];
+    for (int i = 0; i < count; ++i) buffer[i] = (byte) buf[offset + i];
+    out.write(buffer);
+  #else*/
     while (count > 0 || converter.havePendingBytes())
       {
 	converter.setOutput(work_bytes, 0);
@@ -262,11 +285,17 @@ public class PrintStream extends FilterOutputStream implements Appendable
 	count -= converted;
 	out.write(work_bytes, 0, converter.count);
       }
+/*#endif*/
   }
 
   private void writeChars(String str, int offset, int count)
     throws IOException
   {
+/*#if ULIBGCJ
+    byte[] buffer = new byte[count];
+    for (int i = 0; i < count; ++i) buffer[i] = (byte) str.charAt(offset + i);
+    out.write(buffer);
+  #else*/
     while (count > 0 || converter.havePendingBytes())
       {
 	converter.setOutput(work_bytes, 0);
@@ -275,8 +304,10 @@ public class PrintStream extends FilterOutputStream implements Appendable
 	count -= converted;
 	out.write(work_bytes, 0, converter.count);
       }
+/*#endif*/
   }
 
+/*#if not ULIBGCJ*/
   /**
    * This methods prints a boolean value to the stream.  <code>true</code>
    * values are printed as "true" and <code>false</code> values are printed
@@ -344,6 +375,7 @@ public class PrintStream extends FilterOutputStream implements Appendable
   {
     print(obj == null ? "null" : obj.toString(), false);
   }
+/*#endif*/
 
   /**
    * This method prints a <code>String</code> to the stream.  The actual
@@ -356,6 +388,7 @@ public class PrintStream extends FilterOutputStream implements Appendable
     print(str == null ? "null" : str, false);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * This method prints a char to the stream.  The actual value printed is
    * determined by the character encoding in use.
@@ -367,6 +400,7 @@ public class PrintStream extends FilterOutputStream implements Appendable
     work[0] = ch;
     print(work, 0, 1, false);
   }
+/*#endif*/
 
   /**
    * This method prints an array of characters to the stream.  The actual
@@ -389,6 +423,7 @@ public class PrintStream extends FilterOutputStream implements Appendable
     print(line_separator, 0, line_separator.length, false);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * This methods prints a boolean value to the stream.  <code>true</code>
    * values are printed as "true" and <code>false</code> values are printed
@@ -468,6 +503,7 @@ public class PrintStream extends FilterOutputStream implements Appendable
   {
     print(obj == null ? "null" : obj.toString(), true);
   }
+/*#endif*/
 
   /**
    * This method prints a <code>String</code> to the stream.  The actual
@@ -482,6 +518,7 @@ public class PrintStream extends FilterOutputStream implements Appendable
     print (str == null ? "null" : str, true);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * This method prints a char to the stream.  The actual value printed is
    * determined by the character encoding in use.
@@ -495,6 +532,7 @@ public class PrintStream extends FilterOutputStream implements Appendable
     work[0] = ch;
     print(work, 0, 1, true);
   }
+/*#endif*/
 
   /**
    * This method prints an array of characters to the stream.  The actual
@@ -525,10 +563,12 @@ public class PrintStream extends FilterOutputStream implements Appendable
         if (auto_flush && (oneByte == '\n'))
           flush ();
       }
+/*#if not ULIBGCJ*/
     catch (InterruptedIOException iioe)
       {
 	Thread.currentThread ().interrupt ();
       }
+/*#endif*/
     catch (IOException e)
       {
         setError ();
@@ -552,16 +592,19 @@ public class PrintStream extends FilterOutputStream implements Appendable
         if (auto_flush)
           flush ();
       }
+/*#if not ULIBGCJ*/
     catch (InterruptedIOException iioe)
       {
 	Thread.currentThread ().interrupt ();
       }
+/*#endif*/
     catch (IOException e)
       {
         setError ();
       }
   }
 
+/*#if not ULIBGCJ*/
   /** @since 1.5 */
   public PrintStream append(char c)
   {
@@ -608,5 +651,6 @@ public class PrintStream extends FilterOutputStream implements Appendable
     f.format(format, args);
     return this;
   }
+/*#endif*/
 } // class PrintStream
 

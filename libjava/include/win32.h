@@ -31,7 +31,9 @@ details.  */
 #include <ws2tcpip.h>
 #include <gcj/cni.h>
 #include <jvm.h>
+#ifndef JV_ULIBGCJ
 #include <java/util/Properties.h>
+#endif//JV_ULIBGCJ
 
 #include <io.h>
 

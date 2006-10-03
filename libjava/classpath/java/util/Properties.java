@@ -42,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+/*#if not ULIBGCJ*/
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
@@ -60,6 +61,7 @@ import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
+/*#endif*/
 
 /**
  * A set of persistent properties, which can be saved or loaded from a stream.
@@ -194,8 +196,13 @@ label   = Name:\\u0020</pre>
   public void load(InputStream inStream) throws IOException
   {
     // The spec says that the file must be encoded using ISO-8859-1.
+/*#if ULIBGCJ
+    BufferedReader reader =
+      new BufferedReader(new InputStreamReader(inStream));
+  #else*/
     BufferedReader reader =
       new BufferedReader(new InputStreamReader(inStream, "ISO-8859-1"));
+/*#endif*/
     String line;
 
     while ((line = reader.readLine()) != null)
@@ -360,6 +367,7 @@ label   = Name:\\u0020</pre>
       }
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Calls <code>store(OutputStream out, String header)</code> and
    * ignores the IOException that may be thrown.
@@ -433,6 +441,7 @@ label   = Name:\\u0020</pre>
 
     writer.flush ();
   }
+/*#endif*/
 
   /**
    * Gets the property with the specified key in this property list.
@@ -462,6 +471,7 @@ label   = Name:\\u0020</pre>
     return null;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Gets the property with the specified key in this property list.  If
    * the key is not found, the default property list is searched.  If the
@@ -483,6 +493,7 @@ label   = Name:\\u0020</pre>
       prop = defaultValue;
     return prop;
   }
+/*#endif*/
 
   /**
    * Returns an enumeration of all keys in this property list, including
@@ -507,6 +518,7 @@ label   = Name:\\u0020</pre>
     return Collections.enumeration(s);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Prints the key/value pairs to the given print stream.  This is 
    * mainly useful for debugging purposes.
@@ -798,5 +810,152 @@ label   = Name:\\u0020</pre>
 	  initCause(e);
       }
   }
+
+  /**
+   * This class deals with the parsing of XML using 
+   * <a href="http://java.sun.com/dtd/properties.dtd">
+   * http://java.sun.com/dtd/properties.dtd</a>.
+   *   
+   * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
+   * @since 1.5
+   */
+  private class PropertiesHandler
+    extends DefaultHandler2
+  {
+    
+    /**
+     * The current key.
+     */
+    private String key;
+    
+    /**
+     * The current value.
+     */
+    private String value;
+
+    /**
+     * A flag to check whether a valid DTD declaration has been seen.
+     */
+    private boolean dtdDeclSeen;
+
+    /**
+     * Constructs a new Properties handler.
+     */
+    public PropertiesHandler()
+    {
+      key = null;
+      value = null;
+      dtdDeclSeen = false;
+    }
+
+    /**
+     * <p>
+     * Captures the start of the DTD declarations, if they exist.
+     * A valid properties file must declare the following doctype:
+     * </p>
+     * <p>
+     * <code>!DOCTYPE properties SYSTEM
+     * "http://java.sun.com/dtd/properties.dtd"</code>
+     * </p>
+     * 
+     * @param name the name of the document type.
+     * @param publicId the public identifier that was declared, or
+     *                 null if there wasn't one.
+     * @param systemId the system identifier that was declared, or
+     *                 null if there wasn't one.
+     * @throws SAXException if some error occurs in parsing.
+     */
+    public void startDTD(String name, String publicId, String systemId)
+      throws SAXException
+    {
+      if (name.equals("properties") &&
+	  publicId == null &&
+	  systemId.equals("http://java.sun.com/dtd/properties.dtd"))
+	{
+	  dtdDeclSeen = true;
+	}
+      else
+	throw new SAXException("Invalid DTD declaration: " + name);
+    }
+
+    /**
+     * Captures the start of an XML element.
+     *
+     * @param uri the namespace URI.
+     * @param localName the local name of the element inside the namespace.
+     * @param qName the local name qualified with the namespace URI.
+     * @param attributes the attributes of this element.
+     * @throws SAXException if some error occurs in parsing.
+     */
+    public void startElement(String uri, String localName,
+			     String qName, Attributes attributes)
+      throws SAXException
+    {
+      if (qName.equals("entry"))
+	{
+	  int index = attributes.getIndex("key");
+	  if (index != -1)
+	    key = attributes.getValue(index);
+	}
+      else if (qName.equals("comment") || qName.equals("properties"))
+	{
+	  /* Ignore it */
+	}
+      else
+	throw new SAXException("Invalid tag: " + qName);
+    }
+    
+    /**
+     * Captures characters within an XML element.
+     *
+     * @param ch the array of characters.
+     * @param start the start index of the characters to use.
+     * @param length the number of characters to use from the start index on.
+     * @throws SAXException if some error occurs in parsing.
+     */
+    public void characters(char[] ch, int start, int length)
+      throws SAXException
+    {
+      if (key != null)
+	value = new String(ch,start,length);
+    }
+    
+    /**
+     * Captures the end of an XML element.
+     *
+     * @param uri the namespace URI.
+     * @param localName the local name of the element inside the namespace.
+     * @param qName the local name qualified with the namespace URI.
+     * @throws SAXException if some error occurs in parsing.
+     */
+    public void endElement(String uri, String localName,
+			   String qName)
+      throws SAXException
+    {
+      if (qName.equals("entry"))
+	{
+	  if (value == null)
+	    value = "";
+	  setProperty(key, value);
+	  key = null;
+	  value = null;
+	}
+    }
+
+    /**
+     * Captures the end of the XML document.  If a DTD declaration has
+     * not been seen, the document is erroneous and an exception is thrown.
+     *
+     * @throws SAXException if the correct DTD declaration didn't appear.
+     */
+    public void endDocument()
+      throws SAXException
+    {
+      if (!dtdDeclSeen)
+	throw new SAXException("No appropriate DTD declaration was seen.");
+    }
+
+  } // class PropertiesHandler
+/*#endif*/
 
 } // class Properties

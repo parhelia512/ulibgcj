@@ -18,15 +18,21 @@ details.  */
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <java/lang/System.h>
+#ifdef JV_ULIBGCJ
+#include <java/lang/System$Output.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/Class.h>
 #include <java/lang/ArrayStoreException.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/NullPointerException.h>
+#ifndef JV_ULIBGCJ
 #include <java/io/PrintStream.h>
 #include <java/io/InputStream.h>
+#endif//JV_ULIBGCJ
 
 
 
+#ifndef JV_ULIBGCJ
 void
 java::lang::System::setErr0 (java::io::PrintStream *newErr)
 {
@@ -44,6 +50,7 @@ java::lang::System::setOut0 (java::io::PrintStream *newOut)
 {
   out = newOut;
 }
+#endif//JV_ULIBGCJ
 
 void
 java::lang::System::arraycopy (jobject src, jint src_offset,
@@ -136,6 +143,7 @@ java::lang::System::identityHashCode (jobject obj)
   return _Jv_HashCode (obj);
 }
 
+#ifndef JV_ULIBGCJ
 jstring
 java::lang::System::getenv0 (jstring name)
 {
@@ -148,3 +156,32 @@ java::lang::System::getenv0 (jstring name)
     return NULL;
   return JvNewStringUTF (value);
 }
+#endif//JV_ULIBGCJ
+
+#ifdef JV_ULIBGCJ
+void
+java::lang::System$Output::write (jbyteArray b, jint offset, jint length)
+{
+  for (jint i = offset; i < offset + length; ++i) {
+    putchar((char) elements(b)[i]);
+  }
+}
+
+void
+java::lang::System$Output::write (jint v)
+{
+  putchar((char) v);
+}
+
+void
+java::lang::System$Output::flush ()
+{
+  fflush(stdout);
+}
+
+void
+java::lang::System::exit (jint status)
+{
+  ::exit(status);
+}
+#endif//JV_ULIBGCJ

@@ -82,6 +82,7 @@ public class Collections
    */
   private static final int LARGE_LIST_SIZE = 16;
 
+/*#if not ULIBGCJ*/
   /**
    * Determines if a list should be treated as a sequential-access one.
    * Rather than the old method of JDK 1.3 of assuming only instanceof
@@ -96,6 +97,7 @@ public class Collections
   {
     return ! (l instanceof RandomAccess) && l.size() > LARGE_LIST_SIZE;
   }
+/*#endif*/
 
   /**
    * This class is non-instantiable.
@@ -104,6 +106,7 @@ public class Collections
   {
   }
 
+/*#if not ULIBGCJ*/
   /**
    * An immutable, serializable, empty Set.
    * @see Serializable
@@ -773,6 +776,7 @@ public class Collections
         i2.set(i1.next());
       }
   }
+/*#endif*/
 
   /**
    * Returns an Enumeration over a collection. This allows interoperability
@@ -811,6 +815,7 @@ public class Collections
     };
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Replace every element of a list with a given value. This method runs in
    * linear time.
@@ -2125,6 +2130,7 @@ public class Collections
     List<Object> list = (List<Object>) l;
     list.set(i, list.set(j, list.get(i)));
   }
+/*#endif*/
 
 
   /**
@@ -2606,8 +2612,10 @@ public class Collections
    */
   public static <T> List<T> synchronizedList(List<T> l)
   {
+    /*#if not ULIBGCJ*/
     if (l instanceof RandomAccess)
       return new SynchronizedRandomAccessList<T>(l);
+    /*#endif*/
     return new SynchronizedList<T>(l);
   }
 
@@ -2929,7 +2937,10 @@ public class Collections
    * @author Eric Blake (ebb9@email.byu.edu)
    */
   private static final class SynchronizedRandomAccessList<T>
-    extends SynchronizedList<T> implements RandomAccess
+    extends SynchronizedList<T>
+/*#if not ULIBGCJ*/
+    implements RandomAccess
+/*#endif*/
   {
     /**
      * Compatible with JDK 1.4.
@@ -3762,6 +3773,7 @@ public class Collections
     }
   } // class SynchronizedSet
 
+/*#if not ULIBGCJ*/
   /**
    * Returns a synchronized (thread-safe) sorted map wrapper backed by the
    * given map. Notice that element access through the collection views,
@@ -7420,4 +7432,5 @@ public class Collections
     }
   } // class CheckedSortedSet
 
+/*#endif*/
 } // class Collections

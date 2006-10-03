@@ -19,7 +19,9 @@ details.  */
 
 #include <java/lang/Class.h>
 #include <java/lang/reflect/Modifier.h>
+#ifndef JV_ULIBGCJ
 #include <java-interp.h>
+#endif//JV_ULIBGCJ
 
 // More nastiness: the GC wants to define TRUE and FALSE.  We don't
 // need the Java definitions (themselves a hack), so we undefine them.
@@ -161,8 +163,10 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void *env)
 
       p = (GC_PTR) c->arrayclass;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
+#ifndef JV_ULIBGCJ
       p = (GC_PTR) c->protectionDomain;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
+#endif//JV_ULIBGCJ
       p = (GC_PTR) c->hack_signers;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
       p = (GC_PTR) c->aux_info;

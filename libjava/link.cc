@@ -15,11 +15,13 @@ details.  */
 
 #include <stdio.h>
 
+#ifndef JV_ULIBGCJ
 #ifdef USE_LIBFFI
 #include <ffi.h>
 #endif
 
 #include <java-interp.h>
+#endif//JV_ULIBGCJ
 
 // Set GC_DEBUG before including gc.h!
 #ifdef LIBGCJ_GC_DEBUG
@@ -42,7 +44,9 @@ details.  */
 #include <java/lang/VerifyError.h>
 #include <java/lang/NoSuchFieldError.h>
 #include <java/lang/NoSuchMethodError.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/ClassFormatError.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/IllegalAccessError.h>
 #include <java/lang/InternalError.h>
 #include <java/lang/AbstractMethodError.h>
@@ -51,7 +55,9 @@ details.  */
 #include <java/lang/VerifyError.h>
 #include <java/lang/VMClassLoader.h>
 #include <java/lang/reflect/Modifier.h>
+#ifndef JV_ULIBGCJ
 #include <java/security/CodeSource.h>
+#endif//JV_ULIBGCJ
 
 using namespace gcj;
 
@@ -514,6 +520,8 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 	pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
       }
       break;
+
+    default: JvAssert(0);
     }
   return pool->data[index];
 }
@@ -530,12 +538,16 @@ _Jv_Linker::resolve_class_ref (jclass klass, jclass *classref)
     {
       if (klass->state < JV_STATE_LINKED)
 	{
+#ifdef JV_ULIBGCJ
+          throw new java::lang::NoClassDefFoundError ();
+#else
 	  _Jv_Utf8Const *name = klass->constants.data[(uaddr) *classref].utf8;
 	  ret = _Jv_FindClass (name, klass->loader);
 	  if (! ret)
 	    {
 	      throw new java::lang::NoClassDefFoundError (name->toString());
 	    }
+#endif
 	}
       else
 	ret = klass->constants.data[(uaddr) classref].clazz;
@@ -1101,6 +1113,7 @@ _Jv_Linker::link_symbol_table (jclass klass)
    
   klass->otable->state = 1;
 
+#ifndef JV_ULIBGCJ
   if (debug_link)
     fprintf (stderr, "Fixing up otable in %s:\n", klass->name->chars());
   for (index = 0;
@@ -1214,6 +1227,7 @@ _Jv_Linker::link_symbol_table (jclass klass)
 	  }
       }
     }
+#endif//JV_ULIBGCJ
 
  atable:
   if (klass->atable == NULL || klass->atable->state != 0)
@@ -1221,6 +1235,7 @@ _Jv_Linker::link_symbol_table (jclass klass)
 
   klass->atable->state = 1;
 
+#ifndef JV_ULIBGCJ
   for (index = 0;
        (sym = klass->atable_syms[index]).class_name != NULL;
        ++index)
@@ -1311,6 +1326,7 @@ _Jv_Linker::link_symbol_table (jclass klass)
 	  throw new java::lang::IncompatibleClassChangeError;
       }
     }
+#endif//JV_ULIBGCJ
 
  itable:
   if (klass->itable == NULL
@@ -1319,6 +1335,7 @@ _Jv_Linker::link_symbol_table (jclass klass)
 
   klass->itable->state = 1;
 
+#ifndef JV_ULIBGCJ
   for (index = 0;
        (sym = klass->itable_syms[index]).class_name != NULL; 
        ++index)
@@ -1358,9 +1375,10 @@ _Jv_Linker::link_symbol_table (jclass klass)
       else
 	throw new java::lang::IncompatibleClassChangeError;
     }
-
+#endif//JV_ULIBGCJ
 }
 
+#ifndef JV_ULIBGCJ
 // For each catch_record in the list of caught classes, fill in the
 // address field.
 void 
@@ -1388,6 +1406,7 @@ _Jv_Linker::link_exception_table (jclass self)
     }
   self->catch_classes->classname = (_Jv_Utf8Const *)-1;
 }
+#endif//JV_ULIBGCJ
   
 // Set itable method indexes for members of interface IFACE.
 void
@@ -1692,14 +1711,19 @@ _Jv_Linker::ensure_class_linked (jclass klass)
 	{
 	  if (pool->tags[index] == JV_CONSTANT_String)
 	    {
+#ifdef JV_ULIBGCJ
+              resolve_pool_entry (klass, index);
+#else
 	      jstring str;
 
 	      str = _Jv_NewStringUtf8Const (pool->data[index].utf8);
 	      pool->data[index].o = str;
 	      pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
+#endif
 	    }
 	}
 
+#ifndef JV_ULIBGCJ
       if (klass->engine->need_resolve_string_fields())
 	{
 	  jfieldID f = JvGetFirstStaticField (klass);
@@ -1724,6 +1748,7 @@ _Jv_Linker::ensure_class_linked (jclass klass)
 	      f = f->getNextField ();
 	    }
 	}
+#endif//JV_ULIBGCJ
 
       klass->notifyAll ();
 
@@ -1883,6 +1908,15 @@ _Jv_Linker::verify_type_assertions (jclass klass)
 
           if (! _Jv_IsAssignableFromSlow (cl1, cl2))
 	    {
+#ifdef JV_ULIBGCJ
+              java::lang::StringBuffer *sb = new java::lang::StringBuffer ();
+              sb->append (klass->getName());
+	      sb->append (JvNewStringUTF (": "));
+	      sb->append (cl1->getName());
+	      sb->append (JvNewStringUTF (" is not assignable to "));
+	      sb->append (cl2->getName());
+	      throw new java::lang::VerifyError (sb->toString());
+#else
 	      jstring s = JvNewStringUTF ("Incompatible types: In class ");
 	      s = s->concat (klass->getName());
 	      s = s->concat (JvNewStringUTF (": "));
@@ -1890,6 +1924,7 @@ _Jv_Linker::verify_type_assertions (jclass klass)
 	      s = s->concat (JvNewStringUTF (" is not assignable to "));
 	      s = s->concat (cl2->getName());
 	      throw new java::lang::VerifyError (s);
+#endif
 	    }
 	}
       else if (assertion_code == JV_ASSERT_IS_INSTANTIABLE)
@@ -1903,6 +1938,7 @@ _Jv_Linker::verify_type_assertions (jclass klass)
 void
 _Jv_Linker::print_class_loaded (jclass klass)
 {
+#ifndef JV_ULIBGCJ
   char *codesource = NULL;
   if (klass->protectionDomain != NULL)
     {
@@ -1930,6 +1966,7 @@ _Jv_Linker::print_class_loaded (jclass klass)
 
   fprintf (stderr, "[Loaded (%s) %s from %s]\n", abi, klass->name->chars(),
 	   codesource);
+#endif//JV_ULIBGCJ
 }
 
 // FIXME: mention invariants and stuff.
@@ -2004,11 +2041,15 @@ _Jv_Linker::wait_for_state (jclass klass, int state)
 
       if (state >= JV_STATE_LINKED && klass->state < JV_STATE_LINKED)
 	{
+#ifndef JV_ULIBGCJ
 	  if (gcj::verifyClasses)
 	    verify_class (klass);
+#endif//JV_ULIBGCJ
 
 	  ensure_class_linked (klass);
+#ifndef JV_ULIBGCJ
 	  link_exception_table (klass);
+#endif//JV_ULIBGCJ
 	  link_symbol_table (klass);
 	  klass->set_state(JV_STATE_LINKED);
 	}

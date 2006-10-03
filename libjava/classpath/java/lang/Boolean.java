@@ -206,6 +206,7 @@ public final class Boolean implements Serializable, Comparable<Boolean>
     return obj instanceof Boolean && value == ((Boolean) obj).value;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * If the value of the system property <code>name</code> matches
    * "true" ignoring case then the function returns <code>true</code>.
@@ -247,5 +248,25 @@ public final class Boolean implements Serializable, Comparable<Boolean>
   {
     return "true".equalsIgnoreCase(b) ? true : false;
   }
-  
+/*#endif*/  
+
+  /**
+   * Compares this Boolean to another.
+   * @param b the Boolean to compare this Boolean to
+   * @return 0 if both Booleans represent the same value, a positive number 
+   * if this Boolean represents true and b represents false, or a negative
+   * number otherwise.
+   * @since 1.5
+   */
+  public int compareTo (Boolean b)
+  {
+    if (b == null)
+      throw new NullPointerException("argument passed to compareTo(Boolean) cannot be null");
+    
+    if (this.value == b.value)
+      return 0;
+    if (this.value == true)
+      return 1;
+    return -1;
+  }
 }

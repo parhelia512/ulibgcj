@@ -17,6 +17,7 @@ details.  */
 
 #include <java-threads.h>
 
+#ifndef JV_ULIBGCJ
 static _Jv_Mutex_t mutex;
 static _Jv_ConditionVariable_t condition;
 
@@ -27,6 +28,7 @@ gnu::gcj::runtime::FinalizerThread::init ()
   _Jv_MutexInit (&mutex);
   _Jv_CondInit (&condition);
 }
+#endif// not JV_ULIBGCJ
 
 // This is called by the GC when a finalizer is ready to be
 // run.  It sets a flag and wakes up the finalizer thread. Note
@@ -36,7 +38,7 @@ gnu::gcj::runtime::FinalizerThread::init ()
 void
 gnu::gcj::runtime::FinalizerThread::finalizerReady ()
 {
-#ifdef __JV_NO_THREADS__
+#if defined __JV_NO_THREADS__ || defined JV_ULIBGCJ
   _Jv_RunFinalizers ();
 #else
   _Jv_MutexLock (&mutex);
@@ -46,6 +48,7 @@ gnu::gcj::runtime::FinalizerThread::finalizerReady ()
 #endif
 }
 
+#ifndef JV_ULIBGCJ
 // Main loop for the finalizer thread. 
 void
 gnu::gcj::runtime::FinalizerThread::run ()
@@ -60,3 +63,4 @@ gnu::gcj::runtime::FinalizerThread::run ()
       _Jv_RunFinalizers ();
     }
 }
+#endif// not JV_ULIBGCJ

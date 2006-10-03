@@ -23,10 +23,14 @@ details.  */
 #include <java/lang/CloneNotSupportedException.h>
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/IllegalMonitorStateException.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/InterruptedException.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/NullPointerException.h>
 #include <java/lang/Class.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/Cloneable.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/Thread.h>
 
 #ifdef LOCK_DEBUG
@@ -64,6 +68,7 @@ java::lang::Object::hashCode (void)
   return _Jv_HashCode (this);
 }
 
+#ifndef JV_ULIBGCJ
 jobject
 java::lang::Object::clone (void)
 {
@@ -111,6 +116,7 @@ java::lang::Object::clone (void)
 #endif
   return r;
 }
+#endif//JV_ULIBGCJ
 
 void
 _Jv_FinalizeObject (jobject obj)
@@ -935,20 +941,26 @@ retry:
 	  LOG(REQ_CONV, (address | REQUEST_CONVERSION | HEAVY), self);
 	  // If _Jv_CondWait is interrupted, we ignore the interrupt, but
 	  // restore the thread's interrupt status flag when done.
+#ifndef JV_ULIBGCJ
 	  jboolean interrupt_flag = false;
+#endif//JV_ULIBGCJ
 	  while ((he -> address & ~FLAGS) == (address & ~FLAGS))
 	    {
 	      // Once converted, the lock has to retain heavyweight
 	      // status, since heavy_count > 0.
 	      int r = _Jv_CondWait (&(hl->si.condition), &(hl->si.mutex), 0, 0);
+#ifndef JV_ULIBGCJ
 	      if (r == _JV_INTERRUPTED)
 	        {
 		  interrupt_flag = true;
 		  Thread::currentThread()->interrupt_flag = false;
 		}
+#endif//JV_ULIBGCJ
 	    }
+#ifndef JV_ULIBGCJ
 	  if (interrupt_flag)
 	    Thread::currentThread()->interrupt_flag = interrupt_flag;
+#endif//JV_ULIBGCJ
 	  keep_live(addr);
 		// Guarantee that hl doesn't get unlinked by finalizer.
 		// This is only an issue if the client fails to release
@@ -1334,10 +1346,12 @@ retry:
     {
       case _JV_NOT_OWNER:
 	throw new IllegalMonitorStateException (JvNewStringLatin1 
-                          ("current thread not owner"));        
+                          ("current thread not owner"));  
+#ifndef JV_ULIBGCJ      
       case _JV_INTERRUPTED:
 	if (Thread::interrupted ())
-	  throw new InterruptedException;        
+	  throw new InterruptedException; 
+#endif//JV_ULIBGCJ       
     }
   LOG(WAIT_END, addr, self);
 }

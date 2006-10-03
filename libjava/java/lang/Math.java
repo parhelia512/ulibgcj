@@ -38,9 +38,11 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import gnu.classpath.Configuration;
 
 import java.util.Random;
+/*#endif*/
 
 /**
  * Helper class containing useful mathematical functions and constants.
@@ -63,6 +65,7 @@ public final class Math
   {
   }
 
+/*#if not ULIBGCJ*/
   static
   {
     if (Configuration.INIT_LOAD_LIBRARY)
@@ -75,6 +78,7 @@ public final class Math
    * A random number generator, initialized on first use.
    */
   private static Random rand;
+/*#endif*/
 
   /**
    * The most accurate approximation to the mathematical constant <em>e</em>:
@@ -516,6 +520,7 @@ public final class Math
    */
   public static native double pow(double a, double b);
 
+/*#if not ULIBGCJ*/
   /**
    * Get the IEEE 754 floating point remainder on two numbers. This is the
    * value of <code>x - y * <em>n</em></code>, where <em>n</em> is the closest
@@ -531,6 +536,7 @@ public final class Math
    * @see #rint(double)
    */
   public static native double IEEEremainder(double x, double y);
+/*#endif*/
 
   /**
    * Take the nearest integer that is that is greater than or equal to the
@@ -613,12 +619,16 @@ public final class Math
    * @see Random#nextDouble()
    * @see System#currentTimeMillis()
    */
+/*#if ULIBGCJ
+  public static native double random();
+  #else*/
   public static synchronized double random()
   {
     if (rand == null)
       rand = new Random();
     return rand.nextDouble();
   }
+/*#endif*/
 
   /**
    * Convert from degrees to radians. The formula for this is
@@ -869,6 +879,7 @@ public final class Math
    */
   public static native double tanh(double a);
 
+/*#if not ULIBGCJ*/
   /**
    * Return the ulp for the given double argument.  The ulp is the
    * difference between the argument and the next larger double.  Note
@@ -970,4 +981,5 @@ public final class Math
       }
     return Float.intBitsToFloat((newExponent << mantissaBits) | newMantissa);
   }
+/*#endif*/
 }

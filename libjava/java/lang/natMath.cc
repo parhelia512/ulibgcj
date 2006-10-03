@@ -25,7 +25,16 @@ details.  */
 #include <java/lang/Math.h>
 #include <gcj/array.h>
 
+#ifdef JV_ULIBGCJ
+#include <stdlib.h>
+# ifdef HAVE_MATH_H
+#  include <math.h>
+# else
+#  error "you need math.h!"
+# endif
+#else
 #include "fdlibm.h"
+#endif//JV_ULIBGCJ
 
 jdouble java::lang::Math::cos(jdouble x)
 {
@@ -35,7 +44,7 @@ jdouble java::lang::Math::cos(jdouble x)
 jdouble java::lang::Math::sin(jdouble x)
 {
   return (jdouble)::sin((double)x);
-}  
+}
 
 jdouble java::lang::Math::tan(jdouble x)
 {
@@ -82,15 +91,17 @@ jdouble java::lang::Math::pow(jdouble y, jdouble x)
   return (jdouble)::pow((double)y, (double)x);
 }  
 
+#ifndef JV_ULIBGCJ
 jdouble java::lang::Math::IEEEremainder(jdouble y, jdouble x)
 {
   return (jdouble)::__ieee754_remainder((double)y, (double)x);
 }  
+#endif//JV_ULIBGCJ
 
 jdouble java::lang::Math::rint(jdouble x)
 {
   return (jdouble)::rint((double)x);
-}  
+}
 
 jdouble java::lang::Math::floor(jdouble x)
 {
@@ -142,6 +153,7 @@ jdouble java::lang::Math::tanh(jdouble x)
   return (jdouble)::tanh((double)x);
 }
 
+#ifndef JV_ULIBGCJ
 static inline int
 floatToIntBits (jfloat value)
 {
@@ -181,4 +193,11 @@ isNaN (jlong bits)
   
   return e == 0x7ff0000000000000LL && f != 0LL;
 }
+#endif//JV_ULIBGCJ
 
+#ifdef JV_ULIBGCJ
+jdouble java::lang::Math::random()
+{
+  return rand() / (double) RAND_MAX;
+}
+#endif

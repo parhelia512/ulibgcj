@@ -38,10 +38,13 @@ exception statement from your version. */
 
 package java.net;
 
+/*#if not ULIBGCJ*/
 import gnu.java.net.URLParseError;
+/*#endif*/
 
 import java.io.IOException;
 import java.io.InputStream;
+/*#if not ULIBGCJ*/
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -49,6 +52,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.StringTokenizer;
+/*#endif*/
 
 
 /*
@@ -122,13 +126,18 @@ import java.util.StringTokenizer;
   *
   * @see URLStreamHandler
   */
-public final class URL implements Serializable
+public final class URL
+/*#if not ULIBGCJ*/
+  implements Serializable
+/*#endif*/
 {
+/*#if not ULIBGCJ*/
   private static final String DEFAULT_SEARCH_PATH =
     "gnu.java.net.protocol|gnu.inet";
 
   // Cached System ClassLoader
   private static ClassLoader systemClassLoader;
+/*#endif*/
 
   /**
    * The name of the protocol for this URL.
@@ -136,6 +145,7 @@ public final class URL implements Serializable
    */
   private String protocol;
 
+/*#if not ULIBGCJ*/
   /**
    * The "authority" portion of the URL.
    */
@@ -157,22 +167,26 @@ public final class URL implements Serializable
    * the default for this protocol.
    */
   private int port = -1; // Initialize for constructor using context.
+/*#endif*/
 
   /**
    * The "file" portion of the URL. It is defined as <code>path[?query]</code>.
    */
   private String file;
 
+/*#if not ULIBGCJ*/
   /**
    * The anchor portion of the URL.
    */
   private String ref;
+/*#endif*/
 
   /**
    * This is the hashCode for this URL
    */
   private int hashCode;
 
+/*#if not ULIBGCJ*/
   /**
    * The protocol handler in use for this URL
    */
@@ -241,7 +255,11 @@ public final class URL implements Serializable
   {
     this(protocol, host, -1, file, null);
   }
+/*#endif*/
 
+/*#if ULIBGCJ
+
+  #else*/
   /**
    * This method initializes a new instance of <code>URL</code> with the
    * specified protocol, host, port, and file.  Additionally, this method
@@ -306,7 +324,11 @@ public final class URL implements Serializable
       }
     hashCode = hashCode(); // Used for serialization.
   }
+/*#endif*/
 
+/*#if ULIBGCJ
+
+  #else*/
   /**
    * Initializes a URL from a complete string specification such as
    * "http://www.urbanophile.com/arenn/".  First the protocol name is parsed
@@ -470,6 +492,7 @@ public final class URL implements Serializable
 
     hashCode = hashCode(); // Used for serialization.
   }
+/*#endif*/
 
   /**
    * Test another URL for equality with this one.  This will be true only if
@@ -489,6 +512,7 @@ public final class URL implements Serializable
     return ph.equals(this, (URL) obj);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Returns the contents of this URL as an object by first opening a
    * connection, then calling the getContent() method against the connection
@@ -518,6 +542,7 @@ public final class URL implements Serializable
     // FIXME: implement this
     return getContent();
   }
+/*#endif*/
 
   /**
    * Returns the file portion of the URL.
@@ -531,6 +556,7 @@ public final class URL implements Serializable
     return file == null ? "" : file;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Returns the path of the URL. This is the part of the file before any '?'
    * character.
@@ -560,6 +586,7 @@ public final class URL implements Serializable
   {
     return authority;
   }
+/*#endif*/
 
   /**
    * Returns the host of the URL
@@ -617,6 +644,7 @@ public final class URL implements Serializable
     return ref;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Returns the user information of the URL. This is the part of the host
    * name before the '@'.
@@ -642,6 +670,7 @@ public final class URL implements Serializable
     int quest = (file == null) ? -1 : file.indexOf('?');
     return quest < 0 ? null : file.substring(quest + 1, file.length());
   }
+/*#endif*/
 
   /**
    * Returns a hashcode computed by the URLStreamHandler of this URL
@@ -683,6 +712,7 @@ public final class URL implements Serializable
     return openConnection().getInputStream();
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Tests whether or not another URL refers to the same "file" as this one.
    * This will be true if and only if the passed object is not null, is a
@@ -807,6 +837,7 @@ public final class URL implements Serializable
       s.checkSetFactory();
     factory = fac;
   }
+/*#endif*/
 
   /**
    * Returns a String representing this URL.  The String returned is
@@ -941,6 +972,7 @@ public final class URL implements Serializable
     return ph;
   }
 
+/*#if not ULIBGCJ*/
   private void readObject(ObjectInputStream ois)
     throws IOException, ClassNotFoundException
   {
@@ -970,5 +1002,6 @@ public final class URL implements Serializable
   {
     return new URI(toString());
   }
+/*#endif*/
 
 }

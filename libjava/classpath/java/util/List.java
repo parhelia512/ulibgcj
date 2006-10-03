@@ -102,6 +102,7 @@ public interface List<E> extends Collection<E>
    */
   void add(int index, E o);
 
+/*if not ULIBGCJ*/
   /**
    * Add an element to the end of the list (optional operation). If the list
    * imposes restraints on what can be inserted, such as no null elements,
@@ -119,6 +120,7 @@ public interface List<E> extends Collection<E>
    *         the addition of null values.
    */
   boolean add(E o);
+/*endif*/
 
   /**
    * Insert the contents of a collection into the list at a given position
@@ -145,6 +147,7 @@ public interface List<E> extends Collection<E>
    */
   boolean addAll(int index, Collection<? extends E> c);
 
+/*if not ULIBGCJ*/
   /**
    * Add the contents of a collection to the end of the list (optional
    * operation).  This operation is undefined if this list is modified
@@ -218,6 +221,7 @@ public interface List<E> extends Collection<E>
    * @see #hashCode()
    */
   boolean equals(Object o);
+/*endif*/
 
   /**
    * Get the element at a given index in this list.
@@ -228,6 +232,7 @@ public interface List<E> extends Collection<E>
    */
   E get(int index);
 
+/*if not ULIBGCJ*/
   /**
    * Obtains a hash code for this list. In order to obey the general
    * contract of the hashCode method of class Object, this value is
@@ -249,6 +254,7 @@ while (i.hasNext())
    * @see #equals(Object)
    */
   int hashCode();
+/*endif*/
 
   /**
    * Obtain the first index at which a given object is to be found in this
@@ -264,6 +270,7 @@ while (i.hasNext())
    */
   int indexOf(Object o);
 
+/*if not ULIBGCJ*/
   /**
    * Test whether this list is empty, that is, if size() == 0.
    *
@@ -277,6 +284,7 @@ while (i.hasNext())
    * @return an Iterator over the elements of this list, in order
    */
   Iterator<E> iterator();
+/*endif*/
 
   /**
    * Obtain the last index at which a given object is to be found in this
@@ -324,6 +332,7 @@ while (i.hasNext())
    */
   E remove(int index);
 
+/*if not ULIBGCJ*/
   /**
    * Remove the first occurence of an object from this list (optional
    * operation). That is, remove the first element e such that
@@ -377,6 +386,7 @@ while (i.hasNext())
    * @see #contains(Object)
    */
   boolean retainAll(Collection<?> c);
+/*endif*/
 
   /**
    * Replace an element of this list with another object (optional operation).
@@ -396,6 +406,7 @@ while (i.hasNext())
    */
   E set(int index, E o);
 
+/*if not ULIBGCJ*/
   /**
    * Get the number of elements in this list. If the list contains more
    * than Integer.MAX_VALUE elements, return Integer.MAX_VALUE.
@@ -403,6 +414,7 @@ while (i.hasNext())
    * @return the number of elements in the list
    */
   int size();
+/*endif*/
 
   /**
    * Obtain a List view of a subsection of this list, from fromIndex
@@ -422,6 +434,7 @@ while (i.hasNext())
    */
   List<E> subList(int fromIndex, int toIndex);
 
+/*if not ULIBGCJ*/
   /**
    * Copy the current contents of this list into an array.
    *
@@ -448,4 +461,5 @@ while (i.hasNext())
    * @throws NullPointerException if the specified array is null
    */
   <T> T[] toArray(T[] a);
+/*endif*/
 }

@@ -38,7 +38,9 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import java.io.Serializable;
+/*#endif*/
 
 /**
  * <code>StringBuilder</code> represents a changeable <code>String</code>.
@@ -75,7 +77,9 @@ import java.io.Serializable;
  * @since 1.5
  */
 public final class StringBuilder
+/*#if not ULIBGCJ*/
   implements Serializable, CharSequence, Appendable
+/*#endif*/
 {
   // Implementation note: if you change this class, you usually will
   // want to change StringBuffer as well.
@@ -143,6 +147,7 @@ public final class StringBuilder
     str.getChars(0, count, value, 0);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Create a new <code>StringBuilder</code> with the characters in the
    * specified <code>CharSequence</code>. Initial capacity will be the
@@ -160,6 +165,7 @@ public final class StringBuilder
     for (int i = 0; i < len; ++i)
       value[i] = seq.charAt(i);
   }
+/*#endif*/
 
   /**
    * Get the length of the <code>String</code> this <code>StringBuilder</code>
@@ -426,6 +432,7 @@ public final class StringBuilder
     return this;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Append the characters in the <code>CharSequence</code> to this
    * buffer.
@@ -480,6 +487,7 @@ public final class StringBuilder
     count += len;
     return this;
   }
+/*#endif*/
 
   /**
    * Append the <code>String</code> value of the argument to this
@@ -619,6 +627,7 @@ public final class StringBuilder
     return substring(beginIndex, count);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Creates a substring of this StringBuilder, starting at a specified index
    * and ending at one character before a specified index. This is implemented
@@ -636,6 +645,7 @@ public final class StringBuilder
   {
     return substring(beginIndex, endIndex);
   }
+/*#endif*/
 
   /**
    * Creates a substring of this StringBuilder, starting at a specified index
@@ -722,6 +732,7 @@ public final class StringBuilder
     return this;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Insert the <code>CharSequence</code> argument into this
    * <code>StringBuilder</code>.  If the sequence is null, the String
@@ -767,6 +778,7 @@ public final class StringBuilder
     count += len;
     return this;
   }
+/*#endif*/
 
   /**
    * Insert the <code>char[]</code> argument into this

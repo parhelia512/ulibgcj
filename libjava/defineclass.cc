@@ -20,7 +20,9 @@ details.  */
 
 #include <config.h>
 
+#ifndef JV_ULIBGCJ
 #include <java-interp.h>
+#endif//JV_ULIBGCJ
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -34,17 +36,24 @@ details.  */
 #include <java/lang/Character.h>
 #include <java/lang/LinkageError.h>
 #include <java/lang/InternalError.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/ClassFormatError.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/NoClassDefFoundError.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/ClassCircularityError.h>
 #include <java/lang/IncompatibleClassChangeError.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/reflect/Modifier.h>
+#ifndef JV_ULIBGCJ
 #include <java/security/ProtectionDomain.h>
 #include <java/io/DataOutputStream.h>
 #include <java/io/ByteArrayOutputStream.h>
+#endif//JV_ULIBGCJ
 
 using namespace gcj;
 
+#ifndef JV_ULIBGCJ
 #ifdef INTERPRETER
 
 // these go in some separate functions, to avoid having _Jv_InitClass
@@ -1965,6 +1974,7 @@ _Jv_VerifyClassName (_Jv_Utf8Const *name)
 {
   return _Jv_VerifyClassName ((unsigned char*)name->chars(), name->len());
 }
+#endif//JV_ULIBGCJ
 
 /* Returns true, if NAME1 and NAME2 represent classes in the same
    package.  Neither NAME2 nor NAME2 may name an array type.  */

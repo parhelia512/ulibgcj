@@ -38,8 +38,11 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import gnu.java.lang.reflect.ClassSignatureParser;
+/*#endif*/
 import java.io.InputStream;
+/*#if not ULIBGCJ*/
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -56,6 +59,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.annotation.Annotation;
+/*#endif*/
+
+/*#if ULIBGCJ
+import gnu.gcj.Core;
+import gnu.java.net.protocol.core.CoreInputStream;
+  #endif*/
 
 /**
  * A Class represents a Java type.  There will never be multiple Class
@@ -87,7 +96,9 @@ import java.lang.annotation.Annotation;
  * @see ClassLoader
  */
 public final class Class<T>
+/*#if not ULIBGCJ*/
   implements Type, AnnotatedElement, GenericDeclaration, Serializable
+/*#endif*/
 {
   /**
    * Class is non-instantiable from Java code; only the VM can create
@@ -100,8 +111,10 @@ public final class Class<T>
   // Initialize the class.
   private native void initializeClass ();
 
+/*#if not ULIBGCJ*/
   // finalization
   protected native void finalize () throws Throwable;
+/*#endif*/
 
   /**
    * Use the classloader of the current class to load, link, and initialize
@@ -123,9 +136,12 @@ public final class Class<T>
   private static Class forName (String className, Class caller)
     throws ClassNotFoundException
   {
+/*#if ULIBGCJ
+    return forName(className, true, null);
+  #else*/
     return forName(className, true, caller.getClassLoaderInternal());
+/*#endif*/
   }
-
 
   /**
    * Use the specified classloader to load and link a class. If the loader
@@ -155,6 +171,7 @@ public final class Class<T>
 				      ClassLoader loader)
     throws ClassNotFoundException;
   
+/*#if not ULIBGCJ*/
   /**
    * Get all the public member classes and interfaces declared in this
    * class or inherited from superclasses. This returns an array of length
@@ -579,6 +596,7 @@ public final class Class<T>
    * @since 1.1
    */
   public native int getModifiers ();
+/*#endif*/
   
   /**
    * Get the name of this class, separated by dots for package separators.
@@ -609,6 +627,7 @@ public final class Class<T>
    */
   public native String getName ();
 
+/*#if not ULIBGCJ*/
   /**
    * Get a resource URL using this class's package using the
    * getClassLoader().getResource() method.  If this class was loaded using
@@ -635,6 +654,7 @@ public final class Class<T>
       return ClassLoader.getSystemResource(name);
     return loader.getResource(name);
   }
+/*#endif*/
 
   /**
    * Get a resource using this class's package using the
@@ -657,11 +677,16 @@ public final class Class<T>
    */
   public InputStream getResourceAsStream(String resourceName)
   {
+/*#if ULIBGCJ   
+    Core core = Core.find(resourcePath(resourceName));
+    return (core == null ? null : new CoreInputStream(core));
+  #else*/
     String name = resourcePath(resourceName);
     ClassLoader loader = getClassLoaderInternal();
     if (loader == null)
       return ClassLoader.getSystemResourceAsStream(name);
     return loader.getResourceAsStream(name);
+//#endif
   }
 
   private String resourcePath(String resourceName)
@@ -682,6 +707,7 @@ public final class Class<T>
     return resourceName;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Get the signers of this class. This returns null if there are no signers,
    * such as for primitive types or void.
@@ -769,6 +795,7 @@ public final class Class<T>
    * @since 1.1
    */
   public native boolean isPrimitive ();
+/*#endif*/
   
   /**
    * Get a new instance of this class by calling the no-argument constructor.
@@ -790,6 +817,7 @@ public final class Class<T>
   public native Object newInstance ()
     throws InstantiationException, IllegalAccessException;
 
+/*#if not ULIBGCJ*/
   // We need a native method to retrieve the protection domain, because we
   // can't add fields to java.lang.Class that are accessible from Java.
   private native ProtectionDomain getProtectionDomain0();
@@ -903,6 +931,7 @@ public final class Class<T>
       }
     return c.defaultAssertionStatus;
   }
+/*#endif*/
 
   /**
    * Strip the last portion of the name (after the last dot).
@@ -918,6 +947,7 @@ public final class Class<T>
     return name.substring(0, lastInd);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Perform security checks common to all of the methods that
    * get members of this Class.
@@ -933,7 +963,6 @@ public final class Class<T>
 	  sm.checkPackageAccess(pkg.getName());
       }
   }
-
 
   /**
    * <p>
@@ -1353,4 +1382,5 @@ public final class Class<T>
    * @since 1.5
    */
   public native boolean isMemberClass();
+/*#endif*/
 }

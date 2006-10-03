@@ -38,7 +38,9 @@ exception statement from your version. */
 
 package java.util;
 
+/*if not ULIBGCJ*/
 import java.io.Serializable;
+/*endif*/
 
 /**
  * Represents Events fired by Objects.
@@ -48,7 +50,10 @@ import java.io.Serializable;
  * @since 1.1
  * @status updated to 1.4
  */
-public class EventObject implements Serializable
+public class EventObject
+/*if not ULIBGCJ*/
+  implements Serializable
+/*endif*/
 {
   /**
    * Compatible with JDK 1.1+.

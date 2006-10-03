@@ -37,8 +37,10 @@ exception statement from your version. */
 
 package java.io;
 
+/*#if not ULIBGCJ*/
 import java.util.Locale;
 import java.util.Formatter;
+/*#endif*/
 
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 beta from http://www.javasoft.com.
@@ -146,6 +148,7 @@ public class PrintWriter extends Writer
     this.autoflush = autoflush;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * This initializes a new PrintWriter object to write to the specified
    * file.  It creates a FileOutputStream object and wraps it in an
@@ -207,6 +210,7 @@ public class PrintWriter extends Writer
   {
     this(new OutputStreamWriter(new FileOutputStream(file), enc));
   }
+/*#endif*/
 
   /**
    * This method can be called by subclasses to indicate that an error
@@ -382,7 +386,7 @@ public class PrintWriter extends Writer
    * This is the system dependent line separator
    */
   private static final char[] line_separator
-    = System.getProperty("line.separator", "\n").toCharArray(); 
+    = System.getProperty("line.separator", "\n").toCharArray();
 
   /**
    * This method prints a line separator sequence to the stream.  The value
@@ -640,6 +644,7 @@ public class PrintWriter extends Writer
     write(str, 0, str.length());
   }  
 
+/*#if not ULIBGCJ*/
   /** @since 1.5 */
   public PrintWriter append(char c)
   {
@@ -686,5 +691,6 @@ public class PrintWriter extends Writer
     f.format(format, args);
     return this;
   }
+/*#endif*/
 }
 

@@ -37,7 +37,9 @@ exception statement from your version. */
 
 package java.io;
  
+/*#if not ULIBGCJ*/
 import java.nio.CharBuffer;
+/*#endif*/
 
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 beta from http://www.javasoft.com.
@@ -55,7 +57,10 @@ import java.nio.CharBuffer;
  * @date April 21, 1998.  
  * @author Aaron M. Renn (arenn@urbanophile.com) 
  */
-public abstract class Reader implements Closeable, Readable
+public abstract class Reader
+/*#if not ULIBGCJ*/
+  implements Closeable, Readable
+/*#endif*/
 {
   /**
    * This is the <code>Object</code> used for synchronizing critical code
@@ -154,6 +159,7 @@ public abstract class Reader implements Closeable, Readable
     return count > 0 ? buf[0] : -1;
   }
 
+/*#if not ULIBGCJ*/
   /** @since 1.5 */
   public int read(CharBuffer buffer) throws IOException
   {
@@ -166,6 +172,7 @@ public abstract class Reader implements Closeable, Readable
       buffer.put(buf, 0, result);
     return result;
   }
+/*#endif*/
 
   /**
    * Closes the stream.  Any futher attempts to read from the

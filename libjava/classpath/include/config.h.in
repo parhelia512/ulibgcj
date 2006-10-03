@@ -33,6 +33,10 @@
 /* Define to 1 if you have the <crt_externs.h> header file. */
 #undef HAVE_CRT_EXTERNS_H
 
+/* Define to 1 if you have the declaration of `tzname', and to 0 if you don't.
+   */
+#undef HAVE_DECL_TZNAME
+
 /* Define to 1 if you have the <dssi.h> header file. */
 #undef HAVE_DSSI_H
 

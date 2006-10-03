@@ -12,8 +12,10 @@ details.  */
 #define __GCJ_FIELD_H__
 
 #include <java/lang/Class.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/reflect/Field.h>
 #include <java/lang/reflect/Modifier.h>
+#endif//JV_ULIBGCJ
 #include <gnu/gcj/RawData.h>
 
 #define _Jv_FIELD_UNRESOLVED_FLAG	0x8000
@@ -143,12 +145,13 @@ _Jv_GetLongField (jobject obj, _Jv_Field* field)
   return * (jlong *) ((char*) obj + field->getOffset ());
 }
 
+#ifndef JV_ULIBGCJ
 extern inline jfieldID 
 _Jv_FromReflectedField (java::lang::reflect::Field *field)
 { 
   return (jfieldID) ((char *) field->declaringClass->fields + field->offset); 
 } 
-
+#endif//JV_ULIBGCJ
 
 #ifdef __GCJ_CNI_H__
 extern inline jfieldID

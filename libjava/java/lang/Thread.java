@@ -43,9 +43,11 @@ import gnu.gcj.RawData;
 import gnu.gcj.RawDataManaged;
 import gnu.java.util.WeakIdentityHashMap;
 
+/*#if not ULIBGCJ*/
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+/*#endif*/
 
 import java.util.HashMap;
 import java.util.Map;
@@ -108,11 +110,13 @@ public class Thread implements Runnable
   /** The maximum priority for a Thread. */
   public static final int MAX_PRIORITY = 10;
 
+/*#if not ULIBGCJ*/
   /**
    * The group this thread belongs to. This is set to null by
    * ThreadGroup.removeThread when the thread dies.
    */
   ThreadGroup group;
+/*#endif*/
 
   /** The object to run(), null if this is the target. */
   private Runnable runnable;
@@ -120,13 +124,17 @@ public class Thread implements Runnable
   /** The thread name, non-null. */
   String name;
 
+/*#if not ULIBGCJ*/
   /** Whether the thread is a daemon. */
   private boolean daemon;
+/*#endif*/
 
   /** The thread priority, 1 to 10. */
   private int priority;
 
+/*#if not ULIBGCJ*/
   boolean interrupt_flag;
+/*#endif*/
 
   /** A thread is either alive, dead, or being sent a signal; if it is
       being sent a signal, it is also alive.  Thus, if you want to
@@ -139,8 +147,10 @@ public class Thread implements Runnable
 
   private boolean startable_flag;
 
+/*#if not ULIBGCJ*/
   /** The context classloader for this Thread. */
   private ClassLoader contextClassLoader;
+/*#endif*/
 
   /** This thread's ID.  */
   private final long threadId;
@@ -148,16 +158,20 @@ public class Thread implements Runnable
   /** Used to generate the next thread ID to use.  */
   private static long totalThreadsCreated;
 
+/*#if not ULIBGCJ*/
   /** The default exception handler.  */
   private static UncaughtExceptionHandler defaultHandler;
+/*#endif*/
 
   /** Thread local storage. Package accessible for use by
     * InheritableThreadLocal.
     */
   WeakIdentityHashMap locals;
 
+/*#if not ULIBGCJ*/
   /** The uncaught exception handler.  */
   UncaughtExceptionHandler exceptionHandler;
+/*#endif*/
 
   /** This object is recorded while the thread is blocked to permit
    * monitoring and diagnostic tools to identify the reasons that
@@ -263,6 +277,7 @@ public class Thread implements Runnable
     this(null, null, name);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Allocates a new <code>Thread</code> object. This constructor has
    * the same effect as <code>Thread(group, target,</code>
@@ -296,6 +311,7 @@ public class Thread implements Runnable
   {
     this(group, null, name);
   }
+/*#endif*/
 
   /**
    * Allocates a new <code>Thread</code> object. This constructor has
@@ -311,6 +327,7 @@ public class Thread implements Runnable
     this(null, target, name);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Allocate a new Thread object, with the specified ThreadGroup and name, and
    * using the specified Runnable object's <code>run()</code> method to
@@ -370,17 +387,25 @@ public class Thread implements Runnable
     // Just ignore stackSize for now.
     this(currentThread(), group, target, name);
   }
+/*#endif*/
 
+/*#if ULIBGCJ
+  private Thread (Thread current, Runnable r, String n)
+  #else*/
   private Thread (Thread current, ThreadGroup g, Runnable r, String n)
+/*#endif*/
   {
+/*#if not ULIBGCJ*/
     // Make sure the current thread may create a new thread.
     checkAccess();
+/*#endif*/
     
     // The Class Libraries book says ``threadName cannot be null''.  I
     // take this to mean NullPointerException.
     if (n == null)
       throw new NullPointerException ();
       
+/*#if not ULIBGCJ*/
     if (g == null)
       {
 	// If CURRENT is null, then we are bootstrapping the first thread. 
@@ -392,14 +417,22 @@ public class Thread implements Runnable
       }
     else
       group = g;
+/*#endif*/
       
     data = null;
+/*#if not ULIBGCJ*/
     interrupt_flag = false;
+/*#endif*/
     alive_flag = THREAD_DEAD;
     startable_flag = true;
 
     if (current != null)
       {
+/*#if ULIBGCJ
+        int gmax = MAX_PRIORITY;
+	int pri = current.getPriority();
+	priority = (gmax < pri ? gmax : pri);
+  #else*/
 	group.checkAccess();
 
 	daemon = current.isDaemon();
@@ -408,10 +441,13 @@ public class Thread implements Runnable
 	priority = (gmax < pri ? gmax : pri);
 	contextClassLoader = current.contextClassLoader;
 	InheritableThreadLocal.newChildThread(this);
+/*#endif*/
       }
     else
       {
+/*#if not ULIBGCJ*/
 	daemon = false;
+/*#endif*/
 	priority = NORM_PRIORITY;
       }
 
@@ -421,12 +457,15 @@ public class Thread implements Runnable
       }
 
     name = n;
+/*#if not ULIBGCJ*/
     group.addThread(this);
+/*#endif*/
     runnable = r;
 
     initialize_native ();
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Get the number of active threads in the current Thread's ThreadGroup.
    * This implementation calls
@@ -463,6 +502,7 @@ public class Thread implements Runnable
    * @deprecated pointless, since suspend is deprecated
    */
   public native int countStackFrames();
+/*#endif*/
 
   /**
    * Get the currently executing Thread.
@@ -471,6 +511,7 @@ public class Thread implements Runnable
    */
   public static native Thread currentThread();
 
+/*#if not ULIBGCJ*/
   /**
    * Originally intended to destroy this thread, this method was never
    * implemented by Sun, and is hence a no-op.
@@ -508,8 +549,9 @@ public class Thread implements Runnable
   public static int enumerate(Thread[] array)
   {
     return currentThread().group.enumerate(array);
-  }
-  
+  }  
+/*#endif*/
+
   /**
    * Get this Thread's name.
    *
@@ -530,6 +572,7 @@ public class Thread implements Runnable
     return priority;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Get the ThreadGroup this Thread belongs to. If the thread has died, this
    * returns null.
@@ -599,6 +642,7 @@ public class Thread implements Runnable
   {
     return interrupt_flag;
   }
+/*#endif*/
 
   /**
    * Determine whether this Thread is alive. A thread which is alive has
@@ -611,6 +655,7 @@ public class Thread implements Runnable
     return alive_flag != THREAD_DEAD;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Tell whether this is a daemon Thread or not.
    *
@@ -673,9 +718,11 @@ public class Thread implements Runnable
    * @deprecated pointless, since suspend is deprecated
    */
   public final native void resume();
+/*#endif*/
 
   private final native void finish_();
 
+/*#if not ULIBGCJ*/
   /**
    * Determine whether the given Thread has been interrupted, but leave
    * the <i>interrupted status</i> alone in the process.
@@ -695,6 +742,7 @@ public class Thread implements Runnable
       }
     return r;
   }
+/*#endif*/
   
   /**
    * The method of Thread that will be run if there is no Runnable object
@@ -709,6 +757,7 @@ public class Thread implements Runnable
       runnable.run();
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Set the daemon status of this Thread.  If this is a daemon Thread, then
    * the VM may exit even if it is still running.  This may only be called
@@ -788,6 +837,7 @@ public class Thread implements Runnable
       sm.checkPermission(new RuntimePermission("setContextClassLoader"));
     this.contextClassLoader = classloader;
   }
+/*#endif*/
 
   /**
    * Set this Thread's name.  There may be a security check,
@@ -799,7 +849,9 @@ public class Thread implements Runnable
    */
   public final void setName(String name)
   {
+/*#if not ULIBGCJ*/
     checkAccess();
+/*#endif*/
     // The Class Libraries book says ``threadName cannot be null''.  I
     // take this to mean NullPointerException.
     if (name == null)
@@ -865,6 +917,7 @@ public class Thread implements Runnable
    */
   public native void start();
 
+/*#if not ULIBGCJ*/
   /**
    * Cause this Thread to stop abnormally because of the throw of a ThreadDeath
    * error. If you stop a Thread that has not yet started, it will stop
@@ -937,6 +990,7 @@ public class Thread implements Runnable
    * @deprecated unsafe operation, try not to use
    */
   public final native void suspend();
+/*#endif*/
 
   /**
    * Set this Thread's priority. There may be a security check,
@@ -963,8 +1017,12 @@ public class Thread implements Runnable
    */
   public String toString()
   {
+    /*#if ULIBGCJ
+    return ("Thread[" + name + "," + priority + "]");
+    #else*/
     return ("Thread[" + name + "," + priority + ","
 	    + (group == null ? "" : group.getName()) + "]");
+    /*#endif*/
   }
 
   private final native void initialize_native();
@@ -985,6 +1043,7 @@ public class Thread implements Runnable
     return locals;
   }
 
+/*#if not ULIBGCJ*/
   /** 
    * Assigns the given <code>UncaughtExceptionHandler</code> to this
    * thread.  This will then be called if the thread terminates due
@@ -1272,4 +1331,5 @@ public class Thread implements Runnable
     ThreadInfo info = bean.getThreadInfo(getId(), Integer.MAX_VALUE);
     return info.getStackTrace();
   }
+/*#endif*/
 }

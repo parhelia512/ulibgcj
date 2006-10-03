@@ -79,6 +79,7 @@ java::lang::Character::readCodePoint(jint codePoint)
   return data[plane][(jchar) (blocks[plane][offset >> shift[plane]] + offset)];
 }
 
+#ifndef JV_ULIBGCJ
 jint
 java::lang::Character::getType(jchar ch)
 {
@@ -101,6 +102,7 @@ java::lang::Character::getType(jint codePoint)
     (data[plane]
      [(jchar) (blocks[plane][offset >> shift[plane]] + offset)] & TYPE_MASK);
 }
+#endif//JV_ULIBGCJ
 
 jchar
 java::lang::Character::toLowerCase(jchar ch)
@@ -123,6 +125,7 @@ java::lang::Character::toUpperCase(jchar ch)
   return (jchar) (ch + upper[0][readChar(ch) >> 7]);
 }
 
+#ifndef JV_ULIBGCJ
 jint
 java::lang::Character::toUpperCase(jint codePoint)
 {
@@ -151,6 +154,7 @@ java::lang::Character::toTitleCase(jint codePoint)
     return toTitleCase((jchar)codePoint);
   return toUpperCase(codePoint);
 }
+#endif//not JV_ULIBGCJ
 
 jint
 java::lang::Character::digit(jchar ch, jint radix)
@@ -170,6 +174,7 @@ java::lang::Character::digit(jchar ch, jint radix)
   return (jint) -1;
 }
 
+#ifndef JV_ULIBGCJ
 jint
 java::lang::Character::digit(jint codePoint, jint radix)
 {
@@ -234,4 +239,4 @@ java::lang::Character::getDirectionality(jint codePoint)
   return direction[plane][readCodePoint(codePoint) >> 7];
 }
 
-
+#endif//JV_ULIBGCJ

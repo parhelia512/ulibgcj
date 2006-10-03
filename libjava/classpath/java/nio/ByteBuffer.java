@@ -54,6 +54,7 @@ public abstract class ByteBuffer extends Buffer
     super (capacity, limit, position, mark);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Allocates a new direct byte buffer.
    */ 
@@ -61,6 +62,7 @@ public abstract class ByteBuffer extends Buffer
   {
     return DirectByteBufferImpl.allocate (capacity);
   }
+/*#endif*/
 
   /**
    * Allocates a new <code>ByteBuffer</code> object with a given capacity.
@@ -414,6 +416,7 @@ public abstract class ByteBuffer extends Buffer
    */
   public abstract ByteBuffer asReadOnlyBuffer ();
  
+/*#if not ULIBGCJ*/
   /**
    * Creates a view of this byte buffer as a short buffer.
    */
@@ -443,6 +446,7 @@ public abstract class ByteBuffer extends Buffer
    * Creates a view of this byte buffer as a double buffer.
    */
   public abstract DoubleBuffer asDoubleBuffer ();
+/*#endif*/
 
   /**
    * Relative get method for reading a character value.
@@ -572,6 +576,7 @@ public abstract class ByteBuffer extends Buffer
    */
   public abstract ByteBuffer putLong (int index, long value);
   
+/*#if not ULIBGCJ*/
   /**
    * Relative get method for reading a float value.
    *
@@ -635,6 +640,7 @@ public abstract class ByteBuffer extends Buffer
    * than the buffer's limit, minus seven.
    */
   public abstract ByteBuffer putDouble (int index, double value);
+/*#endif*/
 
   /**
    * Returns a string summarizing the state of this buffer.

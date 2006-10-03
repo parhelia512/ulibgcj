@@ -434,6 +434,7 @@ public final class Long extends Number implements Comparable<Long>
     return obj instanceof Long && value == ((Long) obj).value;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Get the specified system property as a <code>Long</code>. The
    * <code>decode()</code> method will be used to interpret the value of
@@ -499,6 +500,7 @@ public final class Long extends Number implements Comparable<Long>
         return def;
       }
   }
+/*#endif*/
 
   /**
    * Compare two Longs numerically by comparing their <code>long</code>
@@ -517,6 +519,7 @@ public final class Long extends Number implements Comparable<Long>
     return value > l.value ? 1 : -1;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Return the number of bits set in x.
    * @param x value to examine
@@ -646,6 +649,7 @@ public final class Long extends Number implements Comparable<Long>
     long lo = Integer.reverse((int) (val >>> 32)) & 0xffffffffL;
     return (hi << 32) | lo;
   }
+/*#endif*/
 
   /**
    * Helper for converting unsigned numbers to String.

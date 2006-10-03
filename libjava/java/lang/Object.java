@@ -240,7 +240,7 @@ public class Object
    * is guaranteed.
    *
    * <p>The waiting period is nowhere near as precise as
-   * nanoseconds; considering that even wait(int) is inaccurate,
+   * nanoseconds; considering that even wait(long) is inaccurate,
    * how much can you expect?  But on supporting
    * implementations, this offers somewhat more granularity
    * than milliseconds.
@@ -500,8 +500,15 @@ public class Object
    *         out of memory
    * @see Cloneable
    */
+/*#if ULIBGCJ
+  protected Object clone() throws CloneNotSupportedException {
+    throw new CloneNotSupportedException();
+  }
+#else*/
   protected native Object clone() throws CloneNotSupportedException;
+/*#endif*/
 
+/*#if not ULIBGCJ*/
   // This initializes the sync_info member.  It is here for
   // completeness (some day we'll be able to auto-generate Object.h).
   private final native void sync_init();
@@ -513,6 +520,7 @@ public class Object
   {
     throw new NoSuchMethodError("in " + getClass());
   }
+/*#endif*/
 
   // Note that we don't mention the sync_info field here.  If we do,
   // jc1 will not work correctly.

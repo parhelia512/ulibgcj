@@ -38,7 +38,9 @@ exception statement from your version. */
 package java.lang;
 
 import java.io.Serializable;
+/*#if not ULIBGCJ*/
 import java.lang.reflect.Field;
+/*#endif*/
 
 /**
  * This class represents a Java enumeration.  All enumerations are
@@ -81,6 +83,7 @@ public abstract class Enum<T extends Enum<T>>
     this.ordinal = ordinal;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Returns an Enum for a enum class given a description string of
    * the enum constant.
@@ -111,6 +114,7 @@ public abstract class Enum<T extends Enum<T>>
 	throw new Error("Unable to access Enum class");
       }
   }
+/*#endif*/
 
   /**
    * Returns true if this enumeration is equivalent to the supplied object,
@@ -166,8 +170,10 @@ public abstract class Enum<T extends Enum<T>>
    */ 
   public final int compareTo(T e)
   {
+/*#if not ULIBGCJ*/
     if (getDeclaringClass() != e.getDeclaringClass())
       throw new ClassCastException();
+/*#endif*/
     return ordinal - e.ordinal;
   }
 
@@ -205,6 +211,7 @@ public abstract class Enum<T extends Enum<T>>
     return ordinal;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Returns the type of this enumeration constant.  This is the class
    * corresponding to the declaration of the enumeration.
@@ -220,4 +227,5 @@ public abstract class Enum<T extends Enum<T>>
       k = k.getSuperclass();
     return k;
   }
+/*#endif*/
 }

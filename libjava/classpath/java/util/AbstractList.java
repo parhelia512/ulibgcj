@@ -733,9 +733,10 @@ while (i.hasNext())
       throw new IllegalArgumentException(fromIndex + " > " + toIndex);
     if (fromIndex < 0 || toIndex > size())
       throw new IndexOutOfBoundsException();
-
+    /*#if not ULIBGCJ*/
     if (this instanceof RandomAccess)
       return new RandomAccessSubList<E>(this, fromIndex, toIndex);
+    /*#endif*/
     return new SubList<E>(this, fromIndex, toIndex);
   }
 
@@ -1179,6 +1180,7 @@ while (i.hasNext())
     }
   } // class SubList
 
+/*#if not ULIBGCJ*/
   /**
    * This class is a RandomAccess version of SubList, as required by
    * {@link AbstractList#subList(int, int)}.
@@ -1200,5 +1202,6 @@ while (i.hasNext())
       super(backing, fromIndex, toIndex);
     }
   } // class RandomAccessSubList
-  
+/*#endif*/
+
 } // class AbstractList

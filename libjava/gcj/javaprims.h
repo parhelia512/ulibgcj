@@ -228,6 +228,7 @@ extern "Java"
       class System$EnvironmentCollection;
       class System$EnvironmentMap;
       class System$EnvironmentSet;
+      class System$Output;
       class Thread;
       class Thread$State;
       class Thread$UncaughtExceptionHandler;

@@ -61,3 +61,11 @@ static struct darwin_constructor_s{
     /* At present, you mustn't unload any java plugin.  */
   };
 } darwin_constructor;
+
+#ifdef JV_ULIBGCJ_DARWIN
+// this is here to force the linker to include the object file
+// generated from this compilation unit.
+void _Jv_DarwinStaticLinkDummyFunction(void) {
+  // do nothing
+}
+#endif//JV_ULIBGCJ_DARWIN

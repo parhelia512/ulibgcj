@@ -80,12 +80,14 @@ package java.util;
  */
 public interface Map<K, V>
 {
+/*if not ULIBGCJ*/
   /**
    * Remove all entries from this Map (optional operation).
    *
    * @throws UnsupportedOperationException if clear is not supported
    */
   void clear();
+/*endif*/
 
   /**
    * Returns true if this contains a mapping for the given key.
@@ -129,6 +131,7 @@ public interface Map<K, V>
    */
   Set<Map.Entry<K, V>> entrySet();
 
+/*if not ULIBGCJ*/
   /**
    * Compares the specified object with this map for equality. Returns
    * <code>true</code> if the other object is a Map with the same mappings,
@@ -141,6 +144,7 @@ public interface Map<K, V>
    * @see Set#equals(Object)
    */
   boolean equals(Object o);
+/*endif*/
 
   /**
    * Returns the value mapped by the given key. Returns <code>null</code> if
@@ -174,6 +178,7 @@ public interface Map<K, V>
    */
   V put(K key, V value);
 
+/*if not ULIBGCJ*/
   /**
    * Returns the hash code for this map. This is the sum of all hashcodes
    * for each Map.Entry object in entrySet.  This allows comparison of maps,
@@ -191,6 +196,7 @@ public interface Map<K, V>
    * @return true if the map is empty
    */
   boolean isEmpty();
+/*endif*/
 
   /**
    * Returns a set view of the keys in this Map.  The set is backed by the
@@ -221,6 +227,7 @@ public interface Map<K, V>
    */
   void putAll(Map<? extends K, ? extends V> m);
 
+/*if not ULIBGCJ*/
   /**
    * Removes the mapping for this key if present (optional operation). If
    * the key is not present, this returns null. Note that maps which permit
@@ -243,6 +250,7 @@ public interface Map<K, V>
    * @return the number of mappings
    */
   int size();
+/*endif*/
 
   /**
    * Returns a collection (or bag) view of the values in this Map.  The
@@ -306,6 +314,7 @@ public interface Map<K, V>
     V setValue(V value);
 
 
+/*if not ULIBGCJ*/
     /**
      * Returns the hash code of the entry.  This is defined as the
      * exclusive-or of the hashcodes of the key and value (using 0 for
@@ -334,5 +343,6 @@ public interface Map<K, V>
      * @return <code>true</code> if it is equal
      */
     boolean equals(Object o);
+/*endif*/
   }
 }

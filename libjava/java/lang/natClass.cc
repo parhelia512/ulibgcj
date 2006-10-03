@@ -26,16 +26,20 @@ details.  */
 #include <java/lang/ClassLoader.h>
 #include <java/lang/String.h>
 #include <java/lang/reflect/Modifier.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/reflect/Member.h>
 #include <java/lang/reflect/Method.h>
 #include <java/lang/reflect/Field.h>
 #include <java/lang/reflect/Constructor.h>
+#endif// not JV_ULIBGCJ
 #include <java/lang/AbstractMethodError.h>
 #include <java/lang/ArrayStoreException.h>
 #include <java/lang/ClassCastException.h>
 #include <java/lang/ClassNotFoundException.h>
 #include <java/lang/ExceptionInInitializerError.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/IllegalAccessException.h>
+#endif// not JV_ULIBGCJ
 #include <java/lang/IllegalAccessError.h>
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/IncompatibleClassChangeError.h>
@@ -43,19 +47,29 @@ details.  */
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/InstantiationException.h>
 #include <java/lang/NoClassDefFoundError.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/NoSuchFieldException.h>
+#endif// not JV_ULIBGCJ
 #include <java/lang/NoSuchMethodError.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/NoSuchMethodException.h>
+#endif// not JV_ULIBGCJ
 #include <java/lang/Thread.h>
 #include <java/lang/NullPointerException.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/RuntimePermission.h>
+#endif// not JV_ULIBGCJ
 #include <java/lang/System.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/SecurityManager.h>
+#endif// not JV_ULIBGCJ
 #include <java/lang/StringBuffer.h>
 #include <java/lang/VMClassLoader.h>
 #include <gcj/method.h>
 #include <gnu/gcj/RawData.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/VerifyError.h>
+#endif// not JV_ULIBGCJ
 #include <java/lang/InternalError.h>
 #include <java/lang/TypeNotPresentException.h>
 #include <java/lang/Byte.h>
@@ -66,18 +80,27 @@ details.  */
 #include <java/lang/Long.h>
 #include <java/lang/Character.h>
 #include <java/lang/Boolean.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/annotation/Annotation.h>
+#endif// not JV_ULIBGCJ
 #include <java/util/HashMap.h>
-
 #include <java-cpool.h>
+#ifndef JV_ULIBGCJ
 #include <java-interp.h>
+#endif// not JV_ULIBGCJ
 #include <java-assert.h>
+#ifndef JV_ULIBGCJ
 #include <java-stack.h>
+#endif// not JV_ULIBGCJ
 #include <execution.h>
 
 
 
 using namespace gcj;
+
+#ifdef JV_ULIBGCJ
+using namespace java::lang;
+#endif
 
 jclass
 java::lang::Class::forName (jstring className, jboolean initialize,
@@ -92,8 +115,10 @@ java::lang::Class::forName (jstring className, jboolean initialize,
 
   _Jv_Utf8Const *name = _Jv_makeUtf8Const (buffer, length);
 
+#ifndef JV_ULIBGCJ
   if (! _Jv_VerifyClassName (name))
     throw new java::lang::ClassNotFoundException (className);
+#endif// not JV_ULIBGCJ
 
   jclass klass = (buffer[0] == '[' 
 		  ? _Jv_FindClassFromSignature (name->chars(), loader)
@@ -113,9 +138,11 @@ java::lang::Class::forName (jstring className)
 {
   java::lang::ClassLoader *loader = NULL;
 
+#ifndef JV_ULIBGCJ
   jclass caller = _Jv_StackTrace::GetCallingClass (&Class::class$);
   if (caller)
     loader = caller->getClassLoaderInternal();
+#endif// not JV_ULIBGCJ
 
   return forName (className, true, loader);
 }
@@ -123,12 +150,14 @@ java::lang::Class::forName (jstring className)
 java::lang::ClassLoader *
 java::lang::Class::getClassLoader (void)
 {
+#ifndef JV_ULIBGCJ
   java::lang::SecurityManager *s = java::lang::System::getSecurityManager();
   if (s != NULL)
     {
       jclass caller = _Jv_StackTrace::GetCallingClass (&Class::class$);
       return getClassLoader (caller);
    }
+#endif// not JV_ULIBGCJ
 
   return loader;
 }
@@ -136,6 +165,7 @@ java::lang::Class::getClassLoader (void)
 java::lang::ClassLoader *
 java::lang::Class::getClassLoader (jclass caller)
 {
+#ifndef JV_ULIBGCJ
   java::lang::SecurityManager *s = java::lang::System::getSecurityManager();
   if (s != NULL)
     {
@@ -147,10 +177,12 @@ java::lang::Class::getClassLoader (jclass caller)
       if (caller_loader != NULL && ! caller_loader->isAncestorOf(loader))
 	s->checkPermission (new RuntimePermission (JvNewStringLatin1 ("getClassLoader")));
     }
+#endif// not JV_ULIBGCJ
 
   return loader;
 }
 
+#ifndef JV_ULIBGCJ
 java::lang::reflect::Constructor *
 java::lang::Class::getConstructor (JArray<jclass> *param_types)
 {
@@ -324,6 +356,7 @@ java::lang::Class::getDeclaredFields (jboolean public_only)
     }
   return result;
 }
+#endif// not JV_ULIBGCJ
 
 void
 java::lang::Class::getSignature (java::lang::StringBuffer *buffer)
@@ -362,6 +395,7 @@ java::lang::Class::getSignature (JArray<jclass> *param_types,
   return buf->toString();
 }
 
+#ifndef JV_ULIBGCJ
 java::lang::reflect::Method *
 java::lang::Class::_getDeclaredMethod (jstring name,
 				       JArray<jclass> *param_types)
@@ -430,6 +464,7 @@ java::lang::Class::getDeclaredMethods (void)
     }
   return result;
 }
+#endif// not JV_ULIBGCJ
 
 jstring
 java::lang::Class::getName (void)
@@ -452,6 +487,7 @@ java::lang::Class::getInterfaces (void)
   return reinterpret_cast<JArray<jclass> *> (r);
 }
 
+#ifndef JV_ULIBGCJ
 java::lang::reflect::Method *
 java::lang::Class::_getMethod (jstring name, JArray<jclass> *param_types)
 {
@@ -619,6 +655,7 @@ java::lang::Class::getMethods (void)
 
   return result;
 }
+#endif// not JV_ULIBGCJ
 
 jboolean
 java::lang::Class::isAssignableFrom (jclass klass)
@@ -641,7 +678,9 @@ java::lang::Class::isInstance (jobject obj)
 jobject
 java::lang::Class::newInstance (void)
 {
+#ifndef JV_ULIBGCJ
   memberAccessCheck(java::lang::reflect::Member::PUBLIC);
+#endif// not JV_ULIBGCJ
 
   if (isPrimitive ()
       || isInterface ()
@@ -767,6 +806,7 @@ java::lang::Class::initializeClass (void)
   notifyAll ();
 }
 
+#ifndef JV_ULIBGCJ
 // Only used by serialization
 java::lang::reflect::Field *
 java::lang::Class::getPrivateField (jstring name)
@@ -841,6 +881,7 @@ java::lang::Class::setSigners(JArray<jobject> *s)
 {
   hack_signers = s;
 }
+#endif// not JV_ULIBGCJ
 
 
 
@@ -884,6 +925,7 @@ read_4 (unsigned char *&p)
   return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
 }
 
+#ifndef JV_ULIBGCJ
 jstring
 java::lang::Class::getReflectionSignature (jint /*jv_attr_type*/ type,
 					   jint obj_index)
@@ -1049,6 +1091,7 @@ java::lang::Class::getEnclosingConstructor()
   cons->declaringClass = this;
   return cons;
 }
+#endif// not JV_ULIBGCJ
 
 static void
 check_constant (_Jv_Constants *pool, jint cpool_index, jint type)
@@ -1169,9 +1212,11 @@ parseAnnotationElement(jclass klass, _Jv_Constants *pool,
 	  }
       }
       break;
+#ifndef JV_ULIBGCJ
     case '@':
       result = parseAnnotation (klass, pool, bytes, last);
       break;
+#endif// not JV_ULIBGCJ
     case '[':
       {
 	int n_array_elts = read_u2 (bytes, last);
@@ -1189,6 +1234,7 @@ parseAnnotationElement(jclass klass, _Jv_Constants *pool,
   return result;
 }
 
+#ifndef JV_ULIBGCJ
 static ::java::lang::annotation::Annotation *
 parseAnnotation(jclass klass, _Jv_Constants *pool,
 		unsigned char *&bytes, unsigned char *last)
@@ -1368,6 +1414,7 @@ java::lang::Class::getDeclaredAnnotationsInternal()
 {
   return (JArray< ::java::lang::annotation::Annotation *> *) getDeclaredAnnotations(JV_CLASS_ATTR, 0, JV_ANNOTATIONS_KIND);
 }
+#endif// not JV_ULIBGCJ
 
 static jclass
 resolve_class_constant (jclass klass, _Jv_Constants *pool, int cpool_index)
@@ -1377,6 +1424,7 @@ resolve_class_constant (jclass klass, _Jv_Constants *pool, int cpool_index)
   return _Jv_Linker::resolve_pool_entry (klass, cpool_index, false).clazz;
 }
 
+#ifndef JV_ULIBGCJ
 jint
 java::lang::Class::findInnerClassAttribute()
 {
@@ -1542,6 +1590,7 @@ java::lang::Class::isMemberClass()
   // FIXME: is this correct?
   return !isLocalClass() && getDeclaringClass() != NULL;
 }
+#endif// not JV_ULIBGCJ
 
 
 

@@ -135,11 +135,13 @@ JvAttachCurrentThread (jstring name, java::lang::ThreadGroup* group)
   return _Jv_AttachCurrentThread (name, group);
 }
 
+#ifndef JV_ULIBGCJ
 extern inline java::lang::Thread*
 JvAttachCurrentThreadAsDaemon (jstring name, java::lang::ThreadGroup* group)
 {
   return _Jv_AttachCurrentThreadAsDaemon (name, group);
 }
+#endif//JV_ULIBGCJ
 
 extern inline jint
 JvDetachCurrentThread (void)
