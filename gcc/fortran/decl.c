@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -508,15 +508,14 @@ char_len_param_value (gfc_expr ** expr)
 static match
 match_char_length (gfc_expr ** expr)
 {
-  int length, cnt;
+  int length;
   match m;
 
   m = gfc_match_char ('*');
   if (m != MATCH_YES)
     return m;
 
-  /* cnt is unused, here.  */
-  m = gfc_match_small_literal_int (&length, &cnt);
+  m = gfc_match_small_literal_int (&length, NULL);
   if (m == MATCH_ERROR)
     return m;
 
@@ -1304,13 +1303,12 @@ match
 gfc_match_old_kind_spec (gfc_typespec * ts)
 {
   match m;
-  int original_kind, cnt;
+  int original_kind;
 
   if (gfc_match_char ('*') != MATCH_YES)
     return MATCH_NO;
 
-  /* cnt is unused, here.  */
-  m = gfc_match_small_literal_int (&ts->kind, &cnt);
+  m = gfc_match_small_literal_int (&ts->kind, NULL);
   if (m != MATCH_YES)
     return MATCH_ERROR;
 
@@ -2572,7 +2570,12 @@ gfc_match_function_decl (void)
 
   m = gfc_match_formal_arglist (sym, 0, 0);
   if (m == MATCH_NO)
-    gfc_error ("Expected formal argument list in function definition at %C");
+    {
+      gfc_error ("Expected formal argument list in function "
+                "definition at %C");
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
   else if (m == MATCH_ERROR)
     goto cleanup;
 

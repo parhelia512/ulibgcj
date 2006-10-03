@@ -1,5 +1,5 @@
 /* Arrays.java -- Utility class with methods to operate on arrays
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -97,7 +97,7 @@ public class Arrays
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final byte d = a[mid];
         if (d == key)
           return mid;
@@ -131,7 +131,7 @@ public class Arrays
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final char d = a[mid];
         if (d == key)
           return mid;
@@ -165,7 +165,7 @@ public class Arrays
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final short d = a[mid];
         if (d == key)
           return mid;
@@ -199,7 +199,7 @@ public class Arrays
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final int d = a[mid];
         if (d == key)
           return mid;
@@ -233,7 +233,7 @@ public class Arrays
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final long d = a[mid];
         if (d == key)
           return mid;
@@ -268,7 +268,7 @@ public class Arrays
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final int r = Float.compare(a[mid], key);
         if (r == 0)
           return mid;
@@ -303,7 +303,7 @@ public class Arrays
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final int r = Double.compare(a[mid], key);
         if (r == 0)
           return mid;
@@ -362,14 +362,14 @@ public class Arrays
    * @throws NullPointerException if a null element is compared with natural
    *         ordering (only possible when c is null)
    */
-  public static int binarySearch(Object[] a, Object key, Comparator c)
+  public static <T> int binarySearch(T[] a, T key, Comparator<? super T> c)
   {
     int low = 0;
     int hi = a.length - 1;
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final int d = Collections.compare(key, a[mid], c);
         if (d == 0)
           return mid;
@@ -2163,7 +2163,7 @@ public class Arrays
    * @throws NullPointerException if a null element is compared with natural
    *         ordering (only possible when c is null)
    */
-  public static void sort(Object[] a, Comparator c)
+  public static <T> void sort(T[] a, Comparator<? super T> c)
   {
     sort(a, 0, a.length, c);
   }
@@ -2213,7 +2213,8 @@ public class Arrays
    * @throws NullPointerException if a null element is compared with natural
    *         ordering (only possible when c is null)
    */
-  public static void sort(Object[] a, int fromIndex, int toIndex, Comparator c)
+  public static <T> void sort(T[] a, int fromIndex, int toIndex,
+			      Comparator<? super T> c)
   {
     if (fromIndex > toIndex)
       throw new IllegalArgumentException("fromIndex " + fromIndex
@@ -2235,7 +2236,7 @@ public class Arrays
               {
                 // not already sorted
                 int j = i;
-                Object elem = a[j];
+                T elem = a[j];
                 do
                   {
                     a[j] = a[j - 1];
@@ -2253,9 +2254,9 @@ public class Arrays
     if (len <= 6)
       return;
 
-    Object[] src = a;
-    Object[] dest = new Object[len];
-    Object[] t = null; // t is used for swapping src and dest
+    T[] src = a;
+    T[] dest = (T[]) new Object[len];
+    T[] t = null; // t is used for swapping src and dest
 
     // The difference of the fromIndex of the src and dest array.
     int srcDestDiff = -fromIndex;
@@ -2341,196 +2342,567 @@ public class Arrays
    * value modification. The returned list implements both Serializable and
    * RandomAccess.
    *
-   * @param a the array to return a view of
+   * @param a the array to return a view of (<code>null</code> not permitted)
    * @return a fixed-size list, changes to which "write through" to the array
+   * 
+   * @throws NullPointerException if <code>a</code> is <code>null</code>.
    * @see Serializable
    * @see RandomAccess
    * @see Arrays.ArrayList
    */
-  public static List asList(final Object[] a)
+  public static <T> List<T> asList(final T... a)
   {
     return new Arrays.ArrayList(a);
+  }
+
+  /** 
+   * Returns the hashcode of an array of long numbers.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents longs in their wrapper class, <code>Long</code>.
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of long numbers for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
+   */
+  public static int hashCode(long[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      {
+	int elt = (int) (v[i] ^ (v[i] >>> 32));
+	result = 31 * result + elt;
+      }
+    return result;
+  }
+
+  /** 
+   * Returns the hashcode of an array of integer numbers.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents ints in their wrapper class, <code>Integer</code>.
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of integer numbers for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
+   */
+  public static int hashCode(int[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      result = 31 * result + v[i];
+    return result;
+  }
+
+  /** 
+   * Returns the hashcode of an array of short numbers.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents shorts in their wrapper class, <code>Short</code>.
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of short numbers for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
+   */
+  public static int hashCode(short[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      result = 31 * result + v[i];
+    return result;
+  }
+
+  /** 
+   * Returns the hashcode of an array of characters.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents chars in their wrapper class, <code>Character</code>.
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of characters for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
+   */
+  public static int hashCode(char[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      result = 31 * result + v[i];
+    return result;
+  }
+
+  /** 
+   * Returns the hashcode of an array of bytes.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents bytes in their wrapper class, <code>Byte</code>.
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of bytes for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
+   */
+  public static int hashCode(byte[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      result = 31 * result + v[i];
+    return result;
+  }
+
+  /** 
+   * Returns the hashcode of an array of booleans.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents booleans in their wrapper class,
+   * <code>Boolean</code>.  For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of booleans for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
+   */
+  public static int hashCode(boolean[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      result = 31 * result + (v[i] ? 1231 : 1237);
+    return result;
+  }
+
+  /** 
+   * Returns the hashcode of an array of floats.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents floats in their wrapper class, <code>Float</code>.
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of floats for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
+   */
+  public static int hashCode(float[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      result = 31 * result + Float.floatToIntBits(v[i]);
+    return result;
+  }
+
+  /** 
+   * Returns the hashcode of an array of doubles.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  This has the same
+   * data, but represents doubles in their wrapper class, <code>Double</code>.
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of doubles for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
+   */
+  public static int hashCode(double[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      {
+	long l = Double.doubleToLongBits(v[i]);
+	int elt = (int) (l ^ (l >>> 32));
+	result = 31 * result + elt;
+      }
+    return result;
+  }
+
+  /** 
+   * Returns the hashcode of an array of objects.  If two arrays
+   * are equal, according to <code>equals()</code>, they should have the
+   * same hashcode.  The hashcode returned by the method is equal to that
+   * obtained by the corresponding <code>List</code> object.  
+   * For <code>null</code>, 0 is returned.
+   *
+   * @param v an array of integer numbers for which the hash code should be
+   *          computed.
+   * @return the hash code of the array, or 0 if null was given.
+   * @since 1.5 
+   */
+  public static int hashCode(Object[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      {
+	int elt = v[i] == null ? 0 : v[i].hashCode();
+	result = 31 * result + elt;
+      }
+    return result;
+  }
+
+  public static int deepHashCode(Object[] v)
+  {
+    if (v == null)
+      return 0;
+    int result = 1;
+    for (int i = 0; i < v.length; ++i)
+      {
+	int elt;
+	if (v[i] == null)
+	  elt = 0;
+	else if (v[i] instanceof boolean[])
+	  elt = hashCode((boolean[]) v[i]);
+	else if (v[i] instanceof byte[])
+	  elt = hashCode((byte[]) v[i]);
+	else if (v[i] instanceof char[])
+	  elt = hashCode((char[]) v[i]);
+	else if (v[i] instanceof short[])
+	  elt = hashCode((short[]) v[i]);
+	else if (v[i] instanceof int[])
+	  elt = hashCode((int[]) v[i]);
+	else if (v[i] instanceof long[])
+	  elt = hashCode((long[]) v[i]);
+	else if (v[i] instanceof float[])
+	  elt = hashCode((float[]) v[i]);
+	else if (v[i] instanceof double[])
+	  elt = hashCode((double[]) v[i]);
+	else if (v[i] instanceof Object[])
+	  elt = hashCode((Object[]) v[i]);
+	else
+	  elt = v[i].hashCode();
+	result = 31 * result + elt;
+      }
+    return result;
+  }
+
+  /** @since 1.5 */
+  public static boolean deepEquals(Object[] v1, Object[] v2)
+  {
+    if (v1 == null)
+      return v2 == null;
+    if (v2 == null || v1.length != v2.length)
+      return false;
+
+    for (int i = 0; i < v1.length; ++i)
+      {
+	Object e1 = v1[i];
+	Object e2 = v2[i];
+
+	if (e1 == e2)
+	  continue;
+	if (e1 == null || e2 == null)
+	  return false;
+
+	boolean check;
+	if (e1 instanceof boolean[] && e2 instanceof boolean[])
+	  check = equals((boolean[]) e1, (boolean[]) e2);
+	else if (e1 instanceof byte[] && e2 instanceof byte[])
+	  check = equals((byte[]) e1, (byte[]) e2);
+	else if (e1 instanceof char[] && e2 instanceof char[])
+	  check = equals((char[]) e1, (char[]) e2);
+	else if (e1 instanceof short[] && e2 instanceof short[])
+	  check = equals((short[]) e1, (short[]) e2);
+	else if (e1 instanceof int[] && e2 instanceof int[])
+	  check = equals((int[]) e1, (int[]) e2);
+	else if (e1 instanceof long[] && e2 instanceof long[])
+	  check = equals((long[]) e1, (long[]) e2);
+	else if (e1 instanceof float[] && e2 instanceof float[])
+	  check = equals((float[]) e1, (float[]) e2);
+	else if (e1 instanceof double[] && e2 instanceof double[])
+	  check = equals((double[]) e1, (double[]) e2);
+	else if (e1 instanceof Object[] && e2 instanceof Object[])
+	  check = equals((Object[]) e1, (Object[]) e2);
+	else
+	  check = e1.equals(e2);
+	if (! check)
+	  return false;
+      }
+
+    return true;
   }
 
   /**
    * Returns a String representation of the argument array.  Returns "null"
    * if <code>a</code> is null.
-   * @param a the array to represent
+   * @param v the array to represent
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString (long[] a)
+  public static String toString(boolean[] v)
   {
-    if (a == null)
+    if (v == null)
       return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
-    return result;
-  }  
-  
-  /**
-   * Returns a String representation of the argument array.  Returns "null"
-   * if <code>a</code> is null.
-   * @param a the array to represent
-   * @return a String representing this array
-   * @since 1.5
-   */
-  public static String toString (int[] a)
-  {
-    if (a == null)
-      return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
-    return result;
-  }  
-  
-  /**
-   * Returns a String representation of the argument array.  Returns "null"
-   * if <code>a</code> is null.
-   * @param a the array to represent
-   * @return a String representing this array
-   * @since 1.5
-   */
-  public static String toString (short[] a)
-  {
-    if (a == null)
-      return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
-    return result;
-  }  
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
 
   /**
    * Returns a String representation of the argument array.  Returns "null"
    * if <code>a</code> is null.
-   * @param a the array to represent
+   * @param v the array to represent
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString (char[] a)
+  public static String toString(byte[] v)
   {
-    if (a == null)
+    if (v == null)
       return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
-    return result;
-  }  
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
 
   /**
    * Returns a String representation of the argument array.  Returns "null"
    * if <code>a</code> is null.
-   * @param a the array to represent
+   * @param v the array to represent
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString (byte[] a)
+  public static String toString(char[] v)
   {
-    if (a == null)
+    if (v == null)
       return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
-    return result;
-  }  
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
 
   /**
    * Returns a String representation of the argument array.  Returns "null"
    * if <code>a</code> is null.
-   * @param a the array to represent
+   * @param v the array to represent
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString (boolean[] a)
+  public static String toString(short[] v)
   {
-    if (a == null)
+    if (v == null)
       return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
-    return result;
-  }  
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
 
   /**
    * Returns a String representation of the argument array.  Returns "null"
    * if <code>a</code> is null.
-   * @param a the array to represent
+   * @param v the array to represent
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString (float[] a)
+  public static String toString(int[] v)
   {
-    if (a == null)
+    if (v == null)
       return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
-    return result;
-  }  
-  
-  /**
-   * Returns a String representation of the argument array.  Returns "null"
-   * if <code>a</code> is null.
-   * @param a the array to represent
-   * @return a String representing this array
-   * @since 1.5
-   */
-  public static String toString (double[] a)
-  {
-    if (a == null)
-      return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
-    return result;
-  }  
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
 
   /**
    * Returns a String representation of the argument array.  Returns "null"
    * if <code>a</code> is null.
-   * @param a the array to represent
+   * @param v the array to represent
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString (Object[] a)
+  public static String toString(long[] v)
   {
-    if (a == null)
+    if (v == null)
       return "null";
-    if (a.length == 0)
-      return "[]";
-    String result = "[";
-    for (int i = 0; i < a.length - 1; i++)
-      result += String.valueOf(a[i]) + ", ";
-    result += String.valueOf(a[a.length - 1]) + "]";
-    return result;
-  }  
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
+
+  /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param v the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString(float[] v)
+  {
+    if (v == null)
+      return "null";
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
+
+  /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param v the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString(double[] v)
+  {
+    if (v == null)
+      return "null";
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
+
+  /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param v the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString(Object[] v)
+  {
+    if (v == null)
+      return "null";
+    StringBuilder b = new StringBuilder("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	b.append(v[i]);
+      }
+    b.append("]");
+    return b.toString();
+  }
+
+  private static void deepToString(Object[] v, StringBuilder b, HashSet seen)
+  {
+    b.append("[");
+    for (int i = 0; i < v.length; ++i)
+      {
+	if (i > 0)
+	  b.append(", ");
+	Object elt = v[i];
+	if (elt == null)
+	  b.append("null");
+	else if (elt instanceof boolean[])
+	  b.append(toString((boolean[]) elt));
+	else if (elt instanceof byte[])
+	  b.append(toString((byte[]) elt));
+	else if (elt instanceof char[])
+	  b.append(toString((char[]) elt));
+	else if (elt instanceof short[])
+	  b.append(toString((short[]) elt));
+	else if (elt instanceof int[])
+	  b.append(toString((int[]) elt));
+	else if (elt instanceof long[])
+	  b.append(toString((long[]) elt));
+	else if (elt instanceof float[])
+	  b.append(toString((float[]) elt));
+	else if (elt instanceof double[])
+	  b.append(toString((double[]) elt));
+	else if (elt instanceof Object[])
+	  {
+	    Object[] os = (Object[]) elt;
+	    if (seen.contains(os))
+	      b.append("[...]");
+	    else
+	      {
+		seen.add(os);
+		deepToString(os, b, seen);
+	      }
+	  }
+	else
+	  b.append(elt);
+      }
+    b.append("]");
+  }
+
+  /** @since 1.5 */
+  public static String deepToString(Object[] v)
+  {
+    if (v == null)
+      return "null";
+    HashSet seen = new HashSet();
+    StringBuilder b = new StringBuilder();
+    deepToString(v, b, seen);
+    return b.toString();
+  }
 
   /**
    * Inner class used by {@link #asList(Object[])} to provide a list interface
@@ -2541,7 +2913,7 @@ public class Arrays
    * @author Eric Blake (ebb9@email.byu.edu)
    * @status updated to 1.4
    */
-  private static final class ArrayList extends AbstractList
+  private static final class ArrayList<E> extends AbstractList<E>
     implements Serializable, RandomAccess
   {
     // We override the necessary methods, plus others which will be much
@@ -2556,14 +2928,14 @@ public class Arrays
      * The array we are viewing.
      * @serial the array
      */
-    private final Object[] a;
+    private final E[] a;
 
     /**
      * Construct a list view of the array.
      * @param a the array to view
      * @throws NullPointerException if a is null
      */
-    ArrayList(Object[] a)
+    ArrayList(E[] a)
     {
       // We have to explicitly check.
       if (a == null)
@@ -2578,7 +2950,7 @@ public class Arrays
      * @param index The index to retrieve an object from.
      * @return The object at the array index specified.
      */ 
-    public Object get(int index)
+    public E get(int index)
     {
       return a[index];
     }
@@ -2601,9 +2973,9 @@ public class Arrays
      * @param element The new object.
      * @return The object replaced by this operation.
      */
-    public Object set(int index, Object element)
+    public E set(int index, E element)
     {
-      Object old = a[index];
+      E old = a[index];
       a[index] = element;
       return old;
     }
@@ -2674,12 +3046,12 @@ public class Arrays
      * @return The array containing the objects in this list,
      *         which may or may not be == to array.
      */
-    public Object[] toArray(Object[] array)
+    public <T> T[] toArray(T[] array)
     {
       int size = a.length;
       if (array.length < size)
-        array = (Object[])
-          Array.newInstance(array.getClass().getComponentType(), size);
+        array = (T[]) Array.newInstance(array.getClass().getComponentType(),
+					size);
       else if (array.length > size)
         array[size] = null;
 

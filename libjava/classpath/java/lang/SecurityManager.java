@@ -1,5 +1,5 @@
 /* SecurityManager.java -- security checks for privileged actions
-   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,9 +41,6 @@ package java.lang;
 import gnu.classpath.VMStackWalker;
 
 import java.awt.AWTPermission;
-import java.awt.Frame;
-import java.awt.Toolkit;
-import java.awt.Window;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -243,7 +240,7 @@ public class SecurityManager
    * @return the most recent non-system Class on the execution stack
    * @deprecated use {@link #checkPermission(Permission)} instead
    */
-  protected Class currentLoadedClass()
+  protected Class<?> currentLoadedClass()
   {
     int i = classLoaderDepth();
     return i >= 0 ? getClassContext()[i] : null;
@@ -424,7 +421,7 @@ public class SecurityManager
   public void checkAccess(Thread thread)
   {
     if (thread.getThreadGroup() != null 
-	&& thread.getThreadGroup().getParent() != null)
+	&& thread.getThreadGroup().parent == null)
       checkPermission(new RuntimePermission("modifyThread"));
   }
 
@@ -457,7 +454,7 @@ public class SecurityManager
    */
   public void checkAccess(ThreadGroup g)
   {
-    if (g.getParent() != null)
+    if (g.parent == null)
       checkPermission(new RuntimePermission("modifyThreadGroup"));
   }
 
@@ -837,7 +834,7 @@ public class SecurityManager
    * @param window the window to create
    * @return true if there is permission to show the window without warning
    * @throws NullPointerException if window is null
-   * @see Window#Window(Frame)
+   * @see java.awt.Window#Window(java.awt.Frame)
    */
   public boolean checkTopLevelWindow(Object window)
   {
@@ -862,7 +859,7 @@ public class SecurityManager
    * an exception.
    *
    * @throws SecurityException if permission is denied
-   * @see Toolkit#getPrintJob(Frame, String, Properties)
+   * @see java.awt.Toolkit#getPrintJob(java.awt.Frame, String, Properties)
    * @since 1.1
    */
   public void checkPrintJobAccess()
@@ -878,7 +875,7 @@ public class SecurityManager
    * rather than throwing an exception.
    *
    * @throws SecurityException if permission is denied
-   * @see Toolkit#getSystemClipboard()
+   * @see java.awt.Toolkit#getSystemClipboard()
    * @since 1.1
    */
   public void checkSystemClipboardAccess()
@@ -894,7 +891,7 @@ public class SecurityManager
    * rather than throwing an exception.
    *
    * @throws SecurityException if permission is denied
-   * @see Toolkit#getSystemEventQueue()
+   * @see java.awt.Toolkit#getSystemEventQueue()
    * @since 1.1
    */
   public void checkAwtEventQueueAccess()
@@ -986,7 +983,7 @@ public class SecurityManager
    * @see Member#PUBLIC
    * @since 1.1
    */
-  public void checkMemberAccess(Class c, int memberType)
+  public void checkMemberAccess(Class<?> c, int memberType)
   {
     if (c == null)
       throw new NullPointerException();

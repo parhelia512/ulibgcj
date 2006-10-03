@@ -1,5 +1,5 @@
 /* Check functions
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -317,34 +317,6 @@ dim_check (gfc_expr * dim, int n, int optional)
   return SUCCESS;
 }
 
-/* Compare the size of a along dimension ai with the size of b along
-   dimension bi, returning 0 if they are known not to be identical,
-   and 1 if they are identical, or if this cannot be determined.  */
-
-static int
-identical_dimen_shape (gfc_expr *a, int ai, gfc_expr *b, int bi)
-{
-  mpz_t a_size, b_size;
-  int ret;
-
-  gcc_assert (a->rank > ai);
-  gcc_assert (b->rank > bi);
-
-  ret = 1;
-
-  if (gfc_array_dimen_size (a, ai, &a_size) == SUCCESS)
-    {
-      if (gfc_array_dimen_size (b, bi, &b_size) == SUCCESS)
-	{
-	  if (mpz_cmp (a_size, b_size) != 0)
-	    ret = 0;
-  
-	  mpz_clear (b_size);
-	}
-      mpz_clear (a_size);
-    }
-  return ret;
-}
 
 /* If a DIM parameter is a constant, make sure that it is greater than
    zero and less than or equal to the rank of the given array.  If
@@ -375,6 +347,35 @@ dim_rank_check (gfc_expr * dim, gfc_expr * array, int allow_assumed)
     }
 
   return SUCCESS;
+}
+
+/* Compare the size of a along dimension ai with the size of b along
+   dimension bi, returning 0 if they are known not to be identical,
+   and 1 if they are identical, or if this cannot be determined.  */
+
+static int
+identical_dimen_shape (gfc_expr *a, int ai, gfc_expr *b, int bi)
+{
+  mpz_t a_size, b_size;
+  int ret;
+
+  gcc_assert (a->rank > ai);
+  gcc_assert (b->rank > bi);
+
+  ret = 1;
+
+  if (gfc_array_dimen_size (a, ai, &a_size) == SUCCESS)
+    {
+      if (gfc_array_dimen_size (b, bi, &b_size) == SUCCESS)
+	{
+	  if (mpz_cmp (a_size, b_size) != 0)
+	    ret = 0;
+  
+	  mpz_clear (b_size);
+	}
+      mpz_clear (a_size);
+    }
+  return ret;
 }
 
 /***** Check functions *****/
@@ -531,7 +532,12 @@ gfc_check_associated (gfc_expr * pointer, gfc_expr * target)
   else if (target->expr_type == EXPR_FUNCTION)
     attr = target->symtree->n.sym->attr;
   else
-    gcc_assert (0); /* Target must be a variable or a function.  */
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L must be a pointer "
+		 "or target VARIABLE or FUNCTION", gfc_current_intrinsic_arg[1],
+		 gfc_current_intrinsic, &target->where);
+      return FAILURE;
+    }
 
   if (!attr.pointer && !attr.target)
     {
@@ -1046,7 +1052,7 @@ gfc_check_ichar_iachar (gfc_expr * c)
       if (!ref)
 	{
           /* Check that the argument is length one.  Non-constant lengths
-	     can't be checked here, so assume thay are ok.  */
+	     can't be checked here, so assume they are ok.  */
 	  if (c->ts.cl && c->ts.cl->length)
 	    {
 	      /* If we already have a length for this expression then use it.  */

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.util.jar;
 
+import gnu.java.util.jar.JarUtils;
+
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Map;
@@ -65,7 +67,8 @@ import java.util.Set;
  * @see java.util.jar.Attributes.Name
  * @author Mark Wielaard (mark@klomp.org)
  */
-public class Attributes implements Cloneable, Map
+public class Attributes 
+  implements Cloneable, Map<Object, Object>
 {
 
   // Fields
@@ -75,7 +78,7 @@ public class Attributes implements Cloneable, Map
    * implementation it is actually a Hashtable, but that can be different in
    * other implementations.
    */
-  protected Map map;
+  protected Map<Object, Object> map;
 
   // Inner class
 
@@ -121,14 +124,13 @@ public class Attributes implements Cloneable, Map
      * General main attribute -
      * the version of this Manifest file.
      */
-    public static final Name MANIFEST_VERSION = new Name("Manifest-Version");
+    public static final Name MANIFEST_VERSION = new Name(JarUtils.MANIFEST_VERSION);
     
     /**
      * General main attribute -
      * the version of the jar file signature.
      */
-    public static final Name SIGNATURE_VERSION
-      = new Name("Signature-Version");
+    public static final Name SIGNATURE_VERSION = new Name(JarUtils.SIGNATURE_VERSION);
     
     /**
      * General main attribute -
@@ -427,16 +429,13 @@ public class Attributes implements Cloneable, Map
    * Attributes map.
    * When the name already exists the value is replaced and the old value
    * is returned.
-   * <p>
-   * I don't know why there is no public method with this signature. I think
-   * there should be one.
    *
    * @param name the attribite name to add/replace
    * @param value the (new) value of the attribute name
    * @returns the old value of the attribute name or null if it didn't exist
    * yet
    */
-  String putValue(Name name, String value)
+  private String putValue(Name name, String value)
   {
     return (String) put(name, value);
   }
@@ -493,7 +492,7 @@ public class Attributes implements Cloneable, Map
    *
    * @return a set of attribute name value pairs
    */
-  public Set entrySet()
+  public Set<Map.Entry<Object, Object>> entrySet()
   {
     return map.entrySet();
   }
@@ -559,7 +558,7 @@ public class Attributes implements Cloneable, Map
   /**
    * Gives a Set of all the values of defined attribute names.
    */
-  public Set keySet()
+  public Set<Object> keySet()
   {
     return map.keySet();
   }
@@ -588,7 +587,7 @@ public class Attributes implements Cloneable, Map
    * @exception ClassCastException if the supplied map is not an instance of
    * Attributes
    */
-  public void putAll(Map attr)
+  public void putAll(Map<?, ?> attr)
   {
     if (!(attr instanceof Attributes))
       {
@@ -623,7 +622,7 @@ public class Attributes implements Cloneable, Map
    * Returns all the values of the defined attribute name/value pairs as a
    * Collection.
    */
-  public Collection values()
+  public Collection<Object> values()
   {
     return map.values();
   }

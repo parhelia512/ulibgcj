@@ -1,5 +1,5 @@
 /* HashAttributeSet.java -- 
-   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,9 @@ exception statement from your version. */
 
 package javax.print.attribute;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -49,8 +52,8 @@ public class HashAttributeSet implements AttributeSet, Serializable
 {
   private static final long serialVersionUID = 5311560590283707917L;
   
-  private Class interfaceName;
-  private HashMap attributeMap = new HashMap();
+  private Class myInterface;
+  private transient HashMap attributeMap = new HashMap();
 
   /**
    * Creates an empty <code>HashAttributeSet</code> object.
@@ -107,12 +110,12 @@ public class HashAttributeSet implements AttributeSet, Serializable
    *
    * @exception NullPointerException if interfaceName is null
    */
-  protected HashAttributeSet(Class interfaceName)
+  protected HashAttributeSet(Class<?> interfaceName)
   {
     if (interfaceName == null)
       throw new NullPointerException("interfaceName may not be null");
     
-    this.interfaceName = interfaceName;
+    myInterface = interfaceName;
   }
   
   /**
@@ -126,7 +129,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * interfaceName
    * @exception NullPointerException if attribute or interfaceName is null
    */
-  protected HashAttributeSet(Attribute attribute, Class interfaceName)
+  protected HashAttributeSet(Attribute attribute, Class<?> interfaceName)
   {
     this(interfaceName);
     
@@ -148,7 +151,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * interface of interfaceName
    * @exception NullPointerException if attributes or interfaceName is null
    */
-  protected HashAttributeSet(Attribute[] attributes, Class interfaceName)
+  protected HashAttributeSet(Attribute[] attributes, Class<?> interfaceName)
   {
     this(interfaceName);
     
@@ -170,7 +173,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * @exception ClassCastException if any element of attributes is not an
    * interface of interfaceName
    */
-  protected HashAttributeSet(AttributeSet attributes, Class interfaceName)
+  protected HashAttributeSet(AttributeSet attributes, Class<?> interfaceName)
   {
     this(interfaceName);
     
@@ -192,7 +195,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    */
   public boolean add(Attribute attribute)
   {
-    return addInternal(attribute, interfaceName);
+    return addInternal(attribute, myInterface);
   }
 
   private boolean addInternal(Attribute attribute, Class interfaceName)
@@ -201,7 +204,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
       throw new NullPointerException("attribute may not be null");
 
     AttributeSetUtilities.verifyAttributeCategory(interfaceName,
-						  this.interfaceName);
+                                                  myInterface);
 
     Object old = attributeMap.put
       (attribute.getCategory(), AttributeSetUtilities.verifyAttributeValue
@@ -220,7 +223,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    */
   public boolean addAll(AttributeSet attributes)
   {
-    return addAllInternal(attributes, interfaceName);
+    return addAllInternal(attributes, myInterface);
   }
 
   private boolean addAllInternal(AttributeSet attributes, Class interfaceName)
@@ -253,7 +256,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * @return <code>true</code> if an attribute of the category is contained
    * in the set, <code>false</code> otherwise.
    */
-  public boolean containsKey(Class category)
+  public boolean containsKey(Class<?> category)
   {
     return attributeMap.containsKey(category);
   }
@@ -298,7 +301,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * @throws ClassCastException if category is not implementing 
    * <code>Attribute</code>.
    */
-  public Attribute get(Class category)
+  public Attribute get(Class<?> category)
   {
     if (category == null)
       throw new NullPointerException("category may not be null");
@@ -356,7 +359,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * @return <code>true</code> if an attribute is removed, false in all other cases. 
    * @throws UnmodifiableSetException if the set does not support modification.
    */
-  public boolean remove(Class category)
+  public boolean remove(Class<?> category)
   {
     if (category == null)
       return false;
@@ -392,5 +395,25 @@ public class HashAttributeSet implements AttributeSet, Serializable
       }
     
     return array;
+  }
+  
+  // Implemented as specified in serialized form
+  private void readObject(ObjectInputStream s)
+    throws ClassNotFoundException, IOException
+  {
+    myInterface = (Class) s.readObject();
+    int size = s.readInt();
+    attributeMap = new HashMap(size);
+    for (int i=0; i < size; i++)
+      add((Attribute) s.readObject());
+  }
+         
+  private void writeObject(ObjectOutputStream s) throws IOException
+  {
+    s.writeObject(myInterface);
+    s.writeInt(size());
+    Iterator it = attributeMap.values().iterator();
+    while (it.hasNext())
+      s.writeObject(it.next());    
   }
 }

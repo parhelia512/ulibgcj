@@ -1,5 +1,5 @@
 /* Java(TM) language-specific utility routines.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -313,6 +313,7 @@ java_handle_option (size_t scode, const char *arg, int value)
       jcf_path_bootclasspath_arg (arg);
       break;
 
+    case OPT_faux_classpath:
     case OPT_fclasspath_:
     case OPT_fCLASSPATH_:
       jcf_path_classpath_arg (arg);
@@ -343,10 +344,14 @@ java_handle_option (size_t scode, const char *arg, int value)
       v_flag = 1;
       break;
       
+    case OPT_fsource_filename_:
+      java_read_sourcefilenames (arg);
+      break;
+      
     default:
       if (cl_options[code].flags & CL_Java)
 	break;
-      abort();
+      gcc_unreachable ();
     }
 
   return 1;
@@ -367,6 +372,9 @@ java_init (void)
      init optimization.  */
   if (flag_indirect_dispatch)
     always_initialize_class_p = true;
+
+  if (!flag_indirect_dispatch)
+    flag_indirect_classes = false;
 
   /* Force minimum function alignment if g++ uses the least significant
      bit of function pointers to store the virtual bit. This is required
@@ -412,7 +420,7 @@ put_decl_string (const char *str, int len)
       if (decl_buf == NULL)
 	{
 	  decl_buflen = len + 100;
-	  decl_buf = xmalloc (decl_buflen);
+	  decl_buf = XNEWVEC (char, decl_buflen);
 	}
       else
 	{
@@ -585,6 +593,10 @@ java_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   /* Java requires left-to-right evaluation of subexpressions.  */
   flag_evaluation_order = 1;
 
+  /* Unit at a time is disabled for Java because it is considered
+     too expensive.  */
+  no_unit_at_a_time_default = 1;
+
   jcf_path_init ();
 
   return CL_Java;
@@ -615,6 +627,15 @@ java_post_options (const char **pfilename)
   if (! flag_indirect_dispatch)
     flag_verify_invocations = true;
 
+  if (flag_reduced_reflection)
+    {
+      if (flag_indirect_dispatch)
+        error ("-findirect-dispatch is incompatible "
+               "with -freduced-reflection");
+      if (flag_jni)
+        error ("-fjni is incompatible with -freduced-reflection");
+    }
+
   /* Open input file.  */
 
   if (filename == 0 || !strcmp (filename, "-"))
@@ -642,7 +663,7 @@ java_post_options (const char **pfilename)
 		error ("couldn't determine target name for dependency tracking");
 	      else
 		{
-		  char *buf = xmalloc (dot - filename +
+		  char *buf = XNEWVEC (char, dot - filename +
 				       3 + sizeof (TARGET_OBJECT_SUFFIX));
 		  strncpy (buf, filename, dot - filename);
 
@@ -788,8 +809,7 @@ merge_init_test_initialization (void **entry, void *x)
   /* See if we have remapped this declaration.  If we haven't there's
      a bug in the inliner.  */
   n = splay_tree_lookup (decl_map, (splay_tree_key) ite->value);
-  if (! n)
-    abort ();
+  gcc_assert (n);
 
   /* Create a new entry for the class and its remapped boolean
      variable.  If we already have a mapping for this class we've

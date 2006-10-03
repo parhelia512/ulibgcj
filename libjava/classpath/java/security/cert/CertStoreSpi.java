@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.security.cert;
 
+import java.security.InvalidAlgorithmParameterException;
 import java.util.Collection;
 
 /**
@@ -49,7 +50,7 @@ import java.util.Collection;
  * implement the {@link CertStoreParameters} interface, if they require
  * parameters.
  *
- * @since JDK 1.4
+ * @since 1.4
  * @see CertStore
  * @see CollectionCertStoreParameters
  * @see LDAPCertStoreParameters
@@ -69,7 +70,7 @@ public abstract class CertStoreSpi
    *         parameters are inappropriate for this class.
    */
   public CertStoreSpi(CertStoreParameters params)
-    throws java.security.InvalidAlgorithmParameterException
+    throws InvalidAlgorithmParameterException
   {
     super();
   }
@@ -85,7 +86,7 @@ public abstract class CertStoreSpi
    * @return A (non-null) collection of certificates.
    * @throws CertStoreException If the certificates cannot be retrieved.
    */
-  public abstract Collection engineGetCertificates(CertSelector selector)
+  public abstract Collection<? extends Certificate> engineGetCertificates(CertSelector selector)
   throws CertStoreException;
 
   /**
@@ -97,6 +98,6 @@ public abstract class CertStoreSpi
    * @return A (non-null) collection of certificate revocation list.
    * @throws CertStoreException If the CRLs cannot be retrieved.
    */
-  public abstract Collection engineGetCRLs(CRLSelector selector)
+  public abstract Collection<? extends CRL> engineGetCRLs(CRLSelector selector)
   throws CertStoreException;
 }

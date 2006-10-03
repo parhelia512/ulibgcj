@@ -36,12 +36,12 @@ libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)
 toolexeclib_LTLIBRARIES = libgcj.la libgij.la
 toolexecmainlib_DATA = libgcj.spec
 
-if XLIB_AWT
-toolexeclib_LTLIBRARIES += lib-gnu-awt-xlib.la
+if USE_LIBGCJ_BC
+toolexeclib_LTLIBRARIES += libgcj_bc.la
 endif
 
-if GTK_AWT
-toolexeclib_LTLIBRARIES += lib-gnu-java-awt-peer-gtk.la libgcjawt.la
+if XLIB_AWT
+toolexeclib_LTLIBRARIES += lib-gnu-awt-xlib.la
 endif
 
 if QT_AWT
@@ -89,8 +89,9 @@ bin_SCRIPTS = addr2name.awk
 ## Compilers and compilation flags.
 ##
 
-GCJH = @GCJH@
-ZIP = @ZIP@
+if BASH_JAR
+bin_SCRIPTS += scripts/jar
+endif
 
 ## The compiler with whatever flags we want for both -c and -C
 ## compiles.
@@ -129,6 +130,8 @@ AM_CXXFLAGS = \
         -DBOOT_CLASS_PATH="\"$(BOOT_CLASS_PATH_DIR)\"" \
 	-DJAVA_EXT_DIRS="\"$(jardir)/ext\"" \
 	-DGCJ_ENDORSED_DIRS="\"$(jardir)/gcj-endorsed\"" \
+	-DGCJ_VERSIONED_LIBDIR="\"$(libdir)/gcj-$(gcc_version)\"" \
+	-DPATH_SEPARATOR="\"$(CLASSPATH_SEPARATOR)\"" \
 	-DLIBGCJ_DEFAULT_DATABASE="\"$(dbexecdir)/$(db_name)\"" \
 	-DLIBGCJ_DEFAULT_DATABASE_PATH_TAIL="\"$(db_pathtail)\"" \
 	-DTOOLEXECLIBDIR="\"$(toolexeclibdir)\""
@@ -155,6 +158,7 @@ LIBFFIINCS = @LIBFFIINCS@
 AM_CPPFLAGS = -I$(top_srcdir) \
 	-Iinclude -I$(top_srcdir)/include \
 	-I$(top_srcdir)/classpath/include \
+	-Iclasspath/include \
 	-I$(top_srcdir)/classpath/native/fdlibm \
 	$(GCINCS) $(THREADINCS) $(INCLTDL) \
 	$(GCC_UNWIND_INCLUDE) $(ZINCS) $(LIBFFIINCS)
@@ -180,7 +184,6 @@ libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
 
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
 	link.cc defineclass.cc interpret.cc verify.cc \
-	java/lang/Class.java java/lang/Object.java \
 	$(nat_source_files)
 
 if USING_BOEHMGC
@@ -189,10 +192,6 @@ endif
 
 if USING_NOGC
 libgcj_la_SOURCES += nogc.cc
-endif
-
-if SUPPLY_BACKTRACE
-libgcj_la_SOURCES += sysdep/dwarf2-backtrace.cc
 endif
 
 if USING_POSIX_PLATFORM
@@ -231,14 +230,21 @@ libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(THREADLIBS) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgcj_la_LIBADD = \
 	classpath/native/fdlibm/libfdlibm.la \
+	java/lang/Object.lo \
+	java/lang/Class.lo \
 	$(all_packages_source_files:.list=.lo) \
 	$(bc_objects) \
 	$(propertyo_files) \
-	$(LIBFFI) $(ZLIBS) $(GCLIBS)
+	$(LIBMAGIC) $(LIBFFI) $(ZLIBS) $(GCLIBS)
 libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	$(all_packages_source_files:.list=.lo) \
 	$(LIBLTDL) $(libgcj_la_LIBADD)
 libgcj_la_LINK = $(LIBLINK)
+
+## A hack to make sure the various gcj-related macros, like
+## LTGCJCOMPILE, are defined by automake.  This is never actually
+## compiled.
+EXTRA_libgcj_la_SOURCES = java/lang/Object.java
 
 
 ## The .db file.  This rule is only used for native builds, so it is
@@ -250,33 +256,6 @@ $(db_name): gcj-dbtool$(EXEEXT)
 ## empty file.  This is simpler than trying to discover when mmap is
 ## not available.
 	./gcj-dbtool -n $(db_name) || touch $(db_name)
-
-## For the peer library, DEPENDENCIES need to come before OBJECTS so
-## that JNI headers are built before JNI C files.
-$(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES)
-
-lib_gnu_java_awt_peer_gtk_la_SOURCES =
-lib_gnu_java_awt_peer_gtk_la_LIBADD = \
-	gnu-java-awt-peer-gtk.lo \
-	classpath/native/jni/gtk-peer/libgtkpeer.la \
-	$(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS) $(CAIRO_LIBS) $(PANGOFT2_LIBS)
-lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = gnu-java-awt-peer-gtk.lo \
-	classpath/native/jni/gtk-peer/libgtkpeer.la \
-	libgcj-$(gcc_version).jar libgcj.la libgcj.spec
-## The mysterious backslash in the grep pattern is consumed by make.
-lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
-        -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC) $(X_LIBS) -lXtst
-lib_gnu_java_awt_peer_gtk_la_LINK = $(LIBLINK)
-
-libgcjawt_la_SOURCES = classpath/native/jawt/jawt.c
-libgcjawt_la_CFLAGS = -I$(srcdir)/classpath/native/jni/classpath \
-	$(PEDANTIC_CFLAGS) $(X_CFLAGS)
-## See jv_convert_LDADD.
-libgcjawt_la_LIBADD = -L$(here)/.libs lib-gnu-java-awt-peer-gtk.la
-libgcjawt_la_LDFLAGS = \
-	-version-info `grep -v '^\#' $(srcdir)/libtool-version` \
-	$(LIBGCJ_LD_SYMBOLIC)
-libgcjawt_la_LINK = $(LIBLINK)
 
 lib_gnu_java_awt_peer_qt_la_SOURCES =
 lib_gnu_java_awt_peer_qt_la_LIBADD = \
@@ -308,19 +287,32 @@ lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 lib_gnu_awt_xlib_la_LINK = $(LIBLINK)
 
-## Build property files into the library.
-property_files = \
-classpath/resource/org/ietf/jgss/MessagesBundle.properties \
-classpath/resource/java/util/iso4217.properties	\
-classpath/resource/gnu/java/awt/peer/gtk/font.properties \
-classpath/resource/gnu/regexp/MessagesBundle_it.properties \
-classpath/resource/gnu/regexp/MessagesBundle_fr.properties \
-classpath/resource/gnu/regexp/MessagesBundle.properties	\
-classpath/resource/META-INF/services/org.xml.sax.driver	\
-classpath/resource/META-INF/services/javax.xml.parsers.SAXParserFactory	\
-classpath/resource/META-INF/services/javax.xml.parsers.DocumentBuilderFactory \
-classpath/resource/META-INF/services/javax.xml.parsers.TransformerFactory
+## Support for libgcj_bc: dummy shared library.
+##
+## This lets us have one soname in BC objects and another in C++ ABI objects.
+libgcj_bc_la_SOURCES = libgcj_bc.c
+libgcj_bc_la_LDFLAGS = -rpath $(toolexeclibdir) -no-static -version-info 1:0:0
+libgcj_bc_la_LIBADD = libgcj.la
+libgcj_bc_la_DEPENDENCIES = libgcj.la
+libgcj_bc_la_LINK = $(LIBLINK)
+## This is specific to Linux/{Free,Net,Open}BSD/Hurd and perhaps few others.
+## USE_LIBGCJ_BC shouldn't be set on other targets.
+libgcj_bc_dummy_LINK = $(CC) -L$(here)/.libs $(CFLAGS) $(LDFLAGS) -shared \
+	-fPIC -nostdlib
 
+## This rule creates the libgcj_bc dummy library in the .libs directory, for use
+## when testing.
+libgcj_bc.la: $(libgcj_bc_la_OBJECTS) $(libgcj_bc_la_DEPENDENCIES)
+	$(libgcj_bc_la_LINK) $(am_libgcj_bc_la_rpath) $(libgcj_bc_la_LDFLAGS) \
+	$(libgcj_bc_la_OBJECTS) $(libgcj_bc_la_LIBADD) $(LIBS) || exit; \
+	rm .libs/libgcj_bc.so; \
+	mv .libs/libgcj_bc.so.1.0.0 .libs/libgcj_bc.so; \
+	$(libgcj_bc_dummy_LINK) -xc /dev/null -Wl,-soname,libgcj_bc.so.1 \
+	-o .libs/libgcj_bc.so.1.0.0 -lgcj || exit; \
+	rm .libs/libgcj_bc.so.1; \
+	$(LN_S) libgcj_bc.so.1.0.0 .libs/libgcj_bc.so.1
+
+## Note that property_files is defined in sources.am.
 propertyo_files = $(patsubst classpath/resource/%,%,$(addsuffix .lo,$(property_files)))
 
 $(propertyo_files): %.lo: classpath/resource/%
@@ -328,14 +320,10 @@ $(propertyo_files): %.lo: classpath/resource/%
 	$(LTGCJCOMPILE) -o $@ -c $< -Wc,--resource,$(@:.lo=)
 
 libgcj-$(gcc_version).jar: classpath/lib/compile-classes
-	jardir=`dirname $(ZIP)`; \
-	jardir=`cd $$jardir && pwd`; \
-	jarname=`basename $(ZIP)`; \
-	cd classpath/lib; $$jardir/$$jarname -cfM \
-	    ../../libgcj-$(gcc_version).jar gnu java javax org
+	cd classpath/lib; $(JAR) -cfM \
+	    ../../libgcj-$(gcc_version).jar gnu java javax org sun
 
-CLEANFILES = libgcj-$(gcc_version).jar \
-	$(all_java_deps_files) $(all_java_filelist_files)
+CLEANFILES = libgcj-$(gcc_version).jar
 DISTCLEANFILES = native.dirs
 
 mostlyclean-local:
@@ -365,7 +353,13 @@ lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPEND
 ## Compiling a list of java sources to a single .o.
 
 %.lo: %.list
-	$(LTGCJCOMPILE) -c -o $@ -MT $@ -MD -MP -MF $(basename $@).deps @$<
+	$(LTGCJCOMPILE) -c -o $@ -fsource-filename=$(here)/classpath/lib/classes -MT $@ -MD -MP -MF $(basename $@).deps @$<
+
+java/lang/Object.lo: classpath/lib/java/lang/Object.class
+	$(LTGCJCOMPILE) -c -o $@ -fsource-filename=$(srcdir)/$(basename $@).java $<
+
+java/lang/Class.lo: classpath/lib/java/lang/Class.class
+	$(LTGCJCOMPILE) -c -o $@  -fsource-filename=$(srcdir)/$(basename $@).java $<
 
 ## ################################################################
 
@@ -384,13 +378,12 @@ omitted_headers = java/lang/ClassLoader.h java/lang/Thread.h \
 	java/lang/reflect/Field.h java/lang/reflect/Method.h \
 	java/lang/reflect/Proxy.h gnu/gcj/runtime/ExtensionClassLoader.h
 
-generic_header_files = $(filter-out $(omitted_headers),$(ordinary_header_files) $(xlib_nat_headers)) \
-	gnu/gcj/tools/gcj_dbtool/Main.h
+generic_header_files = $(ordinary_header_files) $(xlib_nat_headers)
 
-$(generic_header_files): %.h: classpath/lib/%.class
-	name=`echo $< | sed -e 's/\.class$$//' -e 's,classpath/lib/,,'`; \
-	$(mkinstalldirs) `dirname $$name`; \
-	$(GCJH) -d . -classpath '' -bootclasspath classpath/lib $$name
+MYGCJH = gcjh1
+
+$(generic_header_files):
+	$(MYGCJH) --cni --all classpath/lib --cmdfile=$(srcdir)/headers.txt
 
 inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 	java/io/ObjectInputStream$$GetField.h \
@@ -405,148 +398,32 @@ inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 	gnu/java/nio/PipeImpl$$SourceChannelImpl.h \
 	$(PLATFORM_INNER_NAT_HDRS)
 
-nat_headers = $(ordinary_header_files) $(inner_nat_headers) \
-	gnu/gcj/tools/gcj_dbtool/Main.h
+nat_headers = $(ordinary_header_files) $(inner_nat_headers)
 nat_headers_install = $(ordinary_header_files)
 
 xlib_nat_headers = $(gnu_awt_xlib_header_files) $(gnu_gcj_xlib_header_files)
-
-java/lang/ClassLoader.h: classpath/lib/java/lang/ClassLoader.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-		-prepend 'jclass _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
-		-prepend 'void _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, bool is_jar);' \
-		-friend 'jclass (::_Jv_FindClass) (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
-		-friend 'void ::_Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, bool is_jar);' \
-		java/lang/ClassLoader
-
-java/lang/Thread.h: classpath/lib/java/lang/Thread.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-		-prepend 'class _Jv_JNIEnv;' \
-		-prepend '#define _JV_NOT_OWNER 1' \
-		-prepend '#define _JV_INTERRUPTED 2' \
-		-prepend '_Jv_JNIEnv * _Jv_GetCurrentJNIEnv ();' \
-		-prepend 'void _Jv_SetCurrentJNIEnv (_Jv_JNIEnv *env);' \
-		-prepend 'void _Jv_ThreadRun (java::lang::Thread* thread);' \
-		-prepend 'jint _Jv_AttachCurrentThread(java::lang::Thread* thread);' \
-		-prepend 'java::lang::Thread* _Jv_AttachCurrentThread (jstring name, java::lang::ThreadGroup* group);' \
-		-prepend 'java::lang::Thread* _Jv_AttachCurrentThreadAsDaemon (jstring name, java::lang::ThreadGroup* group);' \
-		-prepend 'jint _Jv_DetachCurrentThread ();' \
-		-friend '_Jv_JNIEnv * ::_Jv_GetCurrentJNIEnv ();' \
-		-friend 'void ::_Jv_SetCurrentJNIEnv (_Jv_JNIEnv *env);' \
-		-friend 'void ::_Jv_ThreadRun (java::lang::Thread* thread);' \
-		-friend 'jint (::_Jv_AttachCurrentThread) (java::lang::Thread* thread);' \
-		-friend 'java::lang::Thread* ::_Jv_AttachCurrentThread (jstring name, java::lang::ThreadGroup* group);' \
-		-friend 'java::lang::Thread* ::_Jv_AttachCurrentThreadAsDaemon (jstring name, java::lang::ThreadGroup* group);' \
-		-friend 'jint (::_Jv_DetachCurrentThread) ();' \
-		java/lang/Thread
-
-java/lang/String.h: classpath/lib/java/lang/String.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	    -prepend 'jchar* _Jv_GetStringChars (jstring str);' \
-	    -prepend 'jstring* _Jv_StringFindSlot (jchar*, jint, jint);' \
-	    -prepend 'jstring* _Jv_StringGetSlot (jstring);' \
-	    -prepend 'jstring _Jv_NewStringUtf8Const (_Jv_Utf8Const* str);' \
-	    -prepend 'jstring _Jv_NewStringLatin1 (const char*, jsize);' \
-	    -prepend 'jstring _Jv_AllocString (jsize);' \
-	    -friend 'jchar* ::_Jv_GetStringChars (jstring str);' \
-	    -friend 'jstring* ::_Jv_StringFindSlot (jchar*, jint, jint);' \
-	    -friend 'jstring* ::_Jv_StringGetSlot (jstring);' \
-	    -friend 'jstring (::_Jv_NewStringUtf8Const) (_Jv_Utf8Const* str);' \
-	    -friend 'jstring (::_Jv_NewStringLatin1) (const char*, jsize);' \
-	    -friend 'jstring (::_Jv_AllocString) (jsize);' \
-	    java/lang/String
-
-java/lang/reflect/Constructor.h: classpath/lib/java/lang/reflect/Constructor.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	    -prepend 'jmethodID _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *);' \
-	    -prepend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
-	    -friend 'jmethodID (::_Jv_FromReflectedConstructor) (java::lang::reflect::Constructor *);' \
-	    -friend 'jobject (::_Jv_JNI_ToReflectedMethod) (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
-	    -friend 'class java::lang::Class;' \
-	    java/lang/reflect/Constructor
-
-java/lang/reflect/Field.h: classpath/lib/java/lang/reflect/Field.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	    -prepend 'jfieldID _Jv_FromReflectedField (java::lang::reflect::Field *);' \
-	    -prepend 'jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv*, jclass, jfieldID, jboolean);' \
-	    -friend 'jfieldID (::_Jv_FromReflectedField) (java::lang::reflect::Field *);' \
-	    -friend 'jobject (::_Jv_JNI_ToReflectedField) (_Jv_JNIEnv*, jclass, jfieldID, jboolean);' \
-	    -friend 'class java::lang::Class;' \
-	    java/lang/reflect/Field
-
-java/lang/reflect/Method.h: classpath/lib/java/lang/reflect/Method.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	    -prepend 'jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);' \
-	    -prepend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
-	    -friend 'jmethodID (::_Jv_FromReflectedMethod) (java::lang::reflect::Method *);' \
-	    -friend 'jobject (::_Jv_JNI_ToReflectedMethod) (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
-	    -friend 'class java::lang::Class;' \
-	    -friend 'class java::io::ObjectInputStream;' \
-	    java/lang/reflect/Method
-
-java/lang/reflect/Proxy.h: classpath/lib/java/lang/reflect/Proxy.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	    java/lang/reflect/Proxy
-
-java/lang/reflect/Proxy$$ProxyData.h: classpath/lib/java/lang/reflect/Proxy.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	'java/lang/reflect/Proxy$$ProxyData'
-
-java/lang/reflect/Proxy$$ProxyType.h: classpath/lib/java/lang/reflect/Proxy.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	'java/lang/reflect/Proxy$$ProxyType'
-
-gnu/gcj/runtime/ExtensionClassLoader.h: classpath/lib/gnu/gcj/runtime/ExtensionClassLoader.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	    -friend 'class ::java::lang::ClassLoader;' \
-	    gnu/gcj/runtime/ExtensionClassLoader
-
-java/io/ObjectInputStream$$GetField.h: classpath/lib/java/io/ObjectInputStream.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	'java/io/ObjectInputStream$$GetField'
-
-java/io/ObjectOutputStream$$PutField.h: classpath/lib/java/io/ObjectOutputStream.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	'java/io/ObjectOutputStream$$PutField'
-
-java/nio/DirectByteBufferImpl$$ReadWrite.h: classpath/lib/java/nio/DirectByteBufferImpl.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	'java/nio/DirectByteBufferImpl$$ReadWrite'
-
-java/nio/channels/Pipe$$SinkChannel.h: classpath/lib/java/nio/channels/Pipe.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	'java/nio/channels/Pipe$$SinkChannel'
-
-java/nio/channels/Pipe$$SourceChannel.h: classpath/lib/java/nio/channels/Pipe.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	'java/nio/channels/Pipe$$SourceChannel'
-
-gnu/java/net/PlainSocketImpl$$SocketInputStream.h: classpath/lib/gnu/java/net/PlainSocketImpl.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	'gnu/java/net/PlainSocketImpl$$SocketInputStream'
-
-gnu/java/net/PlainSocketImpl$$SocketOutputStream.h: classpath/lib/gnu/java/net/PlainSocketImpl.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	'gnu/java/net/PlainSocketImpl$$SocketOutputStream'
-
-gnu/java/nio/PipeImpl$$SinkChannelImpl.h: classpath/lib/gnu/java/nio/PipeImpl.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	'gnu/java/nio/PipeImpl$$SinkChannelImpl'
-
-gnu/java/nio/PipeImpl$$SourceChannelImpl.h: classpath/lib/gnu/java/nio/PipeImpl.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	'gnu/java/nio/PipeImpl$$SourceChannelImpl'
-
-## Only used by PosixProcess.java
-java/lang/ConcreteProcess$$ProcessManager.h: classpath/lib/java/lang/ConcreteProcess.class
-	$(GCJH) -classpath '' -bootclasspath classpath/lib \
-	'java/lang/ConcreteProcess$$ProcessManager'
 
 ## Headers we maintain by hand and which we want to install.
 extra_headers = java/lang/Object.h java/lang/Class.h
 
 $(extra_headers) $(srcdir)/java/lang/Object.h $(srcdir)/java/lang/Class.h:
 	@:
+
+## Support for libgcj_bc: dummy shared library used only at link-time.
+if USE_LIBGCJ_BC
+## Install libgcj_bc dummy lib in the target directory. We also need to delete
+## libtool's .la file, this prevents libtool resetting the lib again 
+## later.
+install-exec-hook: install-toolexeclibLTLIBRARIES
+	@echo Installing dummy lib libgcj_bc.so.1.0.0; \
+	rm $(toolexeclibdir)/libgcj_bc.so; \
+	mv $(toolexeclibdir)/libgcj_bc.so.1.0.0 $(toolexeclibdir)/libgcj_bc.so; \
+	$(libgcj_bc_dummy_LINK) -xc /dev/null -Wl,-soname,libgcj_bc.so.1 \
+	-o $(toolexeclibdir)/libgcj_bc.so.1.0.0 -lgcj || exit; \
+	rm $(toolexeclibdir)/libgcj_bc.so.1; \
+	$(LN_S) libgcj_bc.so.1.0.0 $(toolexeclibdir)/libgcj_bc.so.1; \
+	rm $(toolexeclibdir)/libgcj_bc.la;
+endif
 
 ## Install the headers.  It is fairly ugly that we have to do this by
 ## hand.
@@ -567,7 +444,7 @@ install-data-local:
 ## FIXME: the obvious approach using lib_DATA doesn't work with
 ## automake 1.4.
 	$(mkinstalldirs) $(DESTDIR)$(secdir)
-	@for f in classpath.security libgcj.security; do \
+	@for f in libgcj.security; do \
 	  echo " $(INSTALL_DATA) $(srcdir)/java/security/$$f $(DESTDIR)$(secdir)/$$f"; \
 	  $(INSTALL_DATA) $(srcdir)/java/security/$$f $(DESTDIR)$(secdir)/$$f; \
 	done
@@ -718,7 +595,6 @@ jv_convert_LDADD = -L$(here)/.libs libgcj.la
 jv_convert_DEPENDENCIES = libgcj.la libgcj.spec
 
 gcj_dbtool_SOURCES = \
-gnu/gcj/tools/gcj_dbtool/Main.java \
 gnu/gcj/tools/gcj_dbtool/natMain.cc
 
 ## We need -nodefaultlibs because we want to avoid gcj's `-lgcj'.  We
@@ -734,10 +610,10 @@ gcj_dbtool_LINK = $(GCJLINK)
 ## searched before the build-tree ones, and we'd get errors because of
 ## different libraries with the same SONAME from picky linkers such as
 ## Solaris'.  FIXME: should be _libs on some systems.
-gcj_dbtool_LDADD = -L$(here)/.libs libgcj.la
+gcj_dbtool_LDADD = gnu/gcj/tools/gcj_dbtool.lo -L$(here)/.libs libgcj.la
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
-gcj_dbtool_DEPENDENCIES = libgcj.la libgcj.spec
+gcj_dbtool_DEPENDENCIES = gnu/gcj/tools/gcj_dbtool.lo libgcj.la libgcj.spec
 
 gij_SOURCES = 
 ## We need -nodefaultlibs because we want to avoid gcj's `-lgcj'.  We
@@ -791,19 +667,30 @@ gnu/gcj/io/natSimpleSHSStream.cc \
 gnu/gcj/io/shs.cc \
 gnu/gcj/runtime/natFinalizerThread.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
+gnu/gcj/runtime/natSystemClassLoader.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/util/natDebug.cc \
 gnu/java/lang/natMainThread.cc \
+gnu/java/lang/management/natVMClassLoadingMXBeanImpl.cc \
+gnu/java/lang/management/natVMCompilationMXBeanImpl.cc \
+gnu/java/lang/management/natVMGarbageCollectorMXBeanImpl.cc \
+gnu/java/lang/management/natVMMemoryMXBeanImpl.cc \
+gnu/java/lang/management/natVMMemoryManagerMXBeanImpl.cc \
+gnu/java/lang/management/natVMMemoryPoolMXBeanImpl.cc \
+gnu/java/lang/management/natVMRuntimeMXBeanImpl.cc \
+gnu/java/lang/management/natVMThreadMXBeanImpl.cc \
 gnu/java/net/natPlainDatagramSocketImpl.cc \
 gnu/java/net/natPlainSocketImpl.cc \
 gnu/java/net/protocol/core/natCoreInputStream.cc \
 gnu/java/nio/natPipeImpl.cc \
 gnu/java/nio/natSelectorImpl.cc \
 gnu/java/nio/natNIOServerSocket.cc \
+gnu/java/nio/natVMChannel.cc \
 gnu/java/nio/channels/natFileChannelImpl.cc \
 java/io/natFile.cc \
 java/io/natObjectInputStream.cc \
 java/io/natVMObjectStreamClass.cc \
+java/lang/management/natVMManagementFactory.cc \
 java/lang/natCharacter.cc \
 java/lang/natClass.cc \
 java/lang/natClassLoader.cc \
@@ -826,16 +713,20 @@ java/lang/reflect/natArray.cc \
 java/lang/reflect/natConstructor.cc \
 java/lang/reflect/natField.cc \
 java/lang/reflect/natMethod.cc \
-java/net/natVMNetworkInterface.cc \
 java/net/natInetAddress.cc \
-java/nio/channels/natChannels.cc \
+java/net/natVMNetworkInterface.cc \
+java/net/natVMURLConnection.cc \
+java/nio/channels/natVMChannels.cc \
 java/nio/natDirectByteBufferImpl.cc \
 java/text/natCollator.cc \
 java/util/natResourceBundle.cc \
 java/util/natVMTimeZone.cc \
+java/util/concurrent/atomic/natAtomicLong.cc \
 java/util/logging/natLogger.cc \
 java/util/zip/natDeflater.cc \
-java/util/zip/natInflater.cc
+java/util/zip/natInflater.cc \
+sun/misc/natUnsafe.cc \
+sun/reflect/natReflection.cc
 
 xlib_nat_source_files = \
 gnu/gcj/xlib/natClip.cc \
@@ -872,7 +763,7 @@ src.zip:
 	here=`pwd`; \
 	( \
 	  ( cd $(srcdir)/classpath; \
-	  find java gnu javax org -name '*.java' -print | \
+	  find java gnu javax org sun -name '*.java' -print | \
 	  while read file; do \
 ## Ugly code to avoid "echo -C".  Must separate each entry by a newline
 ## Gross but easy.
@@ -889,9 +780,10 @@ src.zip:
 	    echo $$file; \
 	  done ); \
 	) | \
-## Many of the above circumlocutions are because ZIP will most likely
-## be a relative path to fastjar.
-	$(ZIP) -cfM@ $$here/src.zip
+## Many of the above circumlocutions were because ZIP used to be a
+## relative path to fastjar.  It didn't seem worthwhile to change the
+## code when we moved to an external jar.
+	$(JAR) -cfM@ $$here/src.zip
 ## Override GNU Classpath sources with libgcj replacements.
 	here=`pwd`; \
 	( \
@@ -903,7 +795,7 @@ src.zip:
 	    echo $$file; \
 	  done ); \
 	) | \
-	$(ZIP) -ufM@ $$here/src.zip
+	$(JAR) -ufM@ $$here/src.zip
 
 ## We use a variable for this in case the user wants to override it.
 sourcesdir = $(jardir)
@@ -999,6 +891,10 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 
 MAKEOVERRIDES=
+
+# No install-html support yet.
+.PHONY: install-html
+install-html:
 
 # Multilib support variables.
 MULTISRCTOP =

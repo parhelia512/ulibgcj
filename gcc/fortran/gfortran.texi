@@ -1,7 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfortran.info
-@set copyrights-gfortran 1999-2005
+@set copyrights-gfortran 1999-2006
 
 @include gcc-common.texi
 
@@ -493,10 +493,6 @@ Option to initialize otherwise uninitialized integer and floating
 point variables.
 
 @item
-Support for OpenMP directives.  This also requires support from the runtime
-library and the rest of the compiler.
-
-@item
 Support for Fortran 200x. This includes several new features including
 floating point exceptions, extended use of allocatable arrays, C
 interoperability, Parameterizer data types and function pointers.
@@ -552,7 +548,7 @@ Environment variable forcing standard output to be line buffered (unix).
 @chapter Runtime:  Influencing runtime behavior with environment variables
 @cindex Runtime
 
-The behaviour of the @command{gfortran} can be influenced by
+The behavior of the @command{gfortran} can be influenced by
 environment variables.
 
 Malformed environment variables are silently ignored.
@@ -572,65 +568,70 @@ Malformed environment variables are silently ignored.
 @end menu
 
 @node GFORTRAN_STDIN_UNIT
-@section GFORTRAN_STDIN_UNIT -- Unit number for standard input
+@section @env{GFORTRAN_STDIN_UNIT}---Unit number for standard input
 
 This environment variable can be used to select the unit number
 preconnected to standard input.  This must be a positive integer.
 The default value is 5.
 
 @node GFORTRAN_STDOUT_UNIT
-@section GFORTRAN_STDOUT_UNIT -- Unit number for standard output
+@section @env{GFORTRAN_STDOUT_UNIT}---Unit number for standard output
 
 This environment variable can be used to select the unit number
 preconnected to standard output.  This must be a positive integer.
 The default value is 6.
 
 @node GFORTRAN_STDERR_UNIT
-@section GFORTRAN_STDERR_UNIT -- Unit number for standard error
+@section @env{GFORTRAN_STDERR_UNIT}---Unit number for standard error
 
 This environment variable can be used to select the unit number
 preconnected to standard error.  This must be a positive integer.
 The default value is 0.
 
 @node GFORTRAN_USE_STDERR
-@section GFORTRAN_USE_STDERR:: Send library output to standard error
+@section @env{GFORTRAN_USE_STDERR}---Send library output to standard error
 
 This environment variable controls where library output is sent.
-If the first letter is 'y', 'Y' or '1', standard error is used.
-If the first letter is 'n', 'N' or '0', standard output is used.
+If the first letter is @samp{y}, @samp{Y} or @samp{1}, standard
+error is used. If the first letter is @samp{n}, @samp{N} or
+@samp{0}, standard output is used.
 
 @node GFORTRAN_TMPDIR
-@section GFORTRAN_TMPDIR -- Directory for scratch files
+@section @env{GFORTRAN_TMPDIR}---Directory for scratch files
 
 This environment variable controls where scratch files are
-created.  Default is '/tmp'.
+created.  If this environment variable is missing,
+gfortran searches for the environment variable @env{TMP}.  If
+this is also missing, the default is @file{/tmp}.
 
 @node GFORTRAN_UNBUFFERED_ALL
-@section GFORTRAN_UNBUFFERED_ALL -- Don't buffer output
+@section @env{GFORTRAN_UNBUFFERED_ALL}---Don't buffer output
 
-This environment variable controls wether all output is unbuffered.
-If the first letter is 'y', 'Y' or '1', all output is unbuffered.
-This will slow down large writes.  If the first letter is 'n', 'N' or '0',
-output is bufferred.  This is the default.
+This environment variable controls whether all output is unbuffered.
+If the first letter is @samp{y}, @samp{Y} or @samp{1}, all output is
+unbuffered. This will slow down large writes.  If the first letter is
+@samp{n}, @samp{N}  or @samp{0}, output is buffered.  This is the
+default.
 
 @node GFORTRAN_SHOW_LOCUS
-@section GFORTRAN_SHOW_LOCUS -- Show location for runtime errors
+@section @env{GFORTRAN_SHOW_LOCUS}---Show location for runtime errors
 
-If the first letter is 'y', 'Y' or '1', filename and line numbers
-for runtime errors are printed.  If the first letter is 'n', 'N'
-or '0', don't print filename and line numbers for runtime errors.
-The default is to print the location.
+If the first letter is @samp{y}, @samp{Y} or @samp{1}, filename and
+line numbers for runtime errors are printed.  If the first letter is
+@samp{n}, @samp{N} or @samp{0}, don't print filename and line numbers
+for runtime errors. The default is to print the location.
 
 @node GFORTRAN_OPTIONAL_PLUS
-@section GFORTRAN_OPTIONAL_PLUS -- Print leading + where permitted
+@section @env{GFORTRAN_OPTIONAL_PLUS}---Print leading + where permitted
 
-If the first letter is 'y', 'Y' or '1', a plus sign is printed
-where permitted by the Fortran standard.  If the first lettter
-is 'n', 'N' or '0', a plus sign is not printed in most cases.
-Default is not to print plus signs.
+If the first letter is @samp{y}, @samp{Y} or @samp{1},
+a plus sign is printed
+where permitted by the Fortran standard.  If the first letter
+is @samp{n}, @samp{N} or @samp{0}, a plus sign is not printed
+in most cases. Default is not to print plus signs.
 
 @node GFORTRAN_DEFAULT_RECL
-@section GFORTRAN_DEFAULT_RECL -- Default record lenght for new files
+@section @env{GFORTRAN_DEFAULT_RECL}---Default record length for new files
 
 This environment variable specifies the default record length for
 files which are opened without a @code{RECL} tag in the @code{OPEN}
@@ -638,7 +639,7 @@ statement.  This must be a positive integer.  The default value is
 1073741824.
 
 @node GFORTRAN_LIST_SEPARATOR
-@section GFORTRAN_LIST_SEPARATOR -- Separator for list output
+@section @env{GFORTRAN_LIST_SEPARATOR}---Separator for list output
 
 This environment variable specifies the separator when writing
 list-directed output.  It may contain any number of spaces and
@@ -651,11 +652,11 @@ when @code{a.out} is the gfortran program that you want to run.
 Default is a single space.
 
 @node GFORTRAN_CONVERT_UNIT
-@section GFORTRAN_CONVERT_UNIT -- Set endianness for unformatted I/O
+@section @env{GFORTRAN_CONVERT_UNIT}---Set endianness for unformatted I/O
 
-By setting the @code{GFORTRAN_CONVERT_UNIT variable}, it is possible
+By setting the @env{GFORTRAN_CONVERT_UNIT} variable, it is possible
 to change the representation of data for unformatted files.
-The syntax for the @code{GFORTRAN_CONVERT_UNIT} variable is:
+The syntax for the @env{GFORTRAN_CONVERT_UNIT} variable is:
 @smallexample
 GFORTRAN_CONVERT_UNIT: mode | mode ';' exception ;
 mode: 'native' | 'swap' | 'big_endian' | 'little_endian' ;
@@ -742,6 +743,7 @@ of extensions, and @option{-std=legacy} allows both without warning.
 * Extensions to namelist::
 * X format descriptor::
 * Commas in FORMAT specifications::
+* Missing period in FORMAT specifications::
 * I/O item lists::
 * Hexadecimal constants::
 * Real array indices::
@@ -750,6 +752,7 @@ of extensions, and @option{-std=legacy} allows both without warning.
 * Hollerith constants support::
 * Cray pointers::
 * CONVERT specifier::
+* OpenMP::
 @end menu
 
 @node Old-style kind specifications
@@ -855,6 +858,15 @@ PROGRAM test_print
 END PROGRAM test_print
 @end smallexample
 
+Expanded namelist reads are permitted.  This causes an error if -std=f95
+is used.  In the following example, the first element of the array will be
+given the value 0.00 and succeeding elements will be 1.00 and 2.00.
+@smallexample
+&MYNML
+  X(1,1) = 0.00 , 1.00 , 2.00
+/
+@end smallexample
+
 @node X format descriptor
 @section X format descriptor
 @cindex X format descriptor
@@ -879,6 +891,21 @@ descriptors in FORMAT statements.
 @smallexample
        PRINT 10, 2, 3
 10     FORMAT ('FOO='I1' BAR='I2)
+@end smallexample
+
+
+@node Missing period in FORMAT specifications
+@section Missing period in FORMAT specifications
+@cindex Missing period in FORMAT specifications
+
+To support legacy codes, @command{gfortran} allows missing periods in format
+specifications if and only if -std=legacy is given on the command line.  This
+is considered non-conforming code and is discouraged.
+
+@smallexample
+       REAL :: value
+       READ(*,10) value
+10     FORMAT ('F4')
 @end smallexample
 
 @node I/O item lists
@@ -1080,12 +1107,27 @@ pointers will ``incorrectly'' optimize code with illegal aliasing.)
 
 There are a number of restrictions on the attributes that can be
 applied to Cray pointers and pointees.  Pointees may not have the
-attributes ALLOCATABLE, INTENT, OPTIONAL, DUMMY, TARGET, EXTERNAL,
+attributes ALLOCATABLE, INTENT, OPTIONAL, DUMMY, TARGET,
 INTRINSIC, or POINTER.  Pointers may not have the attributes
 DIMENSION, POINTER, TARGET, ALLOCATABLE, EXTERNAL, or INTRINSIC.
 Pointees may not occur in more than one pointer statement.  A pointee
 cannot be a pointer.  Pointees cannot occur in equivalence, common, or
 data statements.
+
+A Cray pointer may point to a function or a subroutine.  For example,
+the following excerpt is valid:
+@smallexample
+  implicit none
+  external sub
+  pointer (subptr,subpte)
+  external subpte
+  subptr = loc(sub)
+  call subpte()
+  [...]
+  subroutine sub
+  [...]
+  end subroutine sub
+@end smallexample
 
 A pointer may be modified during the course of a program, and this
 will change the location to which the pointee refers.  However, when
@@ -1126,7 +1168,7 @@ The value of the conversion can be queried by using
 
 @code{CONVERT} works between big- and little-endian for
 @code{INTEGER} values of all supported kinds and for @code{REAL}
-on IEEE sytems of kinds 4 and 8.  Conversion between different
+on IEEE systems of kinds 4 and 8.  Conversion between different
 ``extended double'' types on different architectures such as
 m68k and x86_64, which gfortran
 supports as @code{REAL(KIND=10)} will probably not work.
@@ -1140,6 +1182,22 @@ Using anything but the native representation for unformatted data
 carries a significant speed overhead.  If speed in this area matters
 to you, it is best if you use this only for data that needs to be
 portable.
+
+@node OpenMP
+@section OpenMP
+@cindex OpenMP
+
+gfortran attempts to be OpenMP Application Program Interface v2.5
+compatible when invoked with the @code{-fopenmp} option.  gfortran
+then generates parallellized code according to the OpenMP directives
+used in the source.  The OpenMP Fortran runtime library
+routines are provided both in a form of Fortran 90 module named
+@code{omp_lib} and in a form of a Fortran @code{include} file named
+@code{omp_lib.h}.
+
+For details refer to the actual
+@uref{http://www.openmp.org/drupal/mp-documents/spec25.pdf,
+OpenMP Application Program Interface v2.5} specification.
 
 @c ---------------------------------------------------------------------
 @include intrinsic.texi
@@ -1312,6 +1370,18 @@ Support for the declaration of enumeration constants via the
 @code{ENUM} and @code{ENUMERATOR} statements.  Interoperability with
 @command{gcc} is guaranteed also for the case where the
 @command{-fshort-enums} command line option is given.
+
+@item
+@cindex TR 15581
+The following parts of TR 15581:
+@itemize
+@item
+@cindex @code{ALLOCATABLE} dummy arguments
+The @code{ALLOCATABLE} attribute for dummy arguments.
+@item
+@cindex @code{ALLOCATABLE} function results
+@code{ALLOCATABLE} function results
+@end itemize
 
 @end itemize
 

@@ -118,7 +118,7 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
   else
     taken_edge = single_succ_edge (bb);
 
-  bsi_remove (&bsi);
+  bsi_remove (&bsi, true);
   taken_edge->flags = EDGE_FALLTHRU;
 
   /* We removed some paths from the cfg.  */
@@ -213,7 +213,7 @@ cleanup_control_flow (void)
 
 	  /* Remove the GOTO_EXPR as it is not needed.  The CFG has all the
 	     relevant information we need.  */
-	  bsi_remove (&bsi);
+	  bsi_remove (&bsi, true);
 	  retval = true;
 	}
 
@@ -239,6 +239,9 @@ static bool
 tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 {
   block_stmt_iterator bsi;
+  edge_iterator ei;
+  edge e, succ;
+  basic_block dest;
 
   /* BB must have a single outgoing edge.  */
   if (single_succ_p (bb) != 1
@@ -288,6 +291,22 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 
       if (dest->loop_father->header == dest)
 	return false;
+    }
+
+  /* If we have an EH edge leaving this block, make sure that the
+     destination of this block has only one predecessor.  This ensures
+     that we don't get into the situation where we try to remove two
+     forwarders that go to the same basic block but are handlers for
+     different EH regions.  */
+  succ = single_succ_edge (bb);
+  dest = succ->dest;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      if (e->flags & EDGE_EH)
+        {
+	  if (!single_pred_p (dest))
+	    return false;
+	}
     }
 
   return true;
@@ -439,7 +458,7 @@ remove_forwarder_block (basic_block bb, basic_block **worklist)
 	{
 	  label = bsi_stmt (bsi);
 	  gcc_assert (TREE_CODE (label) == LABEL_EXPR);
-	  bsi_remove (&bsi);
+	  bsi_remove (&bsi, false);
 	  bsi_insert_before (&bsi_to, label, BSI_CONTINUE_LINKING);
 	}
     }
@@ -476,7 +495,7 @@ cleanup_forwarder_blocks (void)
 {
   basic_block bb;
   bool changed = false;
-  basic_block *worklist = xmalloc (sizeof (basic_block) * n_basic_blocks);
+  basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks);
   basic_block *current = worklist;
 
   FOR_EACH_BB (bb)
@@ -717,10 +736,10 @@ remove_forwarder_block_with_phi (basic_block bb)
 <L10>:;
 */
 
-static void
+static unsigned int
 merge_phi_nodes (void)
 {
-  basic_block *worklist = xmalloc (sizeof (basic_block) * n_basic_blocks);
+  basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks);
   basic_block *current = worklist;
   basic_block bb;
 
@@ -752,6 +771,40 @@ merge_phi_nodes (void)
 	     nodes at BB.  */
 	  *current++ = bb;
 	}
+      else
+	{
+	  tree phi;
+	  unsigned int dest_idx = single_succ_edge (bb)->dest_idx;
+
+	  /* BB dominates DEST.  There may be many users of the PHI
+	     nodes in BB.  However, there is still a trivial case we
+	     can handle.  If the result of every PHI in BB is used
+	     only by a PHI in DEST, then we can trivially merge the
+	     PHI nodes from BB into DEST.  */
+	  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	    {
+	      tree result = PHI_RESULT (phi);
+	      use_operand_p imm_use;
+	      tree use_stmt;
+
+	      /* If the PHI's result is never used, then we can just
+		 ignore it.  */
+	      if (has_zero_uses (result))
+		continue;
+
+	      /* Get the single use of the result of this PHI node.  */
+  	      if (!single_imm_use (result, &imm_use, &use_stmt)
+		  || TREE_CODE (use_stmt) != PHI_NODE
+		  || bb_for_stmt (use_stmt) != dest
+		  || PHI_ARG_DEF (use_stmt, dest_idx) != result)
+		break;
+	    }
+
+	  /* If the loop above iterated through all the PHI nodes
+	     in BB, then we can merge the PHIs from BB into DEST.  */
+	  if (!phi)
+	    *current++ = bb;
+	}
     }
 
   /* Now let's drain WORKLIST.  */
@@ -762,6 +815,7 @@ merge_phi_nodes (void)
     }
 
   free (worklist);
+  return 0;
 }
 
 static bool

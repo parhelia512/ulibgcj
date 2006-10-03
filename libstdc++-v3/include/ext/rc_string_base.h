@@ -38,8 +38,8 @@
 
 #include <bits/atomicity.h>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   /**
    *  @if maint
    *  Documentation?  What's that?
@@ -134,7 +134,7 @@ namespace __gnu_cxx
 	_CharT*
 	_M_refcopy() throw()
 	{
-	  __atomic_add(&_M_info._M_refcount, 1);
+	  __atomic_add_dispatch(&_M_info._M_refcount, 1);
 	  return _M_refdata();
 	}  // XXX MT
 	
@@ -202,7 +202,8 @@ namespace __gnu_cxx
       void
       _M_dispose()
       {
-	if (__exchange_and_add(&_M_rep()->_M_info._M_refcount, -1) <= 0)
+	if (__exchange_and_add_dispatch(&_M_rep()->_M_info._M_refcount,
+					-1) <= 0)
 	  _M_rep()->_M_destroy(_M_get_allocator());
       }  // XXX MT
 
@@ -583,8 +584,9 @@ namespace __gnu_cxx
       _CharT* __tmp = _M_data();
       _M_data(__rcs._M_data());
       __rcs._M_data(__tmp);
-      
-      // NB: Implement Option 3 of DR 431 (see N1599).
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 431. Swapping containers with unequal allocators.
       std::__alloc_swap<allocator_type>::_S_do_it(_M_get_allocator(),
 						  __rcs._M_get_allocator());
     } 
@@ -697,6 +699,7 @@ namespace __gnu_cxx
 	return true;
       return false;
     }
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _RC_STRING_BASE_H */

@@ -365,7 +365,7 @@ public class BitSet implements Cloneable, Serializable
       throw new IndexOutOfBoundsException();
     BitSet bs = new BitSet(to - from);
     int lo_offset = from >>> 6;
-    if (lo_offset >= bits.length)
+    if (lo_offset >= bits.length || to == from)
       return bs;
 
     int lo_bit = from & LONG_MASK;
@@ -740,5 +740,16 @@ public class BitSet implements Cloneable, Serializable
         System.arraycopy(bits, 0, nd, 0, bits.length);
         bits = nd;
       }
+  }
+
+  // This is used by EnumSet for efficiency.
+  final boolean containsAll(BitSet other)
+  {
+    for (int i = other.bits.length - 1; i >= 0; i--)
+      {
+	if ((bits[i] & other.bits[i]) != other.bits[i])
+	  return false;
+      }
+    return true;
   }
 }

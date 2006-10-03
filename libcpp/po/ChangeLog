@@ -1,11 +1,3 @@
-2006-05-24  Release Manager
-
-	* GCC 4.1.1 released.
-
-2006-05-24  Mark Mitchell  <mark@codesourcery.com>
-
-	* cpplib.pot: Regenerated.
-
 2006-04-21  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* de.po: Update.
@@ -19,14 +11,6 @@
 	* be.po, ca.po, da.po, de.po, el.po, es.po, fr.po, ja.po, nl.po,
 	rw.po, sv.po, tr.po, vi.po, zh_CN.po: Update.
 	* zh_TW.po: New file.
-
-2006-02-28  Release Manager
-
-	* GCC 4.1.0 released.
-
-2006-02-28  Mark Mitchell  <mark@codesourcery.com>
-
-	* cpplib.pot: Regenerate.
 
 2005-12-06  Joseph S. Myers  <joseph@codesourcery.com>
 

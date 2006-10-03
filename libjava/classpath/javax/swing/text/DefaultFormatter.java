@@ -219,7 +219,6 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
     commitsOnValidEdit = true;
     overwriteMode = true;
     allowsInvalid = true;
-    valueClass = Object.class;
   }
 
   /**
@@ -331,7 +330,7 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
    *
    * @return the class that is used for values
    */
-  public Class getValueClass()
+  public Class<?> getValueClass()
   {
     return valueClass;
   }
@@ -343,7 +342,7 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
    *
    * @see #getValueClass()
    */
-  public void setValueClass(Class valueClass)
+  public void setValueClass(Class<?> valueClass)
   {
     this.valueClass = valueClass;
   }
@@ -368,7 +367,11 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
     Object value = string;
     Class valueClass = getValueClass();
     if (valueClass == null)
-      valueClass = getFormattedTextField().getValue().getClass();
+      {
+        JFormattedTextField jft = getFormattedTextField();
+        if (jft != null)
+          valueClass = jft.getValue().getClass();
+      }
     if (valueClass != null)
       try
         {
@@ -400,6 +403,8 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
   public String valueToString(Object value)
     throws ParseException
   {
+    if (value == null)
+      return "";
     return value.toString();
   }
 

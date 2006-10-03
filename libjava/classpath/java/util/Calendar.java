@@ -103,7 +103,8 @@ day_of_week + week_of_year</pre>
  * @see TimeZone
  * @see java.text.DateFormat
  */
-public abstract class Calendar implements Serializable, Cloneable
+public abstract class Calendar
+  implements Serializable, Cloneable, Comparable<Calendar>
 {
   /**
    * Constant representing the era time field.
@@ -877,6 +878,7 @@ public abstract class Calendar implements Serializable, Cloneable
                          1, 1970, JANUARY, 1, 1, 1, 1, THURSDAY, 1, AM, 0, 0, 0,
                          0, 0, zone.getRawOffset(), 0
                        };
+    complete();
     isTimeSet = false;
     areFieldsSet = false;
     isSet[field] = false;
@@ -1037,6 +1039,8 @@ public abstract class Calendar implements Serializable, Cloneable
   public void setTimeZone(TimeZone zone)
   {
     this.zone = zone;
+    computeTime();
+    computeFields();
   }
 
   /**
@@ -1190,6 +1194,31 @@ public abstract class Calendar implements Serializable, Cloneable
 	  break;
       }
     return max;
+  }
+
+  /**
+   * Compares the time of two calendar instances.
+   * @param calendar the calendar to which the time should be compared.
+   * @return 0 if the two calendars are set to the same time, 
+   * less than 0 if the time of this calendar is before that of 
+   * <code>cal</code>, or more than 0 if the time of this calendar is after
+   * that of <code>cal</code>.
+   *
+   * @param cal the calendar to compare this instance with.
+   * @throws NullPointerException if <code>cal</code> is null.
+   * @throws IllegalArgumentException if either calendar has fields set to 
+   * invalid values.
+   * @since 1.5
+   */
+  public int compareTo(Calendar cal)
+  {
+    long t1 = getTimeInMillis();
+    long t2 = cal.getTimeInMillis();
+    if(t1 == t2)
+      return 0;
+    if(t1 > t2)
+      return 1;
+    return -1;
   }
 
   /**

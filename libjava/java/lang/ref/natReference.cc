@@ -1,6 +1,6 @@
 // natReference.cc - Native code for References
 
-/* Copyright (C) 2001, 2002, 2003, 2005  Free Software Foundation
+/* Copyright (C) 2001, 2002, 2003, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -363,8 +363,15 @@ void
       // finalizer for ourselves as well.
       _Jv_RegisterFinalizer (this, finalize_reference);
       _Jv_RegisterFinalizer (referent, finalize_referred_to_object);
-      jobject *objp = reinterpret_cast<jobject *> (&referent);
-      _Jv_GCRegisterDisappearingLink (objp);
+      gnu::gcj::RawData **p = &referent;
+     _Jv_GCRegisterDisappearingLink ((jobject *) p);
       add_to_hash (this);
     }
+}
+
+::java::lang::Object *
+::java::lang::ref::Reference::get()
+{
+  JvSynchronize sync (lock);
+  return referent;
 }

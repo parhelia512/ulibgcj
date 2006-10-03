@@ -19,6 +19,7 @@ extern "C"
 {
   void *_Jv_MarkObj (void *, void *, void *, void *);
   void *_Jv_MarkArray (void *, void *, void *, void *);
+  void _Jv_RegisterLibForGc (const void *);
 }
 
 // Enough stuff to inline _Jv_AllocObj.  Ugly.
@@ -78,6 +79,10 @@ void *
 _Jv_AllocPtrFreeObj (jsize size, jclass klass);
 
 #endif /* LIBGCJ_GC_DEBUG */
+
+void _Jv_GCAttachThread ();
+
+void _Jv_GCDetachThread ();
 
 // _Jv_AllocBytes (jsize size) should go here, too.  But clients don't
 // usually include this header.

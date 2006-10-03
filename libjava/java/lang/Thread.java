@@ -1,5 +1,5 @@
 /* Thread -- an independent thread of executable code
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation
 
 This file is part of GNU Classpath.
@@ -41,6 +41,14 @@ package java.lang;
 
 import gnu.gcj.RawData;
 import gnu.gcj.RawDataManaged;
+import gnu.java.util.WeakIdentityHashMap;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
@@ -119,17 +127,60 @@ public class Thread implements Runnable
   private int priority;
 
   boolean interrupt_flag;
-  private boolean alive_flag;
+
+  /** A thread is either alive, dead, or being sent a signal; if it is
+      being sent a signal, it is also alive.  Thus, if you want to
+      know if a thread is alive, it is sufficient to test 
+      alive_status != THREAD_DEAD. */
+  private static final byte THREAD_DEAD = 0;
+  private static final byte THREAD_ALIVE = 1;
+  private static final byte THREAD_SIGNALED = 2;
+  private volatile byte alive_flag;
+
   private boolean startable_flag;
 
   /** The context classloader for this Thread. */
   private ClassLoader contextClassLoader;
 
+  /** This thread's ID.  */
+  private final long threadId;
+  
+  /** Used to generate the next thread ID to use.  */
+  private static long totalThreadsCreated;
+
+  /** The default exception handler.  */
+  private static UncaughtExceptionHandler defaultHandler;
+
+  /** Thread local storage. Package accessible for use by
+    * InheritableThreadLocal.
+    */
+  WeakIdentityHashMap locals;
+
+  /** The uncaught exception handler.  */
+  UncaughtExceptionHandler exceptionHandler;
+
+  /** This object is recorded while the thread is blocked to permit
+   * monitoring and diagnostic tools to identify the reasons that
+   * threads are blocked.
+   */
+  private Object parkBlocker;
+
+  /** Used by Unsafe.park and Unsafe.unpark.  Se Unsafe for a full
+      description.  */
+  static final byte THREAD_PARK_RUNNING = 0;
+  static final byte THREAD_PARK_PERMIT = 1;
+  static final byte THREAD_PARK_PARKED = 2;
+  static final byte THREAD_PARK_DEAD = 3;
+  byte  parkPermit;
+
   // This describes the top-most interpreter frame for this thread.
   RawData interp_frame;
 
+  // Current state.
+  volatile int state;
+
   // Our native data - points to an instance of struct natThread.
-  private RawDataManaged data;
+  RawDataManaged data;
 
   /**
    * Allocates a new <code>Thread</code> object. This constructor has
@@ -344,7 +395,7 @@ public class Thread implements Runnable
       
     data = null;
     interrupt_flag = false;
-    alive_flag = false;
+    alive_flag = THREAD_DEAD;
     startable_flag = true;
 
     if (current != null)
@@ -362,6 +413,11 @@ public class Thread implements Runnable
       {
 	daemon = false;
 	priority = NORM_PRIORITY;
+      }
+
+    synchronized (Thread.class)
+      {
+        this.threadId = ++totalThreadsCreated;
       }
 
     name = n;
@@ -552,7 +608,7 @@ public class Thread implements Runnable
    */
   public final synchronized boolean isAlive()
   {
-    return alive_flag;
+    return alive_flag != THREAD_DEAD;
   }
 
   /**
@@ -914,4 +970,306 @@ public class Thread implements Runnable
   private final native void initialize_native();
 
   private final native static String gen_name();
+
+  /**
+   * Returns the map used by ThreadLocal to store the thread local values.
+   */
+  static Map getThreadLocals()
+  {
+    Thread thread = currentThread();
+    Map locals = thread.locals;
+    if (locals == null)
+      {
+        locals = thread.locals = new WeakIdentityHashMap();
+      }
+    return locals;
+  }
+
+  /** 
+   * Assigns the given <code>UncaughtExceptionHandler</code> to this
+   * thread.  This will then be called if the thread terminates due
+   * to an uncaught exception, pre-empting that of the
+   * <code>ThreadGroup</code>.
+   *
+   * @param h the handler to use for this thread.
+   * @throws SecurityException if the current thread can't modify this thread.
+   * @since 1.5 
+   */
+  public void setUncaughtExceptionHandler(UncaughtExceptionHandler h)
+  {
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
+    if (sm != null)
+      sm.checkAccess(this);    
+    exceptionHandler = h;
+  }
+
+  /** 
+   * <p>
+   * Returns the handler used when this thread terminates due to an
+   * uncaught exception.  The handler used is determined by the following:
+   * </p>
+   * <ul>
+   * <li>If this thread has its own handler, this is returned.</li>
+   * <li>If not, then the handler of the thread's <code>ThreadGroup</code>
+   * object is returned.</li>
+   * <li>If both are unavailable, then <code>null</code> is returned
+   *     (which can only happen when the thread was terminated since
+   *      then it won't have an associated thread group anymore).</li>
+   * </ul>
+   * 
+   * @return the appropriate <code>UncaughtExceptionHandler</code> or
+   *         <code>null</code> if one can't be obtained.
+   * @since 1.5 
+   */
+  public UncaughtExceptionHandler getUncaughtExceptionHandler()
+  {
+    // FIXME: if thread is dead, should return null...
+    return exceptionHandler != null ? exceptionHandler : group;
+  }
+
+  /** 
+   * <p>
+   * Sets the default uncaught exception handler used when one isn't
+   * provided by the thread or its associated <code>ThreadGroup</code>.
+   * This exception handler is used when the thread itself does not
+   * have an exception handler, and the thread's <code>ThreadGroup</code>
+   * does not override this default mechanism with its own.  As the group
+   * calls this handler by default, this exception handler should not defer
+   * to that of the group, as it may lead to infinite recursion.
+   * </p>
+   * <p>
+   * Uncaught exception handlers are used when a thread terminates due to
+   * an uncaught exception.  Replacing this handler allows default code to
+   * be put in place for all threads in order to handle this eventuality.
+   * </p>
+   *
+   * @param h the new default uncaught exception handler to use.
+   * @throws SecurityException if a security manager is present and
+   *                           disallows the runtime permission
+   *                           "setDefaultUncaughtExceptionHandler".
+   * @since 1.5 
+   */
+  public static void 
+    setDefaultUncaughtExceptionHandler(UncaughtExceptionHandler h)
+  {
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
+    if (sm != null)
+      sm.checkPermission(new RuntimePermission("setDefaultUncaughtExceptionHandler"));    
+    defaultHandler = h;
+  }
+
+  /** 
+   * Returns the handler used by default when a thread terminates
+   * unexpectedly due to an exception, or <code>null</code> if one doesn't
+   * exist.
+   *
+   * @return the default uncaught exception handler.
+   * @since 1.5 
+   */
+  public static UncaughtExceptionHandler getDefaultUncaughtExceptionHandler()
+  {
+    return defaultHandler;
+  }
+  
+  /** 
+   * Returns the unique identifier for this thread.  This ID is generated
+   * on thread creation, and may be re-used on its death.
+   *
+   * @return a positive long number representing the thread's ID.
+   * @since 1.5 
+   */
+  public long getId()
+  {
+    return threadId;
+  }
+
+  /**
+   * <p>
+   * This interface is used to handle uncaught exceptions
+   * which cause a <code>Thread</code> to terminate.  When
+   * a thread, t, is about to terminate due to an uncaught
+   * exception, the virtual machine looks for a class which
+   * implements this interface, in order to supply it with
+   * the dying thread and its uncaught exception.
+   * </p>
+   * <p>
+   * The virtual machine makes two attempts to find an
+   * appropriate handler for the uncaught exception, in
+   * the following order:
+   * </p>
+   * <ol>
+   * <li>
+   * <code>t.getUncaughtExceptionHandler()</code> --
+   * the dying thread is queried first for a handler
+   * specific to that thread.
+   * </li>
+   * <li>
+   * <code>t.getThreadGroup()</code> --
+   * the thread group of the dying thread is used to
+   * handle the exception.  If the thread group has
+   * no special requirements for handling the exception,
+   * it may simply forward it on to
+   * <code>Thread.getDefaultUncaughtExceptionHandler()</code>,
+   * the default handler, which is used as a last resort.
+   * </li>
+   * </ol>
+   * <p>
+   * The first handler found is the one used to handle
+   * the uncaught exception.
+   * </p>
+   *
+   * @author Tom Tromey <tromey@redhat.com>
+   * @author Andrew John Hughes <gnu_andrew@member.fsf.org>
+   * @since 1.5
+   * @see Thread#getUncaughtExceptionHandler()
+   * @see Thread#setUncaughtExceptionHander(java.lang.Thread.UncaughtExceptionHandler)
+   * @see Thread#getDefaultUncaughtExceptionHandler()
+   * @see
+   * Thread#setDefaultUncaughtExceptionHandler(java.lang.Thread.UncaughtExceptionHandler)
+   */
+  public interface UncaughtExceptionHandler
+  {
+    /**
+     * Invoked by the virtual machine with the dying thread
+     * and the uncaught exception.  Any exceptions thrown
+     * by this method are simply ignored by the virtual
+     * machine.
+     *
+     * @param thr the dying thread.
+     * @param exc the uncaught exception.
+     */
+    void uncaughtException(Thread thr, Throwable exc);
+  }
+
+  /** 
+   * <p>
+   * Represents the current state of a thread, according to the VM rather
+   * than the operating system.  It can be one of the following:
+   * </p>
+   * <ul>
+   * <li>NEW -- The thread has just been created but is not yet running.</li>
+   * <li>RUNNABLE -- The thread is currently running or can be scheduled
+   * to run.</li>
+   * <li>BLOCKED -- The thread is blocked waiting on an I/O operation
+   * or to obtain a lock.</li>
+   * <li>WAITING -- The thread is waiting indefinitely for another thread
+   * to do something.</li>
+   * <li>TIMED_WAITING -- The thread is waiting for a specific amount of time
+   * for another thread to do something.</li>
+   * <li>TERMINATED -- The thread has exited.</li>
+   * </ul>
+   *
+   * @since 1.5 
+   */
+  public enum State
+  {
+    BLOCKED, NEW, RUNNABLE, TERMINATED, TIMED_WAITING, WAITING;
+  }
+
+
+  /**
+   * Returns the current state of the thread.  This
+   * is designed for monitoring thread behaviour, rather
+   * than for synchronization control.
+   *
+   * @return the current thread state.
+   */
+  public native State getState();
+
+  /**
+   * <p>
+   * Returns a map of threads to stack traces for each
+   * live thread.  The keys of the map are {@link Thread}
+   * objects, which map to arrays of {@link StackTraceElement}s.
+   * The results obtained from Calling this method are
+   * equivalent to calling {@link getStackTrace()} on each
+   * thread in succession.  Threads may be executing while
+   * this takes place, and the results represent a snapshot
+   * of the thread at the time its {@link getStackTrace()}
+   * method is called.
+   * </p>
+   * <p>
+   * The stack trace information contains the methods called
+   * by the thread, with the most recent method forming the
+   * first element in the array.  The array will be empty
+   * if the virtual machine can not obtain information on the
+   * thread. 
+   * </p>
+   * <p>
+   * To execute this method, the current security manager
+   * (if one exists) must allow both the
+   * <code>"getStackTrace"</code> and
+   * <code>"modifyThreadGroup"</code> {@link RuntimePermission}s.
+   * </p>
+   * 
+   * @return a map of threads to arrays of {@link StackTraceElement}s.
+   * @throws SecurityException if a security manager exists, and
+   *                           prevents either or both the runtime
+   *                           permissions specified above.
+   * @since 1.5
+   * @see #getStackTrace()
+   */
+  public static Map<Thread, StackTraceElement[]> getAllStackTraces()
+  {
+    ThreadGroup group = currentThread().group;
+    while (group.getParent() != null)
+      group = group.getParent();
+    int arraySize = group.activeCount();
+    Thread[] threadList = new Thread[arraySize];
+    int filled = group.enumerate(threadList);
+    while (filled == arraySize)
+      {
+	arraySize *= 2;
+	threadList = new Thread[arraySize];
+	filled = group.enumerate(threadList);
+      }
+    Map traces = new HashMap();
+    for (int a = 0; a < filled; ++a)
+      traces.put(threadList[a],
+		 threadList[a].getStackTrace());
+    return traces;
+  }
+
+  /**
+   * <p>
+   * Returns an array of {@link StackTraceElement}s
+   * representing the current stack trace of this thread.
+   * The first element of the array is the most recent
+   * method called, and represents the top of the stack.
+   * The elements continue in this order, with the last
+   * element representing the bottom of the stack.
+   * </p>
+   * <p>
+   * A zero element array is returned for threads which
+   * have not yet started (and thus have not yet executed
+   * any methods) or for those which have terminated.
+   * Where the virtual machine can not obtain a trace for
+   * the thread, an empty array is also returned.  The
+   * virtual machine may also omit some methods from the
+   * trace in non-zero arrays.
+   * </p>
+   * <p>
+   * To execute this method, the current security manager
+   * (if one exists) must allow both the
+   * <code>"getStackTrace"</code> and
+   * <code>"modifyThreadGroup"</code> {@link RuntimePermission}s.
+   * </p>
+   *
+   * @return a stack trace for this thread.
+   * @throws SecurityException if a security manager exists, and
+   *                           prevents the use of the
+   *                           <code>"getStackTrace"</code>
+   *                           permission.
+   * @since 1.5
+   * @see #getAllStackTraces()
+   */
+  public StackTraceElement[] getStackTrace()
+  {
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
+    if (sm != null)
+      sm.checkPermission(new RuntimePermission("getStackTrace"));
+    ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+    ThreadInfo info = bean.getThreadInfo(getId(), Integer.MAX_VALUE);
+    return info.getStackTrace();
+  }
 }

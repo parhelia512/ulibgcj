@@ -1,5 +1,6 @@
 /* PrintStream.java -- OutputStream for printing output
-   Copyright (C) 1998, 1999, 2001, 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +39,11 @@ exception statement from your version. */
 
 package java.io;
 
+import java.util.Locale;
+import java.util.Formatter;
+
+import gnu.classpath.SystemProperties;
+
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * Status:  Believed complete and correct to 1.3
@@ -55,8 +61,9 @@ package java.io;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Tom Tromey (tromey@cygnus.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  */
-public class PrintStream extends FilterOutputStream
+public class PrintStream extends FilterOutputStream implements Appendable
 {
   /* Notice the implementation is quite similar to OutputStreamWriter.
    * This leads to some minor duplication, because neither inherits
@@ -64,7 +71,7 @@ public class PrintStream extends FilterOutputStream
 
   // Line separator string.
   private static final char[] line_separator
-    = System.getProperty("line.separator").toCharArray();
+    = SystemProperties.getProperty("line.separator").toCharArray();
 
   /**
    *  Encoding name
@@ -84,8 +91,76 @@ public class PrintStream extends FilterOutputStream
   private boolean auto_flush;
 
   /**
-   * This method intializes a new <code>PrintStream</code> object to write
-   * to the specified output sink.
+   * This method initializes a new <code>PrintStream</code> object to write
+   * to the specified output File. Doesn't autoflush.
+   *
+   * @param file The <code>File</code> to write to.
+   * @throws FileNotFoundException if an error occurs while opening the file.
+   *
+   * @since 1.5
+   */
+  public PrintStream (File file)
+    throws FileNotFoundException
+  {
+    this (new FileOutputStream(file), false);
+  }
+
+  /**
+   * This method initializes a new <code>PrintStream</code> object to write
+   * to the specified output File. Doesn't autoflush.
+   *
+   * @param file The <code>File</code> to write to.
+   * @param encoding The name of the character encoding to use for this
+   * object.
+   * @throws FileNotFoundException If an error occurs while opening the file.
+   * @throws UnsupportedEncodingException If the charset specified by
+   * <code>encoding</code> is invalid.
+   *
+   * @since 1.5
+   */
+  public PrintStream (File file, String encoding)
+    throws FileNotFoundException,UnsupportedEncodingException
+  {
+    this (new FileOutputStream(file), false, encoding);
+  }
+
+  /**
+   * This method initializes a new <code>PrintStream</code> object to write
+   * to the specified output File. Doesn't autoflush.
+   *
+   * @param fileName The name of the <code>File</code> to write to.
+   * @throws FileNotFoundException if an error occurs while opening the file,
+   *
+   * @since 1.5
+   */
+  public PrintStream (String fileName)
+    throws FileNotFoundException
+  {
+    this (new FileOutputStream(new File(fileName)), false);
+  }
+
+  /**
+   * This method initializes a new <code>PrintStream</code> object to write
+   * to the specified output File. Doesn't autoflush.
+   *
+   * @param fileName The name of the <code>File</code> to write to.
+   * @param encoding The name of the character encoding to use for this
+   * object.
+   * @throws FileNotFoundException if an error occurs while opening the file.
+   * @throws UnsupportedEncodingException If the charset specified by
+   * <code>encoding</code> is invalid.
+   *
+   * @since 1.5
+   */
+  public PrintStream (String fileName, String encoding)
+      throws FileNotFoundException,UnsupportedEncodingException
+  {
+    this (new FileOutputStream(new File(fileName)), false, encoding);
+  }
+
+  /**
+   * This method initializes a new <code>PrintStream</code> object to write
+   * to the specified output sink. Doesn't autoflush.
    *
    * @param out The <code>OutputStream</code> to write to.
    */
@@ -95,7 +170,7 @@ public class PrintStream extends FilterOutputStream
   }
 
   /**
-   * This method intializes a new <code>PrintStream</code> object to write
+   * This method initializes a new <code>PrintStream</code> object to write
    * to the specified output sink.  This constructor also allows "auto-flush"
    * functionality to be specified where the stream will be flushed after
    * every <code>print</code> or <code>println</code> call, when the 
@@ -112,7 +187,7 @@ public class PrintStream extends FilterOutputStream
     super (out);
 
     try {
-	this.encoding = System.getProperty("file.encoding");
+	this.encoding = SystemProperties.getProperty("file.encoding");
     } catch (SecurityException e){
 	this.encoding = "ISO8859_1";
     } catch (IllegalArgumentException e){
@@ -124,7 +199,7 @@ public class PrintStream extends FilterOutputStream
   }
 
   /**
-   * This method intializes a new <code>PrintStream</code> object to write
+   * This method initializes a new <code>PrintStream</code> object to write
    * to the specified output sink.  This constructor also allows "auto-flush"
    * functionality to be specified where the stream will be flushed after
    * every <code>print</code> or <code>println</code> call, when the 
@@ -549,5 +624,51 @@ public class PrintStream extends FilterOutputStream
         setError ();
       }
   }
-} // class PrintStream
 
+  /** @since 1.5 */
+  public PrintStream append(char c)
+  {
+    print(c);
+    return this;
+  }
+
+  /** @since 1.5 */
+  public PrintStream append(CharSequence cs)
+  {
+    print(cs == null ? "null" : cs.toString());
+    return this;
+  }
+
+  /** @since 1.5 */
+  public PrintStream append(CharSequence cs, int start, int end)
+  {
+    print(cs == null ? "null" : cs.subSequence(start, end).toString());
+    return this;
+  }
+
+  /** @since 1.5 */
+  public PrintStream printf(String format, Object... args)
+  {
+    return format(format, args);
+  }
+
+  /** @since 1.5 */
+  public PrintStream printf(Locale locale, String format, Object... args)
+  {
+    return format(locale, format, args);
+  }
+
+  /** @since 1.5 */
+  public PrintStream format(String format, Object... args)
+  {
+    return format(Locale.getDefault(), format, args);
+  }
+
+  /** @since 1.5 */
+  public PrintStream format(Locale locale, String format, Object... args)
+  {
+    Formatter f = new Formatter(this, locale);
+    f.format(format, args);
+    return this;
+  }
+} // class PrintStream

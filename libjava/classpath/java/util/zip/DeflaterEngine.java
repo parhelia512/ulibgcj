@@ -1,5 +1,5 @@
 /* DeflaterEngine.java --
-   Copyright (C) 2001, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -92,7 +92,7 @@ class DeflaterEngine implements DeflaterConstants
   private byte[] inputBuf;
 
   /** The total bytes of input read. */
-  private int totalIn;
+  private long totalIn;
 
   /** The offset into inputBuf, where input data starts. */
   private int inputOff;
@@ -163,7 +163,7 @@ class DeflaterEngine implements DeflaterConstants
     return chksum;
   }
 
-  public final int getTotalIn()
+  public final long getTotalIn()
   {
     return totalIn;
   }
@@ -497,7 +497,7 @@ class DeflaterEngine implements DeflaterConstants
 		      throw new InternalError();
 		  }
 	      }
-	    huffman.tallyDist(strstart - matchStart, matchLen);
+	    boolean full = huffman.tallyDist(strstart - matchStart, matchLen);
 	    
 	    lookahead -= matchLen;
 	    if (matchLen <= max_lazy && lookahead >= MIN_MATCH)
@@ -516,7 +516,8 @@ class DeflaterEngine implements DeflaterConstants
 		  updateHash();
 	      }
 	    matchLen = MIN_MATCH - 1;
-	    continue;
+	    if (!full)
+	      continue;
 	  }
 	else
 	  {

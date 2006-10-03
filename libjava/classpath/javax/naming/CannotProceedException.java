@@ -1,5 +1,5 @@
 /* CannotProceedException.java --
-   Copyright (C) 2001, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,9 +47,11 @@ import java.util.Hashtable;
 
 public class CannotProceedException extends NamingException
 {
+  private static final long serialVersionUID = 1219724816191576813L;
+
   // Serialized fields.
   protected Name remainingNewName;
-  protected Hashtable environment;
+  protected Hashtable<?, ?> environment;
   protected Name altName;
   protected Context altNameCtx;
 
@@ -63,12 +65,12 @@ public class CannotProceedException extends NamingException
     super (msg);
   }
 
-  public Hashtable getEnvironment()
+  public Hashtable<?, ?> getEnvironment()
   {
     return environment;
   }
 
-  public void setEnvironment(Hashtable environment)
+  public void setEnvironment(Hashtable<?, ?> environment)
   {
     this.environment = environment;
   }

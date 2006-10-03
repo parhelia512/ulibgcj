@@ -14,9 +14,12 @@ module mymod
      module procedure foo_1_OK
      module procedure foo_2_OK
      function foo_chr (chr) ! { dg-error "cannot be assumed character length" }
-      character(*) :: foo_chr
-      character(*), intent(in) :: chr
+       character(*) :: foo_chr
+       character(*), intent(in) :: chr
      end function foo_chr
+     subroutine bad_foo (chr) ! { dg-error "must be a FUNCTION" }
+       character(*), intent(in) :: chr
+     end subroutine bad_foo
   end interface
 contains
   function foo_0 ()

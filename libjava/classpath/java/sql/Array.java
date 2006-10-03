@@ -1,5 +1,5 @@
 /* Array.java -- Interface for accessing SQL array object
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,7 +50,7 @@ public interface Array
    * Returns the name of the SQL type of the elements in this
    * array.  This name is database specific.
    *
-   * @param The name of the SQL type of the elements in this array.
+   * @return The name of the SQL type of the elements in this array.
    * @exception SQLException If an error occurs.
    */
   String getBaseTypeName() throws SQLException;
@@ -84,25 +84,25 @@ public interface Array
    * @return The contents of the array as an array of Java objects.
    * @exception SQLException If an error occurs.
    */
-  Object getArray(Map map) throws SQLException;
+  Object getArray(Map<String, Class<?>> map) throws SQLException;
 
   /**
-   * Returns a portion of this array starting at <code>index</code>
+   * Returns a portion of this array starting at <code>start</code>
    * into the array and continuing for <code>count</code>
    * elements.  Fewer than the requested number of elements will be
    * returned if the array does not contain the requested number of elements.
    * The object returned will be an array of Java objects of
    * the appropriate types.
    *
-   * @param offset The offset into this array to start returning elements from.
+   * @param start The offset into this array to start returning elements from.
    * @param count The requested number of elements to return.
    * @return The requested portion of the array.
    * @exception SQLException If an error occurs.
    */
-  Object getArray(long index, int count) throws SQLException;
+  Object getArray(long start, int count) throws SQLException;
 
   /**
-   * This method returns a portion of this array starting at <code>index</code>
+   * This method returns a portion of this array starting at <code>start</code>
    * into the array and continuing for <code>count</code>
    * elements.  Fewer than the requested number of elements will be
    * returned if the array does not contain the requested number of elements.
@@ -110,13 +110,14 @@ public interface Array
    * <code>Map</code> will be used for overriding selected SQL type to
    * Java class mappings.
    *
-   * @param offset The offset into this array to start returning elements from.
+   * @param start The offset into this array to start returning elements from.
    * @param count The requested number of elements to return.
    * @param map A mapping of SQL types to Java classes.
    * @return The requested portion of the array.
    * @exception SQLException If an error occurs.
    */
-  Object getArray(long index, int count, Map map) throws SQLException;
+  Object getArray(long start, int count, Map<String, Class<?>> map)
+    throws SQLException;
 
   /**
    * Returns the elements in the array as a <code>ResultSet</code>.
@@ -143,28 +144,28 @@ public interface Array
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  ResultSet getResultSet(Map map) throws SQLException;
+  ResultSet getResultSet(Map<String, Class<?>> map) throws SQLException;
 
   /**
    * This method returns a portion of the array as a <code>ResultSet</code>.
-   * The returned portion will start at <code>index</code> into the
+   * The returned portion will start at <code>start</code> into the
    * array and up to <code>count</code> elements will be returned.
    * <p>
    * Each row of the result set will have two columns.  The first will be
    * the index into the array of that row's contents.  The second will be
    * the actual value of that array element.
    *
-   * @param offset The index into the array to start returning elements from.
-   * @param length The requested number of elements to return.
+   * @param start The index into the array to start returning elements from.
+   * @param count The requested number of elements to return.
    * @return The requested elements of this array as a <code>ResultSet</code>.
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  ResultSet getResultSet(long index, int count) throws SQLException;
+  ResultSet getResultSet(long start, int count) throws SQLException;
   
   /**
    * This method returns a portion of the array as a <code>ResultSet</code>.
-   * The returned portion will start at <code>index</code> into the
+   * The returned portion will start at <code>start</code> into the
    * array and up to <code>count</code> elements will be returned.
    *
    * <p> Each row of the result set will have two columns.  The first will be
@@ -173,13 +174,13 @@ public interface Array
    * will be used to override selected default mappings of SQL types to
    * Java classes.</p>
    *
-   * @param offset The index into the array to start returning elements from.
-   * @param length The requested number of elements to return.
+   * @param start The index into the array to start returning elements from.
+   * @param count The requested number of elements to return.
    * @param map A mapping of SQL types to Java classes.
    * @return The requested elements of this array as a <code>ResultSet</code>.
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */  
-  ResultSet getResultSet(long index, int count, Map map)
+  ResultSet getResultSet(long start, int count, Map<String, Class<?>> map)
     throws SQLException;
 }

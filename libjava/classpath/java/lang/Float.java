@@ -1,5 +1,5 @@
 /* Float.java -- object wrapper for float
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,10 +49,12 @@ package java.lang;
  * @author Paul Fisher
  * @author Andrew Haley (aph@cygnus.com)
  * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Tom Tromey (tromey@redhat.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.0
- * @status updated to 1.4
+ * @status partly updated to 1.5
  */
-public final class Float extends Number implements Comparable
+public final class Float extends Number implements Comparable<Float>
 {
   /**
    * Compatible with JDK 1.0+.
@@ -91,7 +93,7 @@ public final class Float extends Number implements Comparable
    * <code>Class</code> object.
    * @since 1.1
    */
-  public static final Class TYPE = VMClassLoader.getPrimitiveClass('F');
+  public static final Class<Float> TYPE = (Class<Float>) VMClassLoader.getPrimitiveClass('F');
 
   /**
    * The number of bits needed to represent a <code>float</code>.
@@ -183,6 +185,83 @@ public final class Float extends Number implements Comparable
   }
 
   /**
+   * Convert a float value to a hexadecimal string.  This converts as
+   * follows:
+   * <ul>
+   * <li> A NaN value is converted to the string "NaN".
+   * <li> Positive infinity is converted to the string "Infinity".
+   * <li> Negative infinity is converted to the string "-Infinity".
+   * <li> For all other values, the first character of the result is '-'
+   * if the value is negative.  This is followed by '0x1.' if the
+   * value is normal, and '0x0.' if the value is denormal.  This is
+   * then followed by a (lower-case) hexadecimal representation of the
+   * mantissa, with leading zeros as required for denormal values.
+   * The next character is a 'p', and this is followed by a decimal
+   * representation of the unbiased exponent.
+   * </ul>
+   * @param f the float value
+   * @return the hexadecimal string representation
+   * @since 1.5
+   */
+  public static String toHexString(float f)
+  {
+    if (isNaN(f))
+      return "NaN";
+    if (isInfinite(f))
+      return f < 0 ? "-Infinity" : "Infinity";
+
+    int bits = floatToIntBits(f);
+    StringBuilder result = new StringBuilder();
+    
+    if (bits < 0)
+      result.append('-');
+    result.append("0x");
+
+    final int mantissaBits = 23;
+    final int exponentBits = 8;
+    int mantMask = (1 << mantissaBits) - 1;
+    int mantissa = bits & mantMask;
+    int expMask = (1 << exponentBits) - 1;
+    int exponent = (bits >>> mantissaBits) & expMask;
+
+    result.append(exponent == 0 ? '0' : '1');
+    result.append('.');
+    // For Float only, we have to adjust the mantissa.
+    mantissa <<= 1;
+    result.append(Integer.toHexString(mantissa));
+    if (exponent == 0 && mantissa != 0)
+      {
+        // Treat denormal specially by inserting '0's to make
+        // the length come out right.  The constants here are
+        // to account for things like the '0x'.
+        int offset = 4 + ((bits < 0) ? 1 : 0);
+        // The silly +3 is here to keep the code the same between
+        // the Float and Double cases.  In Float the value is
+        // not a multiple of 4.
+        int desiredLength = offset + (mantissaBits + 3) / 4;
+        while (result.length() < desiredLength)
+          result.insert(offset, '0');
+      }
+    result.append('p');
+    if (exponent == 0 && mantissa == 0)
+      {
+        // Zero, so do nothing special.
+      }
+    else
+      {
+        // Apply bias.
+        boolean denormal = exponent == 0;
+        exponent -= (1 << (exponentBits - 1)) - 1;
+        // Handle denormal.
+        if (denormal)
+          ++exponent;
+      }
+
+    result.append(Integer.toString(exponent));
+    return result.toString();
+  }
+
+  /**
    * Creates a new <code>Float</code> object using the <code>String</code>.
    *
    * @param s the <code>String</code> to convert
@@ -204,7 +283,6 @@ public final class Float extends Number implements Comparable
    *
    * @param val the value to wrap
    * @return the <code>Float</code>
-   * 
    * @since 1.5
    */
   public static Float valueOf(float val)
@@ -504,22 +582,6 @@ public final class Float extends Number implements Comparable
   public int compareTo(Float f)
   {
     return compare(value, f.value);
-  }
-
-  /**
-   * Behaves like <code>compareTo(Float)</code> unless the Object
-   * is not an <code>Float</code>.
-   *
-   * @param o the object to compare
-   * @return the comparison
-   * @throws ClassCastException if the argument is not a <code>Float</code>
-   * @see #compareTo(Float)
-   * @see Comparable
-   * @since 1.2
-   */
-  public int compareTo(Object o)
-  {
-    return compare(value, ((Float) o).value);
   }
 
   /**

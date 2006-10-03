@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.beans;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -63,11 +65,11 @@ import java.lang.reflect.Method;
  **/
 public class PropertyDescriptor extends FeatureDescriptor
 {
-    Class propertyType;
+    Class<?> propertyType;
     Method getMethod;
     Method setMethod;
 
-    Class propertyEditorClass;
+    Class<?> propertyEditorClass;
     boolean bound;
     boolean constrained;
 
@@ -101,7 +103,7 @@ public class PropertyDescriptor extends FeatureDescriptor
      ** @exception IntrospectionException if the methods are not found 
      **            or invalid.
      **/
-    public PropertyDescriptor(String name, Class beanClass)
+    public PropertyDescriptor(String name, Class<?> beanClass)
         throws IntrospectionException
     {
         setName(name);
@@ -157,7 +159,7 @@ public class PropertyDescriptor extends FeatureDescriptor
      **/
     public PropertyDescriptor(
         String name,
-        Class beanClass,
+        Class<?> beanClass,
         String getMethodName,
         String setMethodName)
         throws IntrospectionException
@@ -211,7 +213,7 @@ public class PropertyDescriptor extends FeatureDescriptor
      ** This is the type the get method returns and the set method
      ** takes in.
      **/
-    public Class getPropertyType()
+    public Class<?> getPropertyType()
     {
         return propertyType;
     }
@@ -328,7 +330,7 @@ public class PropertyDescriptor extends FeatureDescriptor
     }
 
     /** Get the PropertyEditor class.  Defaults to null. **/
-    public Class getPropertyEditorClass()
+    public Class<?> getPropertyEditorClass()
     {
         return propertyEditorClass;
     }
@@ -339,9 +341,74 @@ public class PropertyDescriptor extends FeatureDescriptor
      ** @param propertyEditorClass the PropertyEditor class for this 
      **        class to use.
      **/
-    public void setPropertyEditorClass(Class propertyEditorClass)
+    public void setPropertyEditorClass(Class<?> propertyEditorClass)
     {
         this.propertyEditorClass = propertyEditorClass;
+    }
+
+    /**
+     * Instantiate a property editor using the property editor class.
+     * If no property editor class has been set, this will return null.
+     * If the editor class has a public constructor which takes a single
+     * argument, that will be used and the bean parameter will be passed
+     * to it.  Otherwise, a public no-argument constructor will be used,
+     * if available.  This method will return null if no constructor is
+     * found or if construction fails for any reason.
+     * @param bean the argument to the constructor
+     * @return a new PropertyEditor, or null on error
+     * @since 1.5
+     */
+    public PropertyEditor createPropertyEditor(Object bean)
+    {
+      if (propertyEditorClass == null)
+        return null;
+      Constructor c = findConstructor(propertyEditorClass,
+                                      new Class[] { Object.class });
+      if (c != null)
+        return instantiateClass(c, new Object[] { bean });
+      c = findConstructor(propertyEditorClass, null);
+      if (c != null)
+        return instantiateClass(c, null);
+      return null;
+    }
+
+    // Helper method to look up a constructor and return null if it is not
+    // found.
+    private Constructor findConstructor(Class k, Class[] argTypes)
+    {
+      try
+        {
+          return k.getConstructor(argTypes);
+        }
+      catch (NoSuchMethodException _)
+        {
+          return null;
+        }
+    }
+
+    // Helper method to instantiate an object but return null on error.
+    private PropertyEditor instantiateClass(Constructor c, Object[] args)
+    {
+      try
+        {
+          return (PropertyEditor) c.newInstance(args);
+        }
+      catch (InstantiationException _)
+        {
+          return null;
+        }
+      catch (InvocationTargetException _)
+        {
+          return null;
+        }
+      catch (IllegalAccessException _)
+        {
+          return null;
+        }
+      catch (ClassCastException _)
+        {
+          return null;
+        }
     }
 
     private void findMethods(
@@ -449,10 +516,10 @@ public class PropertyDescriptor extends FeatureDescriptor
      * @return The common property type of the two method.
      * @throws IntrospectionException If any of the above requirements are not met.
      */
-    private Class checkMethods(Method readMethod, Method writeMethod)
+    private Class<?> checkMethods(Method readMethod, Method writeMethod)
         throws IntrospectionException
     {
-        Class newPropertyType = propertyType;
+        Class<?> newPropertyType = propertyType;
 
         // a valid read method has zero arguments and a non-void return type.
         if (readMethod != null)

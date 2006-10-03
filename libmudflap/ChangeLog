@@ -1,20 +1,30 @@
-2006-05-24  Release Manager
+2006-05-23  Carlos O'Donell  <carlos@codesourcery.com>
 
-	* GCC 4.1.1 released.
+	* Makefile.am: Add install-html target. Add install-html to .PHONY
+	* Makefile.in: Regenerate.
 
-2006-04-20  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+2006-04-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR mudflap/26789
 	* testsuite/libmudflap.c++/error1-frag.cxx: New test.
+
+	PR mudflap/26790
+	* testsuite/libmudflap.c++/error2-frag.cxx: New test.
 
 2006-04-10  Matthias Klose  <doko@debian.org>
 
 	* testsuite/lib/libmudflap.exp (libmudflap-init): Recognize multilib
 	directory names containing underscores.
 
-2006-02-28  Release Manager
+2005-11-22  Janis Johnson  <janis187@us.ibm.com>
 
-	* GCC 4.1.0 released.
+	* testsuite/lib/libmudflap.exp (libmudflap-init): Remove -static from
+	MUDFLAP_FLAGS if static library not supported.
+	* testsuite/libmudflap.c/cfrags.exp (MUDFLAP_FLAGS): new.
+	* testsuite/libmudflap.c/externs.exp: Ditto.
+	* testsuite/libmudflap.c++/ctors.exp: Ditto.
+	* testsuite/libmudflap.c++/c++frags.exp: Ditto.
+	* testsuite/libmudflap.cth/cthfrags.exp: Ditto.
 
 2005-10-04  James E Wilson  <wilson@specifix.com>
 

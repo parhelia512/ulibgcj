@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -94,6 +94,7 @@ static HOST_WIDE_INT gnat_get_alias_set	(tree);
 static void gnat_print_decl		(FILE *, tree, int);
 static void gnat_print_type		(FILE *, tree, int);
 static const char *gnat_printable_name	(tree, int);
+static const char *gnat_dwarf_name	(tree, int);
 static tree gnat_eh_runtime_type	(tree);
 static int gnat_eh_type_covers		(tree, tree);
 static void gnat_parse_file		(int);
@@ -144,6 +145,8 @@ static tree gnat_type_max_size		(tree);
 #define LANG_HOOKS_TYPE_MAX_SIZE	gnat_type_max_size
 #undef  LANG_HOOKS_DECL_PRINTABLE_NAME
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	gnat_printable_name
+#undef  LANG_HOOKS_DWARF_NAME
+#define LANG_HOOKS_DWARF_NAME		gnat_dwarf_name
 #undef  LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
 #define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION gnat_expand_body
 #undef  LANG_HOOKS_GIMPLIFY_EXPR
@@ -283,6 +286,10 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
     case OPT_Wstrict_prototypes:
     case OPT_Wwrite_strings:
     case OPT_Wlong_long:
+    case OPT_Wvariadic_macros:
+    case OPT_Wold_style_definition:
+    case OPT_Wmissing_format_attribute:
+    case OPT_Woverlength_strings:
       break;
 
       /* This is handled by the front-end.  */
@@ -323,15 +330,11 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
   return 1;
 }
 
-static bool tree_sra_requested = false;
-
 /* Initialize for option processing.  */
 
 static unsigned int
 gnat_init_options (unsigned int argc, const char **argv)
 {
-  int i;
-
   /* Initialize gnat_argv with save_argv size.  */
   gnat_argv = (char **) xmalloc ((argc + 1) * sizeof (argv[0]));
   gnat_argv[0] = xstrdup (argv[0]);     /* name of the command */
@@ -342,16 +345,6 @@ gnat_init_options (unsigned int argc, const char **argv)
 
   /* Uninitialized really means uninitialized in Ada.  */
   flag_zero_initialized_in_bss = 0;
-
-  /* Find last option mentioning Tree-SRA.  */
-  for (i = argc - 1; i > 0; i--)
-    if (strcmp(argv[i], "-ftree-sra") == 0)
-      {
-	tree_sra_requested = true;
-	break;
-      }
-    else if (strcmp(argv[i], "-fno-tree-sra") == 0)
-      break;
 
   return CL_Ada;
 }
@@ -369,11 +362,6 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
     flag_inline_trees = 2;
 
   flag_tree_salias = 0;
-
-  /* Do not enable Tree-SRA unless specifically requested as it
-     is known to badly interact with some Ada constructs.  */
-  if (!tree_sra_requested)
-    flag_tree_sra = 0;
 
   return false;
 }
@@ -609,6 +597,14 @@ gnat_printable_name (tree decl, int verbosity)
     }
 
   return (const char *) ada_name;
+}
+
+static const char *
+gnat_dwarf_name (tree t, int verbosity ATTRIBUTE_UNUSED)
+{
+  gcc_assert (DECL_P (t));
+
+  return (const char *) IDENTIFIER_POINTER (DECL_NAME (t));
 }
 
 /* Expands GNAT-specific GCC tree nodes.  The only ones we support

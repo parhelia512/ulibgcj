@@ -1,5 +1,5 @@
 /* ObjectInputStream.java -- Class used to read serialized objects
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -50,12 +50,18 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.Vector;
 
+/**
+ * @author Tom Tromey (tromey@redhat.com)
+ * @author Jeroen Frijters (jeroen@frijters.net)
+ * @author Guilhem Lavaux (guilhem@kaffe.org)
+ * @author Michael Koch (konqueror@gmx.de)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
+ */
 public class ObjectInputStream extends InputStream
   implements ObjectInput, ObjectStreamConstants
 {
@@ -98,8 +104,8 @@ public class ObjectInputStream extends InputStream
     this.blockDataInput = new DataInputStream(this);
     this.realInputStream = new DataInputStream(in);
     this.nextOID = baseWireHandle;
-    this.objectLookupTable = new Hashtable();
-    this.classLookupTable = new Hashtable();
+    this.objectLookupTable = new Hashtable<Integer,ObjectIdentityWrapper>();
+    this.classLookupTable = new Hashtable<Class,ObjectStreamClass>();
     setBlockDataMode(true);
     readStreamHeader();
   }
@@ -349,7 +355,8 @@ public class ObjectInputStream extends InputStream
  	  int handle = assignNewHandle(obj);
  	  Object prevObject = this.currentObject;
  	  ObjectStreamClass prevObjectStreamClass = this.currentObjectStreamClass;
-	  TreeSet prevObjectValidators = this.currentObjectValidators;
+	  TreeSet<ValidatorAndPriority> prevObjectValidators =
+	    this.currentObjectValidators;
  	  
  	  this.currentObject = obj;
 	  this.currentObjectValidators = null;
@@ -425,7 +432,23 @@ public class ObjectInputStream extends InputStream
  	  clearHandles();
  	  throw new WriteAbortedException("Exception thrown during writing of stream", e);
  	}
-	
+
+       case TC_ENUM:
+	 {
+	   /* TC_ENUM classDesc newHandle enumConstantName */
+	   if (dump)
+	     dumpElementln("ENUM=");
+	   ObjectStreamClass osc = (ObjectStreamClass) readObject();
+	   String constantName = (String) readObject();
+	   if (dump)
+	     dumpElementln("CONSTANT NAME = " + constantName);
+	   Class clazz = osc.forClass();
+	   Enum instance = Enum.valueOf(clazz, constantName);
+	   assignNewHandle(instance);
+	   ret_val = instance;
+	   break;
+	 }
+
        default:
  	throw new IOException("Unknown marker on stream: " + marker);
       }
@@ -556,8 +579,7 @@ public class ObjectInputStream extends InputStream
     classLookupTable.put(clazz, osc);
     setBlockDataMode(oldmode);
 
-    // find the first non-serializable, non-abstract
-    // class in clazz's inheritance hierarchy
+    // find the first non-serializable class in clazz's inheritance hierarchy
     Class first_nonserial = clazz.getSuperclass();
     // Maybe it is a primitive class, those don't have a super class,
     // or Object itself.  Otherwise we can keep getting the superclass
@@ -566,9 +588,8 @@ public class ObjectInputStream extends InputStream
     if (first_nonserial == null)
       first_nonserial = clazz;
     else
-      while (Serializable.class.isAssignableFrom(first_nonserial)
-	     || Modifier.isAbstract(first_nonserial.getModifiers()))
-	first_nonserial = first_nonserial.getSuperclass();
+      while (Serializable.class.isAssignableFrom(first_nonserial))
+        first_nonserial = first_nonserial.getSuperclass();
 
     final Class local_constructor_class = first_nonserial;
 
@@ -740,7 +761,7 @@ public class ObjectInputStream extends InputStream
 				       + "ObjectInputValidation object");
 
     if (currentObjectValidators == null)
-      currentObjectValidators = new TreeSet();
+      currentObjectValidators = new TreeSet<ValidatorAndPriority>();
     
     currentObjectValidators.add(new ValidatorAndPriority(validator, priority));
   }
@@ -762,7 +783,7 @@ public class ObjectInputStream extends InputStream
    *
    * @see java.io.ObjectOutputStream#annotateClass (java.lang.Class)
    */
-  protected Class resolveClass(ObjectStreamClass osc)
+  protected Class<?> resolveClass(ObjectStreamClass osc)
     throws ClassNotFoundException, IOException
   {
     String name = osc.getName();
@@ -848,7 +869,7 @@ public class ObjectInputStream extends InputStream
       return new ObjectStreamClass[0];
     else
       {
-        Vector oscs = new Vector();
+        Vector<ObjectStreamClass> oscs = new Vector<ObjectStreamClass>();
 
         while (osc != null)
           {
@@ -885,12 +906,12 @@ public class ObjectInputStream extends InputStream
   }
 
 
-  protected Class resolveProxyClass(String[] intfs)
+  protected Class<?> resolveProxyClass(String[] intfs)
     throws IOException, ClassNotFoundException
   {
     ClassLoader cl = currentLoader();
     
-    Class[] clss = new Class[intfs.length];
+    Class<?>[] clss = new Class<?>[intfs.length];
     if(cl == null)
       {
 	for (int i = 0; i < intfs.length; i++)
@@ -1597,7 +1618,14 @@ public class ObjectInputStream extends InputStream
 
   private void readNextBlock() throws IOException
   {
-    readNextBlock(this.realInputStream.readByte());
+    byte marker = this.realInputStream.readByte();
+    while (marker == TC_RESET)
+      {
+        if(dump) dumpElementln("RESET");
+        clearHandles();
+        marker = this.realInputStream.readByte();
+      }
+    readNextBlock(marker);
   }
 
   private void readNextBlock(byte marker) throws IOException
@@ -1855,10 +1883,10 @@ public class ObjectInputStream extends InputStream
   {
     try
       {
-	Iterator it = currentObjectValidators.iterator();
+	Iterator<ValidatorAndPriority> it = currentObjectValidators.iterator();
 	while(it.hasNext())
 	  {
-	    ValidatorAndPriority vap = (ValidatorAndPriority) it.next();
+	    ValidatorAndPriority vap = it.next();
 	    ObjectInputValidation validator = vap.validator;
 	    validator.validateObject();
 	  }
@@ -1911,13 +1939,13 @@ public class ObjectInputStream extends InputStream
   private boolean useSubclassMethod;
   private int nextOID;
   private boolean resolveEnabled;
-  private Hashtable objectLookupTable;
+  private Hashtable<Integer,ObjectIdentityWrapper> objectLookupTable;
   private Object currentObject;
   private ObjectStreamClass currentObjectStreamClass;
-  private TreeSet currentObjectValidators;
+  private TreeSet<ValidatorAndPriority> currentObjectValidators;
   private boolean readDataFromBlock;
   private boolean fieldsAlreadyRead;
-  private Hashtable classLookupTable;
+  private Hashtable<Class,ObjectStreamClass> classLookupTable;
   private GetField prereadFields;
 
   private static boolean dump;

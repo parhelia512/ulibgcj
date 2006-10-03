@@ -1416,12 +1416,12 @@ check_inquiry (gfc_expr * e, int not_restricted)
     }
 
   /* Assumed character length will not reduce to a constant expression
-     with LEN,as required by the standard.  */
+     with LEN, as required by the standard.  */
   if (i == 4 && not_restricted
 	&& e->symtree->n.sym->ts.type == BT_CHARACTER
 	&& e->symtree->n.sym->ts.cl->length == NULL)
-    gfc_notify_std (GFC_STD_GNU, "The F95 does not permit the assumed character "
-		    "length variable '%s' in constant expression at %L.",
+    gfc_notify_std (GFC_STD_GNU, "assumed character length "
+		    "variable '%s' in constant expression at %L",
 		    e->symtree->n.sym->name, &e->where);
 
   return SUCCESS;
@@ -1879,7 +1879,7 @@ gfc_check_assign (gfc_expr * lvalue, gfc_expr * rvalue, int conform)
       if (sym->attr.use_assoc)
 	bad_proc = true;
 
-      /* (ii) The assignement is in the main program; or  */
+      /* (ii) The assignment is in the main program; or  */
       if (gfc_current_ns->proc_name->attr.is_main_program)
 	bad_proc = true;
 
@@ -2077,26 +2077,6 @@ gfc_check_pointer_assign (gfc_expr * lvalue, gfc_expr * rvalue)
       gfc_error ("Pointer assignment with vector subscript "
 		 "on rhs at %L", &rvalue->where);
       return FAILURE;
-    }
-
-  if (rvalue->symtree->n.sym
-	&& rvalue->symtree->n.sym->as
-	&& rvalue->symtree->n.sym->as->type == AS_ASSUMED_SIZE)
-    {
-      gfc_ref * ref;
-      int dim = 0;
-      int last = 0;
-      for (ref = rvalue->ref; ref; ref = ref->next)
-	if (ref->type == REF_ARRAY)
-	  for (dim = 0;dim < ref->u.ar.as->rank; dim++)
-	    last = ref->u.ar.end[dim] == NULL;
-      if (last)
-	{
-	  gfc_error ("The upper bound in the last dimension of the "
-		     "assumed_size array on the rhs of the pointer "
-		     "assignment at %L must be set", &rvalue->where);
-	  return FAILURE;
-	}
     }
 
   return SUCCESS;

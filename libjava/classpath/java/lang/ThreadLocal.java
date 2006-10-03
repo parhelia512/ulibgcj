@@ -1,5 +1,5 @@
 /* ThreadLocal -- a variable with a unique value per thread
-   Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -84,9 +84,9 @@ import java.util.Map;
  * @author Mark Wielaard (mark@klomp.org)
  * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.2
- * @status updated to 1.4
+ * @status updated to 1.5
  */
-public class ThreadLocal
+public class ThreadLocal<T>
 {
   /**
    * Placeholder to distinguish between uninitialized and null set by the
@@ -94,21 +94,6 @@ public class ThreadLocal
    * InheritableThreadLocal
    */
   static final Object NULL = new Object();
-
-  /**
-   * Serves as a key for the Thread.locals WeakHashMap.
-   * We can't use "this", because a subclass may override equals/hashCode
-   * and we need to use object identity for the map.
-   */
-  final Key key = new Key();
-
-  class Key
-  {
-    ThreadLocal get()
-    {
-      return ThreadLocal.this;
-    }
-  }
 
   /**
    * Creates a ThreadLocal object without associating any value to it yet.
@@ -125,7 +110,7 @@ public class ThreadLocal
    *
    * @return the initial value of the variable in this thread
    */
-  protected Object initialValue()
+  protected T initialValue()
   {
     return null;
   }
@@ -138,18 +123,18 @@ public class ThreadLocal
    *
    * @return the value of the variable in this thread
    */
-  public Object get()
+  public T get()
   {
-    Map map = Thread.getThreadLocals();
+    Map<ThreadLocal<T>,T> map = (Map<ThreadLocal<T>,T>) Thread.getThreadLocals();
     // Note that we don't have to synchronize, as only this thread will
     // ever modify the map.
-    Object value = map.get(key);
+    T value = map.get(this);
     if (value == null)
       {
         value = initialValue();
-        map.put(key, value == null ? NULL : value);
+        map.put(this, (T) (value == null ? NULL : value));
       }
-    return value == NULL ? null : value;
+    return value == (T) NULL ? null : value;
   }
 
   /**
@@ -160,11 +145,22 @@ public class ThreadLocal
    *
    * @param value the value to set this thread's view of the variable to
    */
-  public void set(Object value)
+  public void set(T value)
   {
     Map map = Thread.getThreadLocals();
     // Note that we don't have to synchronize, as only this thread will
     // ever modify the map.
-    map.put(key, value == null ? NULL : value);
+    map.put(this, value == null ? NULL : value);
+  }
+
+  /**
+   * Removes the value associated with the ThreadLocal object for the
+   * currently executing Thread.
+   * @since 1.5
+   */
+  public void remove()
+  {
+    Map map = Thread.getThreadLocals();
+    map.remove(this);
   }
 }

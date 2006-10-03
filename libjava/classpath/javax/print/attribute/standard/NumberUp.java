@@ -1,5 +1,5 @@
 /* NumberUp.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,12 +37,24 @@ exception statement from your version. */
 
 package javax.print.attribute.standard;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.DocAttribute;
 import javax.print.attribute.IntegerSyntax;
 import javax.print.attribute.PrintJobAttribute;
 import javax.print.attribute.PrintRequestAttribute;
 
 /**
+ * The <code>NumberUp</code> printing attribute specifies the number of pages 
+ * to be arranged upon a single media sheet.
+ * <p>
+ * <b>Note:</b> The effect of this attribute on jobs with multiple documents 
+ * is controlled by the job attribute 
+ * {@link javax.print.attribute.standard.MultipleDocumentHandling}.
+ * </p>
+ * <p>
+ * <b>IPP Compatibility:</b> NumberUp is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch
  */
 public final class NumberUp extends IntegerSyntax
@@ -56,7 +68,7 @@ public final class NumberUp extends IntegerSyntax
    * @param value the number of print-stream pages to print on a single side
    * of a media
    *
-   * @exception IllegalArgumentException if value < 1
+   * @exception IllegalArgumentException if value &lt; 1
    */
   public NumberUp(int value)
   {
@@ -64,11 +76,12 @@ public final class NumberUp extends IntegerSyntax
   }
   
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -81,17 +94,17 @@ public final class NumberUp extends IntegerSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>NumberUp</code> itself
+   * @return The class <code>NumberUp</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return NumberUp.class;
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "number-up"
+   * @return The name "number-up".
    */
   public String getName()
   {

@@ -54,6 +54,7 @@ import java.util.Set;
  * characters or which is undefined over a range of characters.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @since 1.2
  */
 public interface AttributedCharacterIterator extends CharacterIterator
 {
@@ -127,13 +128,13 @@ public interface AttributedCharacterIterator extends CharacterIterator
      */
     protected Object readResolve() throws InvalidObjectException
     {
-      if (this.equals (READING))
+      if (getName().equals(READING.getName()))
         return READING;
 
-      if (this.equals (LANGUAGE))
+      if (getName().equals(LANGUAGE.getName()))
         return LANGUAGE;
 
-      if (this.equals (INPUT_METHOD_SEGMENT))
+      if (getName().equals(INPUT_METHOD_SEGMENT.getName()))
         return INPUT_METHOD_SEGMENT;
 
       throw new InvalidObjectException ("Can't resolve Attribute: " 
@@ -192,7 +193,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
    *
    * @return A list of keys 
    */
-  Set getAllAttributeKeys();
+  Set<Attribute> getAllAttributeKeys();
 
   /**
    * Returns a <code>Map</code> of the attributes defined for the current 
@@ -200,7 +201,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
    *
    * @return A <code>Map</code> of the attributes for the current character.
    */
-  Map getAttributes();
+  Map<Attribute, Object> getAttributes();
 
   /**
    * Returns the value of the specified attribute for the
@@ -230,7 +231,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
    *
    * @return The start index of the run.
    */
-  int getRunStart (Set attribs);
+  int getRunStart (Set<? extends Attribute> attribs);
   
   /**
    * Returns the index of the first character in the run that
@@ -259,7 +260,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
    *
    * @return The end index of the run.
    */
-  int getRunLimit (Set attribs);
+  int getRunLimit (Set<? extends Attribute> attribs);
   
   /**
    * Returns the index of the character after the end of the run

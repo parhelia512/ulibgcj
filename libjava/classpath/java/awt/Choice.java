@@ -63,6 +63,11 @@ public class Choice extends Component
  * Static Variables
  */
 
+/**
+ * The number used to generate the name returned by getName.
+ */
+private static transient long next_choice_number;
+
 // Serialization constant
 private static final long serialVersionUID = -4075310674757313071L;
 
@@ -468,15 +473,16 @@ getSelectedIndex()
 public synchronized void
 select(int index)
 {
-  if ((index < 0) || (index > getItemCount()))
+  if ((index < 0) || (index >= getItemCount()))
     throw new IllegalArgumentException("Bad index: " + index);
 
-  this.selectedIndex = index;
-  if (peer != null)
-    {
+  if (pItems.size() > 0) {
+      selectedIndex = index;
       ChoicePeer cp = (ChoicePeer) peer;
-      cp.select (index);
-    }
+      if (cp != null) {
+          cp.select(index);
+      }
+  }
 }
 
 /*************************************************************************/
@@ -555,6 +561,17 @@ processEvent(AWTEvent event)
     super.processEvent(event);
 }
 
+void 
+dispatchEventImpl(AWTEvent e)
+{
+  if (e.id <= ItemEvent.ITEM_LAST
+      && e.id >= ItemEvent.ITEM_FIRST
+      && (item_listeners != null || (eventMask & AWTEvent.ITEM_EVENT_MASK) != 0))
+    processEvent(e);
+  else
+    super.dispatchEventImpl(e);
+}
+
 /*************************************************************************/
 
 /**
@@ -571,18 +588,6 @@ processItemEvent(ItemEvent event)
     this.selectedIndex = index;
   if (item_listeners != null)
     item_listeners.itemStateChanged(event);
-}
-
-void
-dispatchEventImpl(AWTEvent e)
-{
-  if (e.id <= ItemEvent.ITEM_LAST
-      && e.id >= ItemEvent.ITEM_FIRST
-      && (item_listeners != null 
-	  || (eventMask & AWTEvent.ITEM_EVENT_MASK) != 0))
-    processEvent(e);
-  else
-    super.dispatchEventImpl(e);
 }
 
 /*************************************************************************/
@@ -608,11 +613,11 @@ paramString()
    *
    * @since 1.3
    */
-  public EventListener[] getListeners (Class listenerType)
+  public <T extends EventListener> T[] getListeners (Class<T> listenerType)
   {
     if (listenerType == ItemListener.class)
       return AWTEventMulticaster.getListeners (item_listeners, listenerType);
-    
+
     return super.getListeners (listenerType);
   }
 
@@ -638,5 +643,20 @@ paramString()
     if (accessibleContext == null)
       accessibleContext = new AccessibleAWTChoice();
     return accessibleContext;
+  }
+  
+  /**
+   * Generate a unique name for this <code>Choice</code>.
+   *
+   * @return A unique name for this <code>Choice</code>.
+   */
+  String generateName()
+  {
+    return "choice" + getUniqueLong();
+  }
+
+  private static synchronized long getUniqueLong()
+  {
+    return next_choice_number++;
   }
 } // class Choice 

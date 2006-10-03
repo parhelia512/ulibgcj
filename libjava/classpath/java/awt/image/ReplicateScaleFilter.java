@@ -46,7 +46,6 @@ import java.util.Hashtable;
  * exact method is not defined by Sun but some sort of fast Box filter should
  * probably be correct.
  * <br>
- * Currently this filter does nothing and needs to be implemented.
  *
  * @author C. Brian Jones (cbj@gnu.org) 
  */
@@ -134,11 +133,12 @@ public class ReplicateScaleFilter extends ImageFilter
      *
      * @param props the list of properties associated with this image 
      */
-    public void setProperties(Hashtable props)
+    public void setProperties(Hashtable<?, ?> props)
     {
-	props.put("filters", "ReplicateScaleFilter");
-	if (consumer != null)
-	  consumer.setProperties(props);
+      Hashtable<Object, Object> prop2 = (Hashtable<Object, Object>) props;
+      prop2.put("filters", "ReplicateScaleFilter");
+      if (consumer != null)
+        consumer.setProperties(prop2);
     }
 
     /**

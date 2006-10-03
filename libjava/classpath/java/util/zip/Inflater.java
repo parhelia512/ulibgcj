@@ -140,13 +140,13 @@ public class Inflater
   /**
    * The total number of inflated bytes.
    */
-  private int totalOut;
+  private long totalOut;
   /**
    * The total number of bytes set with setInput().  This is not the
    * value returned by getTotalIn(), since this also includes the 
    * unprocessed input.
    */
-  private int totalIn;
+  private long totalIn;
   /**
    * This variable stores the nowrap flag that was given to the constructor.
    * True means, that the inflated stream doesn't contain a header nor the
@@ -199,7 +199,6 @@ public class Inflater
    * with Sun's JDK, where the compressor allocates native memory.
    * If you call any method (even reset) afterwards the behaviour is
    * <i>undefined</i>.  
-   * @deprecated Just clear all references to inflater instead.
    */
   public void end ()
   {
@@ -247,7 +246,18 @@ public class Inflater
    * Gets the total number of processed compressed input bytes.
    * @return the total number of bytes of processed input bytes.
    */
+  @Deprecated
   public int getTotalIn()
+  {
+    return (int) (totalIn - getRemaining());
+  }
+
+  /**
+   * Gets the total number of processed compressed input bytes.
+   * @return the total number of bytes of processed input bytes.
+   * @since 1.5
+   */
+  public long getBytesRead()
   {
     return totalIn - getRemaining();
   }
@@ -256,7 +266,18 @@ public class Inflater
    * Gets the total number of output bytes returned by inflate().
    * @return the total number of output bytes.
    */
+  @Deprecated
   public int getTotalOut()
+  {
+    return (int) totalOut;
+  }
+
+  /**
+   * Gets the total number of output bytes returned by inflate().
+   * @return the total number of output bytes.
+   * @since 1.5
+   */
+  public long getBytesWritten()
   {
     return totalOut;
   }

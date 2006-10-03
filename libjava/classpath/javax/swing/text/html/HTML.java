@@ -57,8 +57,7 @@ public class HTML
   /**
    * Represents a HTML attribute.
    */
-  public static class Attribute
-    implements Serializable
+  public static final class Attribute
   {
     /**
      * The action attribute
@@ -293,7 +292,7 @@ public class HTML
     /**
      *  The media attribute
      */
-    public static final Attribute MEDIA = new Attribute("media");
+    static final Attribute MEDIA = new Attribute("media");
 
     /**
      *  The method attribute
@@ -464,47 +463,18 @@ public class HTML
      *  The width attribute
      */
     public static final Attribute WIDTH = new Attribute("width");
+
+    /**
+     * The attribute name.
+     */
     private final String name;
 
     /**
      * Creates the attribute with the given name.
      */
-    protected Attribute(String a_name)
+    private Attribute(String a_name)
     {
       name = a_name;
-    }
-
-    /**
-     * Calls compareTo on the tag names (Strings)
-     */
-    public int compareTo(Object other)
-    {
-      return name.compareTo(((Attribute) other).name);
-    }
-
-    /**
-     * The attributes are equal if the names are equal
-     * (ignoring case)
-     */
-    public boolean equals(Object other)
-    {
-      if (other == this)
-        return true;
-
-      if (!(other instanceof Attribute))
-        return false;
-
-      Attribute that = (Attribute) other;
-
-      return that.name.equalsIgnoreCase(name);
-    }
-
-    /**
-     * Returns the hash code which corresponds to the string for this tag.
-     */
-    public int hashCode()
-    {
-      return name == null ? 0 : name.hashCode();
     }
 
     /**
@@ -559,7 +529,6 @@ public class HTML
    * Represents a HTML tag.
    */
   public static class Tag
-    implements Comparable, Serializable
   {
     /**
      * The &lt;a&gt; tag
@@ -789,7 +758,7 @@ public class HTML
     /**
      * The &lt;nobr&gt; tag
      */
-    public static final Tag NOBR = new Tag("nobr");
+    static final Tag NOBR = new Tag("nobr");
 
     /**
      * The &lt;noframes&gt; tag , breaks flow, block tag.
@@ -1047,42 +1016,6 @@ public class HTML
     }
 
     /**
-     * Calls compareTo on the tag names (Strings)
-     */
-    public int compareTo(Object other)
-    {
-      return name.compareTo(((Tag) other).name);
-    }
-
-    /**
-     * The tags are equal if the names are equal (ignoring case).
-     */
-    public boolean equals(Object other)
-    {
-      if (other == this)
-        {
-          return true;
-        }
-
-      if (!(other instanceof Tag))
-        {
-          return false;
-        }
-
-      Tag that = (Tag) other;
-
-      return that.name.equalsIgnoreCase(name);
-    }
-
-    /**
-     * Returns the hash code which corresponds to the string for this tag.
-     */
-    public int hashCode()
-    {
-      return name == null ? 0 : name.hashCode();
-    }
-
-    /**
      * Returns the tag name. The names of the built-in tags are always
      * returned in lowercase.
      */
@@ -1186,8 +1119,8 @@ public class HTML
   static final int BLOCK = 2;
   static final int PREFORMATTED = 4;
   static final int SYNTHETIC = 8;
-  private static Map tagMap;
-  private static Map attrMap;
+  private static Map<String,Tag> tagMap;
+  private static Map<String,Attribute> attrMap;
 
   /**
    * The public constructor (does nothing). It it seldom required to have
@@ -1226,7 +1159,7 @@ public class HTML
     if (attrMap == null)
       {
         // Create the map on demand.
-        attrMap = new TreeMap();
+        attrMap = new TreeMap<String,Attribute>();
 
         Attribute[] attrs = getAllAttributeKeys();
 
@@ -1236,7 +1169,7 @@ public class HTML
           }
       }
 
-    return (Attribute) attrMap.get(attName.toLowerCase());
+    return attrMap.get(attName.toLowerCase());
   }
 
   /**
@@ -1295,7 +1228,7 @@ public class HTML
     if (tagMap == null)
       {
         // Create the mao on demand.
-        tagMap = new TreeMap();
+        tagMap = new TreeMap<String,Tag>();
 
         Tag[] tags = getAllTags();
 
@@ -1305,6 +1238,6 @@ public class HTML
           }
       }
 
-    return (Tag) tagMap.get(tagName.toLowerCase());
+    return tagMap.get(tagName.toLowerCase());
   }
 }

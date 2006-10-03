@@ -1,5 +1,5 @@
 /* Class.java -- Representation of a Java class.
-   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation
 
 This file is part of GNU Classpath.
@@ -38,17 +38,24 @@ exception statement from your version. */
 
 package java.lang;
 
+import gnu.java.lang.reflect.ClassSignatureParser;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericDeclaration;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.annotation.Annotation;
 
 /**
  * A Class represents a Java type.  There will never be multiple Class
@@ -79,7 +86,8 @@ import java.util.HashSet;
  * @since 1.0
  * @see ClassLoader
  */
-public final class Class implements Serializable
+public final class Class<T>
+  implements Type, AnnotatedElement, GenericDeclaration, Serializable
 {
   /**
    * Class is non-instantiable from Java code; only the VM can create
@@ -110,6 +118,14 @@ public final class Class implements Serializable
    */
   public static native Class forName (String className)
     throws ClassNotFoundException;
+
+  // A private internal method that is called by compiler-generated code.
+  private static Class forName (String className, Class caller)
+    throws ClassNotFoundException
+  {
+    return forName(className, true, caller.getClassLoaderInternal());
+  }
+
 
   /**
    * Use the specified classloader to load and link a class. If the loader
@@ -184,7 +200,16 @@ public final class Class implements Serializable
    * @see RuntimePermission
    */
   public native ClassLoader getClassLoader ();
-  
+
+  // A private internal method that is called by compiler-generated code.
+  private final native ClassLoader getClassLoader (Class caller);
+
+  /**
+   *  Internal method that circumvents the usual security checks when 
+   *  getting the class loader.
+   */
+  private native ClassLoader getClassLoaderInternal ();
+
   /**
    * If this is an array, get the Class representing the type of array.
    * Examples: "[[Ljava.lang.String;" would return "[Ljava.lang.String;", and
@@ -211,7 +236,7 @@ public final class Class implements Serializable
    * @see #getConstructors()
    * @since 1.1
    */
-  public native Constructor getConstructor(Class[] args)
+  public native Constructor<T> getConstructor(Class... args)
     throws NoSuchMethodException;
 
   /**
@@ -246,7 +271,7 @@ public final class Class implements Serializable
    * @see #getDeclaredConstructors()
    * @since 1.1
    */
-  public native Constructor getDeclaredConstructor(Class[] args)
+  public native Constructor<T> getDeclaredConstructor(Class... args)
     throws NoSuchMethodException;
 
   /**
@@ -348,7 +373,7 @@ public final class Class implements Serializable
    * @see #getDeclaredMethods()
    * @since 1.1
    */
-  public Method getDeclaredMethod(String methodName, Class[] args)
+  public Method getDeclaredMethod(String methodName, Class... args)
     throws NoSuchMethodException
   {
     memberAccessCheck(Member.DECLARED);
@@ -462,7 +487,7 @@ public final class Class implements Serializable
    */
   public Package getPackage()
   {
-    ClassLoader cl = getClassLoader();
+    ClassLoader cl = getClassLoaderInternal();
     if (cl != null)
       return cl.getPackage(getPackagePortion(getName()));
     else
@@ -507,7 +532,7 @@ public final class Class implements Serializable
    * @see #getMethods()
    * @since 1.1
    */
-  public Method getMethod(String methodName, Class[] args)
+  public Method getMethod(String methodName, Class... args)
     throws NoSuchMethodException
   {
     memberAccessCheck(Member.PUBLIC);
@@ -605,7 +630,7 @@ public final class Class implements Serializable
   public URL getResource(String resourceName)
   {
     String name = resourcePath(resourceName);
-    ClassLoader loader = getClassLoader();
+    ClassLoader loader = getClassLoaderInternal();
     if (loader == null)
       return ClassLoader.getSystemResource(name);
     return loader.getResource(name);
@@ -633,7 +658,7 @@ public final class Class implements Serializable
   public InputStream getResourceAsStream(String resourceName)
   {
     String name = resourcePath(resourceName);
-    ClassLoader loader = getClassLoader();
+    ClassLoader loader = getClassLoaderInternal();
     if (loader == null)
       return ClassLoader.getSystemResourceAsStream(name);
     return loader.getResourceAsStream(name);
@@ -828,7 +853,7 @@ public final class Class implements Serializable
    */
   public boolean desiredAssertionStatus()
   {
-    ClassLoader c = getClassLoader();
+    ClassLoader c = getClassLoaderInternal();
     Object status;
     if (c == null)
       return VMClassLoader.defaultAssertionStatus();
@@ -908,4 +933,424 @@ public final class Class implements Serializable
 	  sm.checkPackageAccess(pkg.getName());
       }
   }
+
+
+  /**
+   * <p>
+   * Casts this class to represent a subclass of the specified class.
+   * This method is useful for `narrowing' the type of a class so that
+   * the class object, and instances of that class, can match the contract
+   * of a more restrictive method.  For example, if this class has the
+   * static type of <code>Class&lt;Object&gt;</code>, and a dynamic type of
+   * <code>Class&lt;Rectangle&gt;</code>, then, assuming <code>Shape</code> is
+   * a superclass of <code>Rectangle</code>, this method can be used on
+   * this class with the parameter, <code>Class&lt;Shape&gt;</code>, to retain
+   * the same instance but with the type
+   * <code>Class&lt;? extends Shape&gt;</code>.
+   * </p>
+   * <p>
+   * If this class can be converted to an instance which is parameterised
+   * over a subtype of the supplied type, <code>U</code>, then this method
+   * returns an appropriately cast reference to this object.  Otherwise,
+   * a <code>ClassCastException</code> is thrown.
+   * </p>
+   * 
+   * @param klass the class object, the parameterized type (<code>U</code>) of
+   *              which should be a superclass of the parameterized type of
+   *              this instance.
+   * @return a reference to this object, appropriately cast.
+   * @throws ClassCastException if this class can not be converted to one
+   *                            which represents a subclass of the specified
+   *                            type, <code>U</code>. 
+   * @since 1.5
+   */
+  public <U> Class<? extends U> asSubclass(Class<U> klass)
+  {
+    if (! klass.isAssignableFrom(this))
+      throw new ClassCastException();
+    return (Class<? extends U>) this;
+  }
+
+  /**
+   * Returns the specified object, cast to this <code>Class</code>' type.
+   *
+   * @param obj the object to cast
+   * @throws ClassCastException  if obj is not an instance of this class
+   * @since 1.5
+   */
+  public T cast(Object obj)
+  {
+    if (obj != null && ! isInstance(obj))
+      throw new ClassCastException();
+    return (T) obj;
+  }
+
+  /**
+   * Returns the enumeration constants of this class, or
+   * null if this class is not an <code>Enum</code>.
+   *
+   * @return an array of <code>Enum</code> constants
+   *         associated with this class, or null if this
+   *         class is not an <code>enum</code>.
+   * @since 1.5
+   */
+  public T[] getEnumConstants()
+  {
+    if (isEnum())
+      {
+	try
+	  {
+	    return (T[]) getMethod("values").invoke(null);
+	  }
+	catch (NoSuchMethodException exception)
+	  {
+	    throw new Error("Enum lacks values() method");
+	  }
+	catch (IllegalAccessException exception)
+	  {
+	    throw new Error("Unable to access Enum class");
+	  }
+	catch (InvocationTargetException exception)
+	  {
+	    throw new
+	      RuntimeException("The values method threw an exception",
+			       exception);
+	  }
+      }
+    else
+      {
+	return null;
+      }
+  }
+
+  /**
+   * Returns true if this class is an <code>Enum</code>.
+   *
+   * @return true if this is an enumeration class.
+   * @since 1.5
+   */
+  public boolean isEnum()
+  {
+    // FIXME
+    int mod = getModifiers ();
+    // FIXME: was 'ENUM'
+    return (mod & 0x4000) != 0;
+  }
+
+  /**
+   * Returns true if this class is a synthetic class, generated by
+   * the compiler.
+   *
+   * @return true if this is a synthetic class.
+   * @since 1.5
+   */
+  public boolean isSynthetic()
+  {
+    // FIXME
+    int mod = getModifiers ();
+    // FIXME: was SYNTHETIC
+    return (mod & 0x1000) != 0;
+  }
+
+  /**
+   * Returns true if this class is an <code>Annotation</code>.
+   *
+   * @return true if this is an annotation class.
+   * @since 1.5
+   */
+  public boolean isAnnotation()
+  {
+    // FIXME
+    int mod = getModifiers ();
+    // FIXME: was ANNOTATION
+    return (mod & 0x2000) != 0;
+  }
+
+  /**
+   * Returns the simple name for this class, as used in the source
+   * code.  For normal classes, this is the content returned by
+   * <code>getName()</code> which follows the last ".".  Anonymous
+   * classes have no name, and so the result of calling this method is
+   * "".  The simple name of an array consists of the simple name of
+   * its component type, followed by "[]".  Thus, an array with the
+   * component type of an anonymous class has a simple name of simply
+   * "[]".
+   *
+   * @return the simple name for this class.
+   * @since 1.5
+   */
+  public String getSimpleName()
+  {
+    StringBuffer sb = new StringBuffer();
+    Class klass = this;
+    int arrayCount = 0;
+    while (klass.isArray())
+      {
+	klass = klass.getComponentType();
+	++arrayCount;
+      }
+    if (! klass.isAnonymousClass())
+      {
+	String fullName = klass.getName();
+	sb.append(fullName, fullName.lastIndexOf(".") + 1, fullName.length());
+      }
+    while (arrayCount-- > 0)
+      sb.append("[]");
+    return sb.toString();
+  }
+
+  /**
+   * Returns the class which immediately encloses this class.  If this class
+   * is a top-level class, this method returns <code>null</code>.
+   *
+   * @return the immediate enclosing class, or <code>null</code> if this is
+   *         a top-level class.
+   * @since 1.5
+   */
+  public native Class<?> getEnclosingClass();
+
+  /**
+   * Returns the constructor which immediately encloses this class.  If
+   * this class is a top-level class, or a local or anonymous class
+   * immediately enclosed by a type definition, instance initializer
+   * or static initializer, then <code>null</code> is returned.
+   *
+   * @return the immediate enclosing constructor if this class is
+   *         declared within a constructor.  Otherwise, <code>null</code>
+   *         is returned.
+   * @since 1.5
+   */
+  public native Constructor<T> getEnclosingConstructor();
+
+  /**
+   * Returns the method which immediately encloses this class.  If
+   * this class is a top-level class, or a local or anonymous class
+   * immediately enclosed by a type definition, instance initializer
+   * or static initializer, then <code>null</code> is returned.
+   *
+   * @return the immediate enclosing method if this class is
+   *         declared within a method.  Otherwise, <code>null</code>
+   *         is returned.
+   * @since 1.5
+   */
+  public native Method getEnclosingMethod();
+
+  private native String getClassSignature();
+
+  /**
+   * <p>
+   * Returns an array of <code>Type</code> objects which represent the
+   * interfaces directly implemented by this class or extended by this
+   * interface.
+   * </p>
+   * <p>
+   * If one of the superinterfaces is a parameterized type, then the
+   * object returned for this interface reflects the actual type
+   * parameters used in the source code.  Type parameters are created
+   * using the semantics specified by the <code>ParameterizedType</code>
+   * interface, and only if an instance has not already been created.
+   * </p>
+   * <p>
+   * The order of the interfaces in the array matches the order in which
+   * the interfaces are declared.  For classes which represent an array,
+   * an array of two interfaces, <code>Cloneable</code> and
+   * <code>Serializable</code>, is always returned, with the objects in
+   * that order.  A class representing a primitive type or void always
+   * returns an array of zero size.
+   * </p>
+   *
+   * @return an array of interfaces implemented or extended by this class.
+   * @throws GenericSignatureFormatError if the generic signature of one
+   *         of the interfaces does not comply with that specified by the Java
+   *         Virtual Machine specification, 3rd edition.
+   * @throws TypeNotPresentException if any of the superinterfaces refers
+   *         to a non-existant type.
+   * @throws MalformedParameterizedTypeException if any of the interfaces
+   *         refer to a parameterized type that can not be instantiated for
+   *         some reason.
+   * @since 1.5
+   * @see java.lang.reflect.ParameterizedType
+   */
+  public Type[] getGenericInterfaces()
+  {
+    if (isPrimitive())
+      return new Type[0];
+
+    String sig = getClassSignature();
+    if (sig == null)
+      return getInterfaces();
+
+    ClassSignatureParser p = new ClassSignatureParser(this, sig);
+    return p.getInterfaceTypes();
+  }
+
+  /**
+   * <p>
+   * Returns a <code>Type</code> object representing the direct superclass,
+   * whether class, interface, primitive type or void, of this class.
+   * If this class is an array class, then a class instance representing
+   * the <code>Object</code> class is returned.  If this class is primitive,
+   * an interface, or a representation of either the <code>Object</code>
+   * class or void, then <code>null</code> is returned.
+   * </p>
+   * <p>
+   * If the superclass is a parameterized type, then the
+   * object returned for this interface reflects the actual type
+   * parameters used in the source code.  Type parameters are created
+   * using the semantics specified by the <code>ParameterizedType</code>
+   * interface, and only if an instance has not already been created.
+   * </p>
+   *
+   * @return the superclass of this class.
+   * @throws GenericSignatureFormatError if the generic signature of the
+   *         class does not comply with that specified by the Java
+   *         Virtual Machine specification, 3rd edition.
+   * @throws TypeNotPresentException if the superclass refers
+   *         to a non-existant type.
+   * @throws MalformedParameterizedTypeException if the superclass
+   *         refers to a parameterized type that can not be instantiated for
+   *         some reason.
+   * @since 1.5
+   * @see java.lang.reflect.ParameterizedType
+   */
+  public Type getGenericSuperclass()
+  {
+    if (isArray())
+      return Object.class;
+
+    if (isPrimitive() || isInterface() || this == Object.class)
+      return null;
+
+    String sig = getClassSignature();
+    if (sig == null)
+      return getSuperclass();
+
+    ClassSignatureParser p = new ClassSignatureParser(this, sig);
+    return p.getSuperclassType();
+  }
+
+  /**
+   * Returns an array of <code>TypeVariable</code> objects that represents
+   * the type variables declared by this class, in declaration order.
+   * An array of size zero is returned if this class has no type
+   * variables.
+   *
+   * @return the type variables associated with this class. 
+   * @throws GenericSignatureFormatError if the generic signature does
+   *         not conform to the format specified in the Virtual Machine
+   *         specification, version 3.
+   * @since 1.5
+   */
+  public TypeVariable<Class<T>>[] getTypeParameters()
+  {
+    String sig = getClassSignature();
+    if (sig == null)
+      return (TypeVariable<Class<T>>[])new TypeVariable[0];
+
+    ClassSignatureParser p = new ClassSignatureParser(this, sig);
+    return p.getTypeParameters();
+  }
+
+  /**
+   * Returns this class' annotation for the specified annotation type,
+   * or <code>null</code> if no such annotation exists.
+   *
+   * @param annotationClass the type of annotation to look for.
+   * @return this class' annotation for the specified type, or
+   *         <code>null</code> if no such annotation exists.
+   * @since 1.5
+   */
+  public <A extends Annotation> A getAnnotation(Class<A> annotationClass)
+  {
+    A foundAnnotation = null;
+    Annotation[] annotations = getAnnotations();
+    for (Annotation annotation : annotations)
+      if (annotation.annotationType() == annotationClass)
+	foundAnnotation = (A) annotation;
+    return foundAnnotation;
+  }
+
+  /**
+   * Returns all annotations associated with this class.  If there are
+   * no annotations associated with this class, then a zero-length array
+   * will be returned.  The returned array may be modified by the client
+   * code, but this will have no effect on the annotation content of this
+   * class, and hence no effect on the return value of this method for
+   * future callers.
+   *
+   * @return this class' annotations.
+   * @since 1.5
+   */
+  public Annotation[] getAnnotations()
+  {
+    HashSet<Annotation> set = new HashSet<Annotation>();
+    set.addAll(Arrays.asList(getDeclaredAnnotations()));
+    Class[] interfaces = getInterfaces();
+    for (int i = 0; i < interfaces.length; i++)
+      set.addAll(Arrays.asList(interfaces[i].getAnnotations()));
+    Class<? super T> superClass = getSuperclass();
+    if (superClass != null)
+      set.addAll(Arrays.asList(superClass.getAnnotations()));
+    return set.toArray(new Annotation[set.size()]);
+  }
+
+  /**
+   * Returns all annotations directly defined by this class.  If there are
+   * no annotations associated with this class, then a zero-length array
+   * will be returned.  The returned array may be modified by the client
+   * code, but this will have no effect on the annotation content of this
+   * class, and hence no effect on the return value of this method for
+   * future callers.
+   *
+   * @return the annotations directly defined by this class.
+   * @since 1.5
+   */
+  public Annotation[] getDeclaredAnnotations()
+  {
+    Annotation[] result = getDeclaredAnnotationsInternal();
+    if (result == null)
+      result = new Annotation[0];
+    return result;
+  }
+
+  private native Annotation[] getDeclaredAnnotationsInternal();
+
+  /**
+   * Returns true if an annotation for the specified type is associated
+   * with this class.  This is primarily a short-hand for using marker
+   * annotations.
+   *
+   * @param annotationClass the type of annotation to look for.
+   * @return true if an annotation exists for the specified type.
+   * @since 1.5
+   */
+  public boolean isAnnotationPresent(Class<? extends Annotation> 
+				     annotationClass)
+  {
+    return getAnnotation(annotationClass) != null;
+  }
+
+  /**
+   * Returns true if this object represents an anonymous class.
+   *
+   * @return true if this object represents an anonymous class.
+   * @since 1.5
+   */
+  public native boolean isAnonymousClass();
+
+  /**
+   * Returns true if this object represents an local class.
+   *
+   * @return true if this object represents an local class.
+   * @since 1.5
+   */
+  public native boolean isLocalClass();
+
+  /**
+   * Returns true if this object represents an member class.
+   *
+   * @return true if this object represents an member class.
+   * @since 1.5
+   */
+  public native boolean isMemberClass();
 }

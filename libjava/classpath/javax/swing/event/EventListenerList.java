@@ -1,5 +1,5 @@
 /* EventListenerList.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -108,7 +108,7 @@ public class EventListenerList
    * An array with all currently registered listeners.  The array has
    * twice as many elements as there are listeners.  For an even
    * integer <code>i</code>, <code>listenerList[i]</code> indicates
-   * the registered class, and <code>listenerList[i+1]</code> is the
+   * the registered class, and <code>listenerList[i + 1]</code> is the
    * listener.
    */
   protected transient Object[] listenerList = NO_LISTENERS;
@@ -136,7 +136,7 @@ public class EventListenerList
    *
    * @throws NullPointerException if <code>t</code> is <code>null</code>.
    */
-  public void add(Class t, EventListener listener)
+  public <T extends EventListener> void add(Class<T> t, T listener)
   {
     int oldLength;
     Object[] newList;
@@ -175,7 +175,7 @@ public class EventListenerList
    * <code>t</code>. Thus, subclasses of <code>t</code> will not be
    * counted.
    */
-  public int getListenerCount(Class t)
+  public int getListenerCount(Class<?> t)
   {
     int result = 0;
     for (int i = 0; i < listenerList.length; i += 2)
@@ -187,11 +187,15 @@ public class EventListenerList
 
 
   /**
-   * Get a list of listenerType/listener pairs
-   * @returns Listener list
+   * Returns an array containing a sequence of listenerType/listener pairs, one
+   * for each listener.
+   * 
+   * @return An array containing the listener types and references.
    */
   public Object[] getListenerList()
   {
+    // returning the internal storage is a bad idea, but tests show that the
+    // reference implementation does this...
     return listenerList;
   }
 
@@ -214,13 +218,13 @@ public class EventListenerList
    * @throws NullPointerException if <code>c</code> is
    * <code>null</code>.
    *
-   * @returns an array of <code>c</code> whose elements are the
+   * @return an array of <code>c</code> whose elements are the
    * currently subscribed listeners of the specified type.  If there
    * are no such listeners, an empty array is returned.
    *
    * @since 1.3
    */
-  public EventListener[] getListeners(Class c)
+  public <T extends EventListener> T[] getListeners(Class<T> c)
   {
     int count, f;
     EventListener[] result;
@@ -228,11 +232,11 @@ public class EventListenerList
     count = getListenerCount(c);
     result = (EventListener[]) Array.newInstance(c, count);
     f = 0;
-    for (int i = 0; i < listenerList.length; i += 2)
+    for (int i = listenerList.length - 2; i >= 0; i -= 2)
       if (listenerList[i] == c)
         result[f++] = (EventListener) listenerList[i + 1];
     
-    return result;
+    return (T[]) result;
   }
 
 
@@ -249,7 +253,7 @@ public class EventListenerList
    *
    * @throws NullPointerException if <code>t</code> is <code>null</code>.
    */
-  public void remove(Class t, EventListener listener)
+  public <T extends EventListener> void remove(Class<T> t, T listener)
   {
     Object[] oldList, newList;
     int oldLength;

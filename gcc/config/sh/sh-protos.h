@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2003,
-   2004, 2005, 2006
+   2004, 2005
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
@@ -165,9 +165,10 @@ extern int shmedia_cleanup_truncate (rtx *, void *);
 
 extern int sh_contains_memref_p (rtx);
 extern rtx shmedia_prepare_call_address (rtx fnaddr, int is_sibcall);
-
-extern bool sh_cfun_trap_exit_p (void);
-
+struct secondary_reload_info;
+extern enum reg_class sh_secondary_reload (bool, rtx, enum reg_class,
+					   enum machine_mode,
+					   struct secondary_reload_info *);
 
 #endif /* ! GCC_SH_PROTOS_H */
 

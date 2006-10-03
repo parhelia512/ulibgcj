@@ -113,8 +113,22 @@ AC_SUBST(LDFLAGS)
 AM_INIT_AUTOMAKE([1.9.0])
 
 AC_CHECK_TOOL(AS, as)
+AC_CHECK_TOOL(LD, ld)
 AC_CHECK_TOOL(AR, ar)
 AC_CHECK_TOOL(RANLIB, ranlib, :)
+AC_PROG_AWK
+AC_CHECK_PROGS([JAR], [jar fastjar], no)
+AC_PATH_PROG([ZIP], [zip], no)
+AC_PATH_PROG([UNZIP], [unzip], unzip)
+AM_CONDITIONAL(BASH_JAR, test "$JAR" = no)
+if test "$ZIP" = no; then
+  if test "$JAR" = no; then
+    AC_MSG_ERROR([cannot find neither zip nor jar, cannot continue])
+  fi
+else
+  # InfoZIP available, use the 'guaranteed' Bourne-shell JAR to build libjava
+  JAR=`pwd`/scripts/jar
+fi
 
 AC_PROG_INSTALL
 
@@ -160,6 +174,24 @@ AC_ARG_ENABLE(libgcj-debug,
     LIBGCJDEBUG="enable"
   fi])
 
+AC_ARG_WITH([escher],
+         AS_HELP_STRING([--with-escher=ABS.PATH],
+                        [specify path to escher dir or JAR for X peers]))
+case "$with_escher" in
+"")
+        use_escher=false
+        ;;
+"no")
+        use_escher=false
+        ;;
+"yes")
+        AC_MSG_ERROR([Please supply an absolute path to Escher library])
+        ;;
+*)
+        use_escher=true
+        ;;
+esac
+
 # Determine which AWT peer libraries to build
 AC_ARG_ENABLE(java-awt,
   AS_HELP_STRING([--enable-java-awt],
@@ -169,6 +201,7 @@ peerlibs="`echo ${enable_java_awt} | tr ',' ' '`"
 use_xlib_awt=""
 use_gtk_awt=""
 use_qt_awt=""
+use_x_awt=""
 # The default toolkit to use is the first one specified.
 TOOLKIT=
 AC_SUBST(TOOLKIT)
@@ -209,10 +242,17 @@ for peer in $peerlibs ; do
 	 fi
       fi
       ;;
+    x)
+      use_x_awt=yes
+      if test -z "$TOOLKIT"; then
+	 TOOLKIT=gnu.java.awt.peer.x.XToolkit
+      fi
+      ;;
     no)
       use_xlib_awt=
       use_gtk_awt=
       use_qt_awt=
+      use_x_awt=
       break
       ;;
     *)
@@ -222,8 +262,8 @@ for peer in $peerlibs ; do
 done
 
 AM_CONDITIONAL(XLIB_AWT, test "$use_xlib_awt" = yes)
-AM_CONDITIONAL(GTK_AWT, test "$use_gtk_awt" = yes)
 AM_CONDITIONAL(QT_AWT, test "$use_qt_awt" = yes)
+AM_CONDITIONAL(X_AWT, test "$use_x_awt" = yes)
 
 # Create standard.omit based on decisions we just made.
 cp $srcdir/standard.omit.in standard.omit
@@ -231,11 +271,11 @@ if test "$use_xlib_awt" != yes; then
    echo gnu/awt/xlib >> standard.omit
    echo gnu/gcj/xlib >> standard.omit
 fi
-if test "$use_gtk_awt" != yes; then
-   echo gnu/java/awt/peer/gtk >> standard.omit
-fi
 if test "$use_qt_awt" != yes; then
    echo gnu/java/awt/peer/qt >> standard.omit
+fi
+if test "$use_x_awt" != yes; then
+   echo gnu/java/awt/peer/x >> standard.omit
 fi
 
 if test -z "${with_multisubdir}"; then
@@ -288,7 +328,6 @@ case "${which_gcj}" in
    built)
       GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
       GCJH='$(top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/gcc/gcjh'
-      ZIP='$(top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/fastjar/fastjar'
    ;;
    cross)
       if test "x${with_newlib}" = "xyes"; then
@@ -298,20 +337,15 @@ case "${which_gcj}" in
       else
          GCJ="${target_noncanonical}-gcj -B`${PWDCMD-pwd}`/"
       fi
-      ZIP='$(target_noncanonical)-fastjar'
       GCJH='$(target_noncanonical)-gcjh'
    ;;
    path)
       GCJ="gcj -B`${PWDCMD-pwd}`/"
-      ## In this case, gcj is found outside the build tree.  However, zip is
-      ## found in the build tree.
-      ZIP='$(top_builddir)/$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar'
       GCJH=gcjh
    ;;
 esac
 
 AC_SUBST(GCJH)
-AC_SUBST(ZIP)
 
 # Create it, so that compile/link tests don't fail
 test -f libgcj.spec || touch libgcj.spec
@@ -331,13 +365,23 @@ dnl FIXME?
 ac_configure_args="$ac_configure_args --disable-examples"
 ac_configure_args="$ac_configure_args --with-glibj=build"
 if test "$use_gtk_awt" != yes; then
-  ac_configure_args="$ac_configure_args --disable-gtk-peer"
+  ac_configure_args="$ac_configure_args --disable-gtk-peer --disable-plugin"
 fi
 if test "$use_qt_awt" != yes; then
   ac_configure_args="$ac_configure_args --disable-qt-peer"
 else
   # We need this as qt is disabled by default in classpath.
   ac_configure_args="$ac_configure_args --enable-qt-peer"
+fi
+if test "$use_x_awt" != yes; then
+  ac_configure_args="$ac_configure_args --without-escher"
+else
+  # We need this as escher is disabled by default in classpath.
+  if test "$use_escher" != true; then
+    AC_MSG_ERROR([Please supply an absolute path to the Escher library])
+  else
+    ac_configure_args="$ac_configure_args --with-escher=$with_escher"
+  fi
 fi
 dnl --with-gcj=$GCJ
 dnl --with-javah=$GCJH
@@ -567,8 +611,6 @@ AC_ARG_WITH(ecos,
 [  --with-ecos             enable runtime eCos target support],
 TARGET_ECOS="$with_ecos"
 )
-
-supply_backtrace=no
 
 PLATFORM_INNER_NAT_HDRS=
 case "$TARGET_ECOS" in
@@ -808,7 +850,7 @@ case "$THREADS" in
 	THREADLDFLAGS=-pthread
 	THREADSPEC=-lpthread
 	;;
-     alpha*-dec-osf*)
+     alpha*-dec-osf* | hppa*-hp-hpux*)
 	THREADCXXFLAGS=-pthread
 	# boehm-gc needs some functions from librt, so link that too.
 	THREADLIBS='-lpthread -lrt'
@@ -851,11 +893,18 @@ AC_SUBST(THREADCXXFLAGS)
 AM_CONDITIONAL(USING_POSIX_THREADS, test "$THREADS" = posix)
 AM_CONDITIONAL(USING_WIN32_THREADS, test "$THREADS" = win32)
 AM_CONDITIONAL(USING_NO_THREADS, test "$THREADS" = none)
+AM_CONDITIONAL(USE_LIBGCJ_BC, test "$use_libgcj_bc" = yes)
 
 if test -d sysdep; then true; else mkdir sysdep; fi
 AC_CONFIG_LINKS(sysdep/locks.h:sysdep/$sysdeps_dir/locks.h)
 AC_CONFIG_LINKS(sysdep/backtrace.h:$fallback_backtrace_h)
 AC_CONFIG_LINKS(sysdep/descriptor.h:$descriptor_h)
+
+LIBGCJ_SPEC="%{s-bc-abi:} -lgcj"
+if test "$use_libgcj_bc" = yes; then
+  LIBGCJ_SPEC="%{s-bc-abi:-lgcj_bc;:-lgcj}"
+fi
+AC_SUBST(LIBGCJ_SPEC)
 
 HASH_SYNC_SPEC=
 # Hash synchronization is only useful with posix threads right now.
@@ -898,38 +947,14 @@ else
 		   access stat mkdir rename rmdir unlink realpath utime chmod \
 		   nl_langinfo setlocale \
 		   inet_pton uname inet_ntoa \
-		   fork execvp pipe sigaction ftruncate])
+		   fork execvp pipe sigaction ftruncate mmap])
    AC_CHECK_FUNCS(inet_aton inet_addr, break)
-   AC_CHECK_HEADERS(execinfo.h unistd.h dlfcn.h) 
-   AC_CHECK_FUNC(backtrace, [
-     case "$host" in
-       ia64-*-linux*)
-	 # Has broken backtrace()
-	 ;;
-       mips*-*-linux*)
-         # Has broken backtrace(), but we supply our own.
-         if test -d sysdep; then true; else mkdir -p sysdep; fi
-	 supply_backtrace=yes
-         AC_DEFINE(HAVE_BACKTRACE, 1,
-           [Define if your platform has a working backtrace() function.])
-         ;;
-       *)
-         AC_DEFINE(HAVE_BACKTRACE, 1,
-           [Define if your platform has a working backtrace() function.])
-	 ;;
-     esac
-   ], [
-     case "$host" in
-       *mingw*)
-         # Has backtrace() defined in libgcj itself
-         AC_DEFINE(HAVE_BACKTRACE, 1,
-           [Define if your platform has a working backtrace() function.])
-         ;;
-     esac
-   ])
-
+   AC_CHECK_HEADERS(execinfo.h unistd.h dlfcn.h)
+   # Do an additional check on dld, HP-UX for example has dladdr in libdld.sl
    AC_CHECK_LIB(dl, dladdr, [
-       AC_DEFINE(HAVE_DLADDR, 1, [Define if you have dladdr()])])
+       AC_DEFINE(HAVE_DLADDR, 1, [Define if you have dladdr()])], [
+       AC_CHECK_LIB(dld, dladdr, [
+       AC_DEFINE(HAVE_DLADDR, 1, [Define if you have dladdr()])])])
 
    if test x"$build" = x"$host"; then
      AC_CHECK_FILES(/proc/self/exe, [
@@ -1043,6 +1068,17 @@ else
 	    AC_DEFINE(HAVE_SCHED_YIELD)
 	    THREADLIBS="$THREADLIBS -lposix4"
 	    THREADSPEC="$THREADSPEC -lposix4"])])])
+
+      AC_CHECK_LIB(rt, clock_gettime, [
+         AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [Define if you have clock_gettime()])
+	 case "$THREADSPEC" in
+	   *-lrt*) ;;
+	   *)
+ 	     THREADSPEC="$THREADSPEC -lrt"
+	     THREADLIBS="$THREADLIBS -lrt"
+	     ;;
+	 esac])
+
       LIBS="$save_LIBS"
 
       # We can save a little space at runtime if the mutex has m_count
@@ -1072,9 +1108,11 @@ else
    if test "$memcpy_found" = no; then
       AC_MSG_ERROR([memcpy is required])
    fi
-
+   # Do an additional check on dld, HP-UX for example has dlopen in libdld.sl
    AC_CHECK_LIB(dl, dlopen, [
-       AC_DEFINE(HAVE_DLOPEN, 1, [Define if dlopen is available])])
+       AC_DEFINE(HAVE_DLOPEN, 1, [Define if dlopen is available])], [
+       AC_CHECK_LIB(dld, dlopen, [
+       AC_DEFINE(HAVE_DLOPEN, 1, [Define if dlopen is available])])])
 
    # Some library-finding code we stole from Tcl.
    #--------------------------------------------------------------------
@@ -1130,6 +1168,10 @@ else
       AC_CHECK_LIB(z, deflate, ZLIBSPEC=-lz, ZLIBSPEC=)
    fi
 
+   LIBMAGIC=
+   AC_CHECK_LIB(magic, magic_open, LIBMAGIC=-lmagic)
+   AC_SUBST(LIBMAGIC)
+
    # Test for Gtk stuff, if asked for.
    if test "$use_gtk_awt" = yes; then
       PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.4)
@@ -1156,7 +1198,6 @@ else
       AC_CHECK_LIB(dl, main, SYSTEMSPEC="$SYSTEMSPEC -ldl")
    fi
 fi
-AM_CONDITIONAL(SUPPLY_BACKTRACE, test "$supply_backtrace" = yes)
 
 # Use a semicolon as CLASSPATH separator for MinGW, otherwise a colon.
 case $build in
@@ -1277,8 +1318,8 @@ GCJVERSION=$gcjversion
 AC_SUBST(GCJVERSION)
 AC_DEFINE_UNQUOTED(GCJVERSION, "$GCJVERSION", [Short GCJ version ID])
 
-AC_DEFINE(JV_VERSION, "1.4.2", [Compatibility version string])
-AC_DEFINE(JV_API_VERSION, "1.4", [API compatibility version string])
+AC_DEFINE(JV_VERSION, "1.5.0", [Compatibility version string])
+AC_DEFINE(JV_API_VERSION, "1.5", [API compatibility version string])
 
 TL_AC_GXX_INCLUDE_DIR
 
@@ -1291,7 +1332,7 @@ AC_CHECK_HEADERS([unistd.h bstring.h sys/time.h sys/types.h fcntl.h \
 		  sys/ioctl.h sys/filio.h sys/stat.h sys/select.h \
 		  sys/socket.h netinet/in.h arpa/inet.h netdb.h net/if.h \
 		  pwd.h sys/config.h stdint.h langinfo.h locale.h \
-		  dirent.h])
+		  dirent.h sys/rw_lock.h magic.h])
 AC_CHECK_HEADERS(inttypes.h, [
     AC_DEFINE(HAVE_INTTYPES_H, 1, [Define if <inttypes.h> is available])
     AC_DEFINE(JV_HAVE_INTTYPES_H, 1, [Define if <inttypes.h> is available])
@@ -1366,7 +1407,6 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <time.h>]], [[struct tm tim; tim.t
           [AC_MSG_RESULT(no)])])])
 
 AC_FUNC_ALLOCA
-AC_FUNC_MMAP
 
 AC_CHECK_PROGS(PERL, perl, false)
 
@@ -1386,6 +1426,9 @@ case "${host}" in
 #    ;;
  hppa*-*-linux*)
     SIGNAL_HANDLER=include/pa-signal.h
+    ;;
+ hppa*-hp-hpux*)
+    SIGNAL_HANDLER=include/hppa-signal.h
     ;;
  ia64-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h
@@ -1447,6 +1490,17 @@ fi
 # See if we support thread-local storage.
 GCC_CHECK_TLS
 
+# Check if linker supports static linking on a per library basis
+LD_START_STATIC_SPEC=
+LD_FINISH_STATIC_SPEC=
+if $LD --help 2>&1 | grep -q -e -call_shared ; then
+  if $LD --help 2>&1 | grep -q -e -non_shared ; then
+    LD_START_STATIC_SPEC='%{static-libgcj:-non_shared}'
+    LD_FINISH_STATIC_SPEC='%{static-libgcj:-call_shared}'
+  fi
+fi
+AC_SUBST(LD_START_STATIC_SPEC)
+AC_SUBST(LD_FINISH_STATIC_SPEC)
 
 here=`${PWDCMD-pwd}`
 AC_SUBST(here)
@@ -1463,6 +1517,8 @@ gcj/Makefile
 include/Makefile
 testsuite/Makefile
 ])
+
+AC_CONFIG_FILES([scripts/jar], [chmod +x scripts/jar])
 
 AC_CONFIG_COMMANDS([default],
 [# Only add multilib support code if we just rebuilt top-level Makefile.

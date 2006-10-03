@@ -222,8 +222,11 @@ public abstract class NumberFormat extends Format implements Cloneable
     return sbuf.toString();
   }
 
-  public final StringBuffer format (Object obj, StringBuffer sbuf,
-				    FieldPosition pos)
+  /**
+   * @specnote this method was final in releases before 1.5
+   */
+  public StringBuffer format (Object obj, StringBuffer sbuf,
+                              FieldPosition pos)
   {
     if (obj instanceof Number)
       return format(((Number) obj).doubleValue(), sbuf, pos);
@@ -481,7 +484,7 @@ public abstract class NumberFormat extends Format implements Cloneable
    */
   public static NumberFormat getIntegerInstance(Locale locale)
   {
-    NumberFormat format = computeInstance (locale, "numberFormat", "#,##0");
+    NumberFormat format = computeInstance (locale, "integerFormat", "#,##0");
     format.setMaximumFractionDigits(0);
     format.setParseIntegerOnly (true);
     return format;

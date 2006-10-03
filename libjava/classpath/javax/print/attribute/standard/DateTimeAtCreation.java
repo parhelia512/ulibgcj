@@ -1,5 +1,5 @@
 /* DateTimeAtCreation.java -- 
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,10 +40,19 @@ package javax.print.attribute.standard;
 
 import java.util.Date;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.DateTimeSyntax;
 import javax.print.attribute.PrintJobAttribute;
 
 /**
+ * The <code>DateTimeAtCreation</code> attribute specifies the 
+ * date and the time at which a print job was created.
+ * <p>
+ * <b>IPP Compatibility:</b> DateTimeAtCreation is an IPP 1.1 attribute.
+ * </p>
+ * @see javax.print.attribute.standard.DateTimeAtCompleted
+ * @see javax.print.attribute.standard.DateTimeAtProcessing
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class DateTimeAtCreation extends DateTimeSyntax
@@ -64,11 +73,12 @@ public final class DateTimeAtCreation extends DateTimeSyntax
   }
 
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -81,17 +91,17 @@ public final class DateTimeAtCreation extends DateTimeSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>DateTimeAtCreation</code> itself
+   * @return The class <code>DateTimeAtCreation</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return DateTimeAtCreation.class;
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "date-time-at-creation"
+   * @return The name "date-time-at-creation".
    */
   public String getName()
   {

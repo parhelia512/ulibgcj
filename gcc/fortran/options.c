@@ -1,6 +1,6 @@
 /* Parse and display command line options.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004,
-   2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -57,9 +57,11 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.warn_implicit_interface = 0;
   gfc_option.warn_line_truncation = 0;
   gfc_option.warn_surprising = 0;
+  gfc_option.warn_tabs = 1;
   gfc_option.warn_underflow = 1;
   gfc_option.warn_unused_labels = 0;
 
+  gfc_option.flag_all_intrinsics = 0;
   gfc_option.flag_default_double = 0;
   gfc_option.flag_default_integer = 0;
   gfc_option.flag_default_real = 0;
@@ -78,12 +80,16 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.flag_backslash = 1;
   gfc_option.flag_cray_pointer = 0;
   gfc_option.flag_d_lines = -1;
+  gfc_option.flag_openmp = 0;
 
   gfc_option.q_kind = gfc_default_double_kind;
 
   gfc_option.fpe = 0;
 
-  flag_argument_noalias = 2;
+  /* Argument pointers cannot point to anything
+     but their argument.  */
+  flag_argument_noalias = 3;
+
   flag_errno_math = 0;
 
   gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
@@ -274,6 +280,9 @@ gfc_post_options (const char **pfilename)
   if (pedantic)
     gfc_option.warn_ampersand = 1;
 
+  if (gfc_option.flag_all_intrinsics)
+    gfc_option.warn_nonstd_intrinsics = 0;
+
   return false;
 }
 
@@ -289,6 +298,7 @@ set_Wall (void)
   gfc_option.warn_line_truncation = 1;
   gfc_option.warn_nonstd_intrinsics = 1;
   gfc_option.warn_surprising = 1;
+  gfc_option.warn_tabs = 0;
   gfc_option.warn_underflow = 1;
   gfc_option.warn_unused_labels = 1;
  
@@ -407,12 +417,28 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.warn_surprising = value;
       break;
 
+    case OPT_Wtabs:
+      gfc_option.warn_tabs = value;
+      break;
+
     case OPT_Wunderflow:
       gfc_option.warn_underflow = value;
       break;
 
     case OPT_Wunused_labels:
       gfc_option.warn_unused_labels = value;
+      break;
+
+    case OPT_fall_intrinsics:
+      gfc_option.flag_all_intrinsics = 1;
+      break;
+
+    case OPT_fautomatic:
+      gfc_option.flag_automatic = value;
+      break;
+
+    case OPT_fbackslash:
+      gfc_option.flag_backslash = value;
       break;
       
     case OPT_fcray_pointer:
@@ -425,14 +451,6 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_fdollar_ok:
       gfc_option.flag_dollar_ok = value;
-      break;
-
-    case OPT_fautomatic:
-      gfc_option.flag_automatic = value;
-      break;
-
-    case OPT_fbackslash:
-      gfc_option.flag_backslash = value;
       break;
 
     case OPT_fd_lines_as_code:
@@ -463,6 +481,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_ffree_form:
       gfc_option.source_form = FORM_FREE;
+      break;
+
+    case OPT_fopenmp:
+      gfc_option.flag_openmp = value;
       break;
 
     case OPT_ffree_line_length_none:
@@ -511,7 +533,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_fmax_identifier_length_:
       if (value > GFC_MAX_SYMBOL_LEN)
-	gfc_fatal_error ("Maximum supported idenitifier length is %d",
+	gfc_fatal_error ("Maximum supported identifier length is %d",
 			 GFC_MAX_SYMBOL_LEN);
       gfc_option.max_identifier_length = value;
       break;
@@ -552,6 +574,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.warn_std = GFC_STD_F95_OBS;
       gfc_option.max_identifier_length = 31;
       gfc_option.warn_ampersand = 1;
+      gfc_option.warn_tabs = 0;
       break;
 
     case OPT_std_f2003:
@@ -559,6 +582,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 	| GFC_STD_F2003 | GFC_STD_F95;
       gfc_option.warn_std = GFC_STD_F95_OBS;
       gfc_option.max_identifier_length = 63;
+      gfc_option.warn_ampersand = 1;
       break;
 
     case OPT_std_gnu:
@@ -577,7 +601,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_Wnonstd_intrinsics:
-      gfc_option.warn_nonstd_intrinsics = 1;
+      gfc_option.warn_nonstd_intrinsics = value;
       break;
 
     case OPT_fshort_enums:

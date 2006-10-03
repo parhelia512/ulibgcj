@@ -100,8 +100,8 @@ import java.io.Serializable;
  * @since 1.0
  * @status updated to 1.4
  */
-public class Hashtable extends Dictionary
-  implements Map, Cloneable, Serializable
+public class Hashtable<K, V> extends Dictionary<K, V>
+  implements Map<K, V>, Cloneable, Serializable
 {
   // WARNING: Hashtable is a CORE class in the bootstrap cycle. See the
   // comments in vm/reference/java/lang/Runtime for implications of this fact.
@@ -110,12 +110,6 @@ public class Hashtable extends Dictionary
    * early documentation specified this value as 101. That is incorrect.
    */
   private static final int DEFAULT_CAPACITY = 11;
-
-  /** An "enum" of iterator types. */
-  // Package visible for use by nested classes.
-  static final int KEYS = 0,
-                   VALUES = 1,
-                   ENTRIES = 2;
 
   /**
    * The default load factor; this is explicitly specified by the spec.
@@ -145,7 +139,7 @@ public class Hashtable extends Dictionary
    * Array containing the actual key-value mappings.
    */
   // Package visible for use by nested classes.
-  transient HashEntry[] buckets;
+  transient HashEntry<K, V>[] buckets;
 
   /**
    * Counts the number of modifications this Hashtable has undergone, used
@@ -163,34 +157,35 @@ public class Hashtable extends Dictionary
   /**
    * The cache for {@link #keySet()}.
    */
-  private transient Set keys;
+  private transient Set<K> keys;
 
   /**
    * The cache for {@link #values()}.
    */
-  private transient Collection values;
+  private transient Collection<V> values;
 
   /**
    * The cache for {@link #entrySet()}.
    */
-  private transient Set entries;
+  private transient Set<Map.Entry<K, V>> entries;
 
   /**
    * Class to represent an entry in the hash table. Holds a single key-value
    * pair. A Hashtable Entry is identical to a HashMap Entry, except that
    * `null' is not allowed for keys and values.
    */
-  private static final class HashEntry extends AbstractMap.BasicMapEntry
+  private static final class HashEntry<K, V>
+    extends AbstractMap.SimpleEntry<K, V>
   {
     /** The next entry in the linked list. */
-    HashEntry next;
+    HashEntry<K, V> next;
 
     /**
      * Simple constructor.
      * @param key the key, already guaranteed non-null
      * @param value the value, already guaranteed non-null
      */
-    HashEntry(Object key, Object value)
+    HashEntry(K key, V value)
     {
       super(key, value);
     }
@@ -201,7 +196,7 @@ public class Hashtable extends Dictionary
      * @return the prior value
      * @throws NullPointerException if <code>newVal</code> is null
      */
-    public Object setValue(Object newVal)
+    public V setValue(V newVal)
     {
       if (newVal == null)
         throw new NullPointerException();
@@ -232,7 +227,7 @@ public class Hashtable extends Dictionary
    *         to or from `null'.
    * @since 1.2
    */
-  public Hashtable(Map m)
+  public Hashtable(Map<? extends K, ? extends V> m)
   {
     this(Math.max(m.size() * 2, DEFAULT_CAPACITY), DEFAULT_LOAD_FACTOR);
     putAll(m);
@@ -269,7 +264,7 @@ public class Hashtable extends Dictionary
 
     if (initialCapacity == 0)
       initialCapacity = 1;
-    buckets = new HashEntry[initialCapacity];
+    buckets = (HashEntry<K, V>[]) new HashEntry[initialCapacity];
     this.loadFactor = loadFactor;
     threshold = (int) (initialCapacity * loadFactor);
   }
@@ -301,9 +296,9 @@ public class Hashtable extends Dictionary
    * @see #elements()
    * @see #keySet()
    */
-  public Enumeration keys()
+  public Enumeration<K> keys()
   {
-    return new Enumerator(KEYS);
+    return new KeyEnumerator();
   }
 
   /**
@@ -315,9 +310,9 @@ public class Hashtable extends Dictionary
    * @see #keys()
    * @see #values()
    */
-  public Enumeration elements()
+  public Enumeration<V> elements()
   {
-    return new Enumerator(VALUES);
+    return new ValueEnumerator();
   }
 
   /**
@@ -339,7 +334,7 @@ public class Hashtable extends Dictionary
 
     for (int i = buckets.length - 1; i >= 0; i--)
       {
-        HashEntry e = buckets[i];
+        HashEntry<K, V> e = buckets[i];
         while (e != null)
           {
             if (e.value.equals(value))
@@ -347,7 +342,7 @@ public class Hashtable extends Dictionary
             e = e.next;
           }
       }
- 
+
     return false;  
   }
 
@@ -382,7 +377,7 @@ public class Hashtable extends Dictionary
   public synchronized boolean containsKey(Object key)
   {
     int idx = hash(key);
-    HashEntry e = buckets[idx];
+    HashEntry<K, V> e = buckets[idx];
     while (e != null)
       {
         if (e.key.equals(key))
@@ -402,10 +397,10 @@ public class Hashtable extends Dictionary
    * @see #put(Object, Object)
    * @see #containsKey(Object)
    */
-  public synchronized Object get(Object key)
+  public synchronized V get(Object key)
   {
     int idx = hash(key);
-    HashEntry e = buckets[idx];
+    HashEntry<K, V> e = buckets[idx];
     while (e != null)
       {
         if (e.key.equals(key))
@@ -427,10 +422,10 @@ public class Hashtable extends Dictionary
    * @see #get(Object)
    * @see Object#equals(Object)
    */
-  public synchronized Object put(Object key, Object value)
+  public synchronized V put(K key, V value)
   {
     int idx = hash(key);
-    HashEntry e = buckets[idx];
+    HashEntry<K, V> e = buckets[idx];
 
     // Check if value is null since it is not permitted.
     if (value == null)
@@ -441,7 +436,7 @@ public class Hashtable extends Dictionary
         if (e.key.equals(key))
           {
             // Bypass e.setValue, since we already know value is non-null.
-            Object r = e.value;
+            V r = e.value;
             e.value = value;
             return r;
           }
@@ -460,7 +455,7 @@ public class Hashtable extends Dictionary
         idx = hash(key);
       }
 
-    e = new HashEntry(key, value);
+    e = new HashEntry<K, V>(key, value);
 
     e.next = buckets[idx];
     buckets[idx] = e;
@@ -476,11 +471,11 @@ public class Hashtable extends Dictionary
    * @param key the key used to locate the value to remove
    * @return whatever the key mapped to, if present
    */
-  public synchronized Object remove(Object key)
+  public synchronized V remove(Object key)
   {
     int idx = hash(key);
-    HashEntry e = buckets[idx];
-    HashEntry last = null;
+    HashEntry<K, V> e = buckets[idx];
+    HashEntry<K, V> last = null;
 
     while (e != null)
       {
@@ -508,17 +503,19 @@ public class Hashtable extends Dictionary
    * @param m the map to be hashed into this
    * @throws NullPointerException if m is null, or contains null keys or values
    */
-  public synchronized void putAll(Map m)
+  public synchronized void putAll(Map<? extends K, ? extends V> m)
   {
-    Iterator itr = m.entrySet().iterator();
+    Map<K,V> addMap;
+    
+    addMap = (Map<K,V>) m;
 
-    while (itr.hasNext())
+    for (Map.Entry<K,V> e : addMap.entrySet())
       {
-        Map.Entry e = (Map.Entry) itr.next();
         // Optimize in case the Entry is one of our own.
-        if (e instanceof AbstractMap.BasicMapEntry)
+        if (e instanceof AbstractMap.SimpleEntry)
           {
-            AbstractMap.BasicMapEntry entry = (AbstractMap.BasicMapEntry) e;
+            AbstractMap.SimpleEntry<? extends K, ? extends V> entry
+	      = (AbstractMap.SimpleEntry<? extends K, ? extends V>) e;
             put(entry.key, entry.value);
           }
         else
@@ -549,16 +546,16 @@ public class Hashtable extends Dictionary
    */
   public synchronized Object clone()
   {
-    Hashtable copy = null;
+    Hashtable<K, V> copy = null;
     try
       {
-        copy = (Hashtable) super.clone();
+        copy = (Hashtable<K, V>) super.clone();
       }
     catch (CloneNotSupportedException x)
       {
         // This is impossible.
       }
-    copy.buckets = new HashEntry[buckets.length];
+    copy.buckets = (HashEntry<K, V>[]) new HashEntry[buckets.length];
     copy.putAllInternal(this);
     // Clear the caches.
     copy.keys = null;
@@ -581,8 +578,8 @@ public class Hashtable extends Dictionary
   {
     // Since we are already synchronized, and entrySet().iterator()
     // would repeatedly re-lock/release the monitor, we directly use the
-    // unsynchronized HashIterator instead.
-    Iterator entries = new HashIterator(ENTRIES);
+    // unsynchronized EntryIterator instead.
+    Iterator<Map.Entry<K, V>> entries = new EntryIterator();
     StringBuffer r = new StringBuffer("{");
     for (int pos = size; pos > 0; pos--)
       {
@@ -609,22 +606,22 @@ public class Hashtable extends Dictionary
    * @see #entrySet()
    * @since 1.2
    */
-  public Set keySet()
+  public Set<K> keySet()
   {
     if (keys == null)
       {
         // Create a synchronized AbstractSet with custom implementations of
         // those methods that can be overridden easily and efficiently.
-        Set r = new AbstractSet()
+        Set<K> r = new AbstractSet<K>()
         {
           public int size()
           {
             return size;
           }
 
-          public Iterator iterator()
+          public Iterator<K> iterator()
           {
-            return new HashIterator(KEYS);
+            return new KeyIterator();
           }
 
           public void clear()
@@ -646,7 +643,7 @@ public class Hashtable extends Dictionary
         };
         // We must specify the correct object to synchronize upon, hence the
         // use of a non-public API
-        keys = new Collections.SynchronizedSet(this, r);
+        keys = new Collections.SynchronizedSet<K>(this, r);
       }
     return keys;
   }
@@ -667,22 +664,22 @@ public class Hashtable extends Dictionary
    * @see #entrySet()
    * @since 1.2
    */
-  public Collection values()
+  public Collection<V> values()
   {
     if (values == null)
       {
         // We don't bother overriding many of the optional methods, as doing so
         // wouldn't provide any significant performance advantage.
-        Collection r = new AbstractCollection()
+        Collection<V> r = new AbstractCollection<V>()
         {
           public int size()
           {
             return size;
           }
 
-          public Iterator iterator()
+          public Iterator<V> iterator()
           {
-            return new HashIterator(VALUES);
+            return new ValueIterator();
           }
 
           public void clear()
@@ -692,7 +689,7 @@ public class Hashtable extends Dictionary
         };
         // We must specify the correct object to synchronize upon, hence the
         // use of a non-public API
-        values = new Collections.SynchronizedCollection(this, r);
+        values = new Collections.SynchronizedCollection<V>(this, r);
       }
     return values;
   }
@@ -719,22 +716,22 @@ public class Hashtable extends Dictionary
    * @see Map.Entry
    * @since 1.2
    */
-  public Set entrySet()
+  public Set<Map.Entry<K, V>> entrySet()
   {
     if (entries == null)
       {
         // Create an AbstractSet with custom implementations of those methods
         // that can be overridden easily and efficiently.
-        Set r = new AbstractSet()
+        Set<Map.Entry<K, V>> r = new AbstractSet<Map.Entry<K, V>>()
         {
           public int size()
           {
             return size;
           }
 
-          public Iterator iterator()
+          public Iterator<Map.Entry<K, V>> iterator()
           {
-            return new HashIterator(ENTRIES);
+            return new EntryIterator();
           }
 
           public void clear()
@@ -749,7 +746,7 @@ public class Hashtable extends Dictionary
 
           public boolean remove(Object o)
           {
-            HashEntry e = getEntry(o);
+            HashEntry<K, V> e = getEntry(o);
             if (e != null)
               {
                 Hashtable.this.remove(e.key);
@@ -760,7 +757,7 @@ public class Hashtable extends Dictionary
         };
         // We must specify the correct object to synchronize upon, hence the
         // use of a non-public API
-        entries = new Collections.SynchronizedSet(this, r);
+        entries = new Collections.SynchronizedSet<Map.Entry<K, V>>(this, r);
       }
     return entries;
   }
@@ -778,7 +775,7 @@ public class Hashtable extends Dictionary
    */
   public boolean equals(Object o)
   {
-    // no need to synchronize, entrySet().equals() does that
+    // no need to synchronize, entrySet().equals() does that.
     if (o == this)
       return true;
     if (!(o instanceof Map))
@@ -798,8 +795,8 @@ public class Hashtable extends Dictionary
   {
     // Since we are already synchronized, and entrySet().iterator()
     // would repeatedly re-lock/release the monitor, we directly use the
-    // unsynchronized HashIterator instead.
-    Iterator itr = new HashIterator(ENTRIES);
+    // unsynchronized EntryIterator instead.
+    Iterator<Map.Entry<K, V>> itr = new EntryIterator();
     int hashcode = 0;
     for (int pos = size; pos > 0; pos--)
       hashcode += itr.next().hashCode();
@@ -832,16 +829,16 @@ public class Hashtable extends Dictionary
    * @see #entrySet()
    */
   // Package visible, for use in nested classes.
-  HashEntry getEntry(Object o)
+  HashEntry<K, V> getEntry(Object o)
   {
     if (! (o instanceof Map.Entry))
       return null;
-    Object key = ((Map.Entry) o).getKey();
+    K key = ((Map.Entry<K, V>) o).getKey();
     if (key == null)
       return null;
 
     int idx = hash(key);
-    HashEntry e = buckets[idx];
+    HashEntry<K, V> e = buckets[idx];
     while (e != null)
       {
         if (e.equals(o))
@@ -858,18 +855,19 @@ public class Hashtable extends Dictionary
    *
    * @param m the map to initialize this from
    */
-  void putAllInternal(Map m)
+  void putAllInternal(Map<? extends K, ? extends V> m)
   {
-    Iterator itr = m.entrySet().iterator();
+    Map<K,V> addMap;
+
+    addMap = (Map<K,V>) m;
     size = 0;
 
-    while (itr.hasNext())
+    for (Map.Entry<K,V> e : addMap.entrySet())
       {
         size++;
-	Map.Entry e = (Map.Entry) itr.next();
-	Object key = e.getKey();
+	K key = e.getKey();
 	int idx = hash(key);
-	HashEntry he = new HashEntry(key, e.getValue());
+	HashEntry<K, V> he = new HashEntry<K, V>(key, e.getValue());
 	he.next = buckets[idx];
 	buckets[idx] = he;
       }
@@ -888,24 +886,28 @@ public class Hashtable extends Dictionary
    */
   protected void rehash()
   {
-    HashEntry[] oldBuckets = buckets;
+    HashEntry<K, V>[] oldBuckets = buckets;
 
     int newcapacity = (buckets.length * 2) + 1;
     threshold = (int) (newcapacity * loadFactor);
-    buckets = new HashEntry[newcapacity];
+    buckets = (HashEntry<K, V>[]) new HashEntry[newcapacity];
 
     for (int i = oldBuckets.length - 1; i >= 0; i--)
       {
-        HashEntry e = oldBuckets[i];
+        HashEntry<K, V> e = oldBuckets[i];
         while (e != null)
           {
             int idx = hash(e.key);
-            HashEntry dest = buckets[idx];
+            HashEntry<K, V> dest = buckets[idx];
 
             if (dest != null)
               {
-                while (dest.next != null)
-                  dest = dest.next;
+                HashEntry next = dest.next;
+                while (next != null)
+                  {
+                    dest = next;
+                    next = dest.next;
+                  }
                 dest.next = e;
               }
             else
@@ -913,7 +915,7 @@ public class Hashtable extends Dictionary
                 buckets[idx] = e;
               }
 
-            HashEntry next = e.next;
+            HashEntry<K, V> next = e.next;
             e.next = null;
             e = next;
           }
@@ -940,11 +942,11 @@ public class Hashtable extends Dictionary
     s.writeInt(size);
     // Since we are already synchronized, and entrySet().iterator()
     // would repeatedly re-lock/release the monitor, we directly use the
-    // unsynchronized HashIterator instead.
-    Iterator it = new HashIterator(ENTRIES);
+    // unsynchronized EntryIterator instead.
+    Iterator<Map.Entry<K, V>> it = new EntryIterator();
     while (it.hasNext())
       {
-        HashEntry entry = (HashEntry) it.next();
+        HashEntry<K, V> entry = (HashEntry<K, V>) it.next();
         s.writeObject(entry.key);
         s.writeObject(entry.value);
       }
@@ -968,33 +970,30 @@ public class Hashtable extends Dictionary
     s.defaultReadObject();
 
     // Read and use capacity.
-    buckets = new HashEntry[s.readInt()];
+    buckets = (HashEntry<K, V>[]) new HashEntry[s.readInt()];
     int len = s.readInt();
 
     // Read and use key/value pairs.
     // TODO: should we be defensive programmers, and check for illegal nulls?
     while (--len >= 0)
-      put(s.readObject(), s.readObject());
+      put((K) s.readObject(), (V) s.readObject());
   }
 
   /**
    * A class which implements the Iterator interface and is used for
    * iterating over Hashtables.
-   * This implementation is parameterized to give a sequential view of
-   * keys, values, or entries; it also allows the removal of elements,
-   * as per the Javasoft spec.  Note that it is not synchronized; this is
-   * a performance enhancer since it is never exposed externally and is
-   * only used within synchronized blocks above.
+   * This implementation iterates entries. Subclasses are used to
+   * iterate key and values. It also allows the removal of elements,
+   * as per the Javasoft spec.  Note that it is not synchronized; this
+   * is a performance enhancer since it is never exposed externally
+   * and is only used within synchronized blocks above.
    *
    * @author Jon Zeppieri
+   * @author Fridjof Siebert
    */
-  private final class HashIterator implements Iterator
+  private class EntryIterator 
+      implements Iterator<Entry<K,V>>
   {
-    /**
-     * The type of this Iterator: {@link #KEYS}, {@link #VALUES},
-     * or {@link #ENTRIES}.
-     */
-    final int type;
     /**
      * The number of modifications to the backing Hashtable that we know about.
      */
@@ -1004,22 +1003,21 @@ public class Hashtable extends Dictionary
     /** Current index in the physical hash table. */
     int idx = buckets.length;
     /** The last Entry returned by a next() call. */
-    HashEntry last;
+    HashEntry<K, V> last;
     /**
      * The next entry that should be returned by next(). It is set to something
      * if we're iterating through a bucket that contains multiple linked
      * entries. It is null if next() needs to find a new bucket.
      */
-    HashEntry next;
+    HashEntry<K, V> next;
 
     /**
-     * Construct a new HashIterator with the supplied type.
-     * @param type {@link #KEYS}, {@link #VALUES}, or {@link #ENTRIES}
+     * Construct a new EntryIterator
      */
-    HashIterator(int type)
+    EntryIterator()
     {
-      this.type = type;
     }
+
 
     /**
      * Returns true if the Iterator has more elements.
@@ -1036,24 +1034,23 @@ public class Hashtable extends Dictionary
      * @throws ConcurrentModificationException if the hashtable was modified
      * @throws NoSuchElementException if there is none
      */
-    public Object next()
+    public Map.Entry<K,V> next()
     {
       if (knownMod != modCount)
         throw new ConcurrentModificationException();
       if (count == 0)
         throw new NoSuchElementException();
       count--;
-      HashEntry e = next;
+      HashEntry<K, V> e = next;
 
       while (e == null)
-        e = buckets[--idx];
+	if (idx <= 0)
+	  return null;
+	else
+	  e = buckets[--idx];
 
       next = e.next;
       last = e;
-      if (type == VALUES)
-        return e.value;
-      if (type == KEYS)
-        return e.key;
       return e;
     }
 
@@ -1074,29 +1071,156 @@ public class Hashtable extends Dictionary
       last = null;
       knownMod++;
     }
-  } // class HashIterator
-
+  } // class EntryIterator
 
   /**
-   * Enumeration view of this Hashtable, providing sequential access to its
-   * elements; this implementation is parameterized to provide access either
-   * to the keys or to the values in the Hashtable.
+   * A class which implements the Iterator interface and is used for
+   * iterating over keys in Hashtables.  This class uses an
+   * <code>EntryIterator</code> to obtain the keys of each entry.
+   *
+   * @author Fridtjof Siebert
+   * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
+   */
+  private class KeyIterator 
+      implements Iterator<K>
+  {
+
+    /**
+     * This entry iterator is used for most operations.  Only
+     * <code>next()</code> gives a different result, by returning just
+     * the key rather than the whole element.
+     */
+    private EntryIterator iterator;
+
+    /**
+     * Construct a new KeyIterator
+     */
+    KeyIterator()
+    {
+	iterator = new EntryIterator();
+    }
+
+
+    /**
+     * Returns true if the entry iterator has more elements.
+     *
+     * @return true if there are more elements
+     * @throws ConcurrentModificationException if the hashtable was modified
+     */
+    public boolean hasNext()
+    {
+	return iterator.hasNext();
+    }
+
+    /**
+     * Returns the next element in the Iterator's sequential view.
+     *
+     * @return the next element
+     *
+     * @throws ConcurrentModificationException if the hashtable was modified
+     * @throws NoSuchElementException if there is none
+     */
+    public K next()
+    {
+      return ((HashEntry<K,V>) iterator.next()).key;
+    }
+
+    /**
+     * Removes the last element used by the <code>next()</code> method
+     * using the entry iterator.
+     *
+     * @throws ConcurrentModificationException if the hashtable was modified
+     * @throws IllegalStateException if called when there is no last element
+     */
+    public void remove()
+    {
+      iterator.remove();
+    }
+  } // class KeyIterator
+ 
+  /**
+   * A class which implements the Iterator interface and is used for
+   * iterating over values in Hashtables.  This class uses an
+   * <code>EntryIterator</code> to obtain the values of each entry.
+   *
+   * @author Fridtjof Siebert
+   * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
+   */
+  private class ValueIterator
+      implements Iterator<V>
+  {
+
+    /**
+     * This entry iterator is used for most operations.  Only
+     * <code>next()</code> gives a different result, by returning just
+     * the value rather than the whole element.
+     */
+    private EntryIterator iterator;
+
+    /**
+     * Construct a new KeyIterator
+     */
+    ValueIterator()
+    {
+	iterator = new EntryIterator();
+    }
+
+
+    /**
+     * Returns true if the entry iterator has more elements.
+     *
+     * @return true if there are more elements
+     * @throws ConcurrentModificationException if the hashtable was modified
+     */
+    public boolean hasNext()
+    {
+	return iterator.hasNext();
+    }
+
+    /**
+     * Returns the value of the next element in the iterator's sequential view.
+     *
+     * @return the next value
+     *
+     * @throws ConcurrentModificationException if the hashtable was modified
+     * @throws NoSuchElementException if there is none
+     */
+    public V next()
+    {
+      return ((HashEntry<K,V>) iterator.next()).value;
+    }
+
+    /**
+     * Removes the last element used by the <code>next()</code> method
+     * using the entry iterator.
+     *
+     * @throws ConcurrentModificationException if the hashtable was modified
+     * @throws IllegalStateException if called when there is no last element
+     */
+    public void remove()
+    {
+      iterator.remove();
+    }
+
+  } // class ValueIterator
+
+  /**
+   * Enumeration view of the entries in this Hashtable, providing
+   * sequential access to its elements.
    *
    * <b>NOTE</b>: Enumeration is not safe if new elements are put in the table
    * as this could cause a rehash and we'd completely lose our place.  Even
    * without a rehash, it is undetermined if a new element added would
    * appear in the enumeration.  The spec says nothing about this, but
-   * the "Java Class Libraries" book infers that modifications to the
+   * the "Java Class Libraries" book implies that modifications to the
    * hashtable during enumeration causes indeterminate results.  Don't do it!
    *
    * @author Jon Zeppieri
+   * @author Fridjof Siebert
    */
-  private final class Enumerator implements Enumeration
+  private class EntryEnumerator 
+      implements Enumeration<Entry<K,V>>
   {
-    /**
-     * The type of this Iterator: {@link #KEYS} or {@link #VALUES}.
-     */
-    final int type;
     /** The number of elements remaining to be returned by next(). */
     int count = size;
     /** Current index in the physical hash table. */
@@ -1106,15 +1230,14 @@ public class Hashtable extends Dictionary
      * set if we are iterating through a bucket with multiple entries, or null
      * if we must look in the next bucket.
      */
-    HashEntry next;
+    HashEntry<K, V> next;
 
     /**
      * Construct the enumeration.
-     * @param type either {@link #KEYS} or {@link #VALUES}.
      */
-    Enumerator(int type)
+    EntryEnumerator()
     {
-      this.type = type;
+      // Nothing to do here.
     }
 
     /**
@@ -1131,18 +1254,144 @@ public class Hashtable extends Dictionary
      * @return the next element
      * @throws NoSuchElementException if there is none.
      */
-    public Object nextElement()
+    public Map.Entry<K,V> nextElement()
     {
       if (count == 0)
         throw new NoSuchElementException("Hashtable Enumerator");
       count--;
-      HashEntry e = next;
+      HashEntry<K, V> e = next;
 
       while (e == null)
-        e = buckets[--idx];
+        if (idx <= 0)
+          return null;
+        else
+          e = buckets[--idx];
 
       next = e.next;
-      return type == VALUES ? e.value : e.key;
+      return e;
     }
-  } // class Enumerator
+  } // class EntryEnumerator
+
+
+  /**
+   * Enumeration view of this Hashtable, providing sequential access to its
+   * elements.
+   *
+   * <b>NOTE</b>: Enumeration is not safe if new elements are put in the table
+   * as this could cause a rehash and we'd completely lose our place.  Even
+   * without a rehash, it is undetermined if a new element added would
+   * appear in the enumeration.  The spec says nothing about this, but
+   * the "Java Class Libraries" book implies that modifications to the
+   * hashtable during enumeration causes indeterminate results.  Don't do it!
+   *
+   * @author Jon Zeppieri
+   * @author Fridjof Siebert
+   * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
+   */
+  private final class KeyEnumerator
+      implements Enumeration<K>
+  {
+    /**
+     * This entry enumerator is used for most operations.  Only
+     * <code>nextElement()</code> gives a different result, by returning just
+     * the key rather than the whole element.
+     */
+    private EntryEnumerator enumerator;
+
+    /**
+     * Construct a new KeyEnumerator
+     */
+    KeyEnumerator()
+    {
+      enumerator = new EntryEnumerator();
+    }
+
+
+    /**
+     * Returns true if the entry enumerator has more elements.
+     *
+     * @return true if there are more elements
+     * @throws ConcurrentModificationException if the hashtable was modified
+     */
+    public boolean hasMoreElements()
+    {
+	return enumerator.hasMoreElements();
+    }
+
+    /**
+     * Returns the next element.
+     * @return the next element
+     * @throws NoSuchElementException if there is none.
+     */
+    public K nextElement()
+    {
+      HashEntry<K,V> entry = (HashEntry<K,V>) enumerator.nextElement();
+      K retVal = null;
+      if (entry != null)
+        retVal = entry.key;
+      return retVal;
+    }
+  } // class KeyEnumerator
+
+
+  /**
+   * Enumeration view of this Hashtable, providing sequential access to its
+   * values.
+   *
+   * <b>NOTE</b>: Enumeration is not safe if new elements are put in the table
+   * as this could cause a rehash and we'd completely lose our place.  Even
+   * without a rehash, it is undetermined if a new element added would
+   * appear in the enumeration.  The spec says nothing about this, but
+   * the "Java Class Libraries" book implies that modifications to the
+   * hashtable during enumeration causes indeterminate results.  Don't do it!
+   *
+   * @author Jon Zeppieri
+   * @author Fridjof Siebert
+   * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
+   */
+  private final class ValueEnumerator
+      implements Enumeration<V>
+  {
+    /**
+     * This entry enumerator is used for most operations.  Only
+     * <code>nextElement()</code> gives a different result, by returning just
+     * the value rather than the whole element.
+     */
+    private EntryEnumerator enumerator;
+
+    /**
+     * Construct a new ValueEnumerator
+     */
+    ValueEnumerator()
+    {
+      enumerator = new EntryEnumerator();
+    }
+
+
+    /**
+     * Returns true if the entry enumerator has more elements.
+     *
+     * @return true if there are more elements
+     * @throws ConcurrentModificationException if the hashtable was modified
+     */
+    public boolean hasMoreElements()
+    {
+	return enumerator.hasMoreElements();
+    }
+
+    /**
+     * Returns the next element.
+     * @return the next element
+     * @throws NoSuchElementException if there is none.
+     */
+    public V nextElement()
+    {
+      HashEntry<K,V> entry = (HashEntry<K,V>) enumerator.nextElement();
+      V retVal = null;
+      if (entry != null)
+        retVal = entry.value;
+      return retVal;
+    }
+  } // class ValueEnumerator
+
 } // class Hashtable

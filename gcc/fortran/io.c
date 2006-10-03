@@ -1,6 +1,6 @@
 /* Deal with I/O statements & related stuff.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation,
-   Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software
+   Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -28,8 +28,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "parse.h"
 
 gfc_st_label format_asterisk =
-  { -1, ST_LABEL_FORMAT, ST_LABEL_FORMAT, NULL, 0,
-    {NULL, NULL}, NULL, NULL};
+  {0, NULL, NULL, -1, ST_LABEL_FORMAT, ST_LABEL_FORMAT, NULL,
+   0, {NULL, NULL}};
 
 typedef struct
 {
@@ -211,7 +211,7 @@ format_lex (void)
           if(ISDIGIT (c))
             value = 10 * value + c - '0';
 	}
-      while (ISDIGIT (c) || gfc_is_whitespace(c));
+      while (ISDIGIT (c));
 
       unget_char ();
 
@@ -413,7 +413,6 @@ static try
 check_format (void)
 {
   const char *posint_required	  = _("Positive width required");
-  const char *period_required	  = _("Period required");
   const char *nonneg_required	  = _("Nonnegative width required");
   const char *unexpected_element  = _("Unexpected element");
   const char *unexpected_end	  = _("Unexpected end of format string");
@@ -610,8 +609,13 @@ data_desc:
       u = format_lex ();
       if (u != FMT_PERIOD)
 	{
-	  error = period_required;
-	  goto syntax;
+	  /* Warn if -std=legacy, otherwise error.  */
+	  if (gfc_option.warn_std != 0)
+	    gfc_error_now ("Period required in format specifier at %C");
+	  else
+	    gfc_warning ("Period required in format specifier at %C");
+	  saved_token = u;
+	  break;
 	}
 
       u = format_lex ();
@@ -653,8 +657,13 @@ data_desc:
       t = format_lex ();
       if (t != FMT_PERIOD)
 	{
-	  error = period_required;
-	  goto syntax;
+	  /* Warn if -std=legacy, otherwise error.  */
+          if (gfc_option.warn_std != 0)
+	    gfc_error_now ("Period required in format specifier at %C");
+	  else
+	    gfc_warning ("Period required in format specifier at %C");
+	  saved_token = t;
+	  break;
 	}
 
       t = format_lex ();
@@ -1116,6 +1125,7 @@ resolve_tag (const io_tag * tag, gfc_expr * e)
 	    return FAILURE;
 	}
     }
+
   return SUCCESS;
 }
 
@@ -2422,6 +2432,12 @@ match_io (io_kind k)
       comma_flag = 1;
       dt->io_unit = default_unit (k);
       goto get_io_list;
+    }
+  else
+    {
+      /* Error for constructs like print (1,*).   */
+      if (k == M_PRINT)
+	goto  syntax;
     }
 
   /* Match a control list */

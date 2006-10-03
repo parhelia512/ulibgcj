@@ -1,5 +1,5 @@
 /* PagesPerMinuteColor.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,10 +37,18 @@ exception statement from your version. */
 
 package javax.print.attribute.standard;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.IntegerSyntax;
 import javax.print.attribute.PrintServiceAttribute;
 
 /**
+ * The <code>PagesPerMinuteColor</code> printing attribute specifies 
+ * the nominal number of pages per minute which may be printed in
+ * color by the printer. 
+ * <p>
+ * <b>IPP Compatibility:</b> PagesPerMinuteColor is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch
  */
 public final class PagesPerMinuteColor extends IntegerSyntax
@@ -51,9 +59,9 @@ public final class PagesPerMinuteColor extends IntegerSyntax
   /**
    * Creates a <code>PagesPerMinuteColor</code> object.
    *
-   * @param value the number of pages per minute
+   * @param value the number of pages per minute in color
    *
-   * @exception IllegalArgumentException if value < 0
+   * @exception IllegalArgumentException if value &lt; 0
    */
   public PagesPerMinuteColor(int value)
   {
@@ -64,11 +72,12 @@ public final class PagesPerMinuteColor extends IntegerSyntax
   }
   
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -81,17 +90,17 @@ public final class PagesPerMinuteColor extends IntegerSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>PagesPerMinuteColor</code> itself
+   * @return The class <code>PagesPerMinuteColor</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return PagesPerMinuteColor.class;
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "pages-per-minute-color"
+   * @return The name "pages-per-minute-color".
    */
   public String getName()
   {
