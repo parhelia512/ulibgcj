@@ -49,28 +49,32 @@ java_sources = \
 gnu/gcj/Core.java \
 gnu/gcj/RawData.java \
 gnu/gcj/RawDataManaged.java \
-gnu/gcj/runtime/StringBuffer.java \
 gnu/gcj/runtime/NameFinder.java \
-gnu/java/net/protocol/core/CoreInputStream.java \
+gnu/gcj/runtime/StringBuffer.java \
 gnu/java/net/URLParseError.java \
-java/io/InputStreamReader.java \
-java/io/BufferedReader.java \
-java/io/BufferedWriter.java \
+gnu/java/net/protocol/core/CoreInputStream.java \
+java/io/BufferedInputStream.java \
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
-java/io/FilterInputStream.java \
-java/io/EOFException.java \
-java/io/Reader.java \
-java/io/Writer.java \
-java/io/PrintWriter.java \
-java/io/FilterOutputStream.java \
-java/io/PrintStream.java \
+java/io/BufferedReader.java \
+java/io/BufferedWriter.java \
 java/io/ByteArrayOutputStream.java \
+java/io/EOFException.java \
+java/io/FilterInputStream.java \
+java/io/FilterOutputStream.java \
 java/io/IOException.java \
 java/io/InputStream.java \
+java/io/InputStreamReader.java \
 java/io/OutputStream.java \
 java/io/OutputStreamWriter.java \
+java/io/PrintStream.java \
+java/io/PrintWriter.java \
+java/io/PrintWriter.java \
+java/io/Reader.java \
+java/io/Reader.java \
 java/io/Serializable.java \
+java/io/Writer.java \
+java/io/Writer.java \
 java/lang/AbstractMethodError.java \
 java/lang/ArithmeticException.java \
 java/lang/ArrayIndexOutOfBoundsException.java \
@@ -82,8 +86,8 @@ java/lang/Class.java \
 java/lang/ClassCastException.java \
 java/lang/ClassLoader.java \
 java/lang/ClassNotFoundException.java \
-java/lang/Cloneable.java \
 java/lang/CloneNotSupportedException.java \
+java/lang/Cloneable.java \
 java/lang/Comparable.java \
 java/lang/Double.java \
 java/lang/Error.java \
@@ -134,20 +138,29 @@ java/lang/VMThrowable.java \
 java/lang/VerifyError.java \
 java/lang/VirtualMachineError.java \
 java/lang/reflect/Modifier.java \
+java/nio/Buffer.java \
+java/nio/BufferOverflowException.java \
+java/nio/BufferUnderflowException.java \
+java/nio/ByteBuffer.java \
+java/nio/ByteBufferHelper.java \
+java/nio/ByteBufferImpl.java \
+java/nio/ByteOrder.java \
+java/nio/InvalidMarkException.java \
+java/nio/ReadOnlyBufferException.java \
 java/util/AbstractCollection.java \
 java/util/AbstractList.java \
 java/util/AbstractMap.java \
 java/util/AbstractSet.java \
-java/util/Arrays.java \
 java/util/ArrayList.java \
+java/util/Arrays.java \
 java/util/Collection.java \
 java/util/Collections.java \
 java/util/ConcurrentModificationException.java \
 java/util/Enumeration.java \
 java/util/EventListener.java \
 java/util/EventObject.java \
-java/util/HashSet.java \
 java/util/HashMap.java \
+java/util/HashSet.java \
 java/util/Hashtable.java \
 java/util/IdentityHashMap.java \
 java/util/Iterator.java \
@@ -224,6 +237,7 @@ libulibgcj_a_SOURCES += win32.cc
 endif
 
 if USING_DARWIN_CRT
+AM_CXXFLAGS += -DJV_ULIBGCJ_DARWIN
 libulibgcj_a_SOURCES += darwin.cc
 endif
 
@@ -371,7 +385,12 @@ libgcj-$(gcc_version).jar: $(classes)
 
 clean:
 	rm -rf $(libulibgcj_a_OBJECTS) objects classes headers processed \
-		libulibgcj.a libgcj-$(gcc_version).jar hello core-test
+		libulibgcj.a libgcj-$(gcc_version).jar hello core-test javadoc
+
+.PHONY: javadoc
+javadoc: $(processed_java_sources)
+	javadoc -sourcepath processed java.lang java.util java.io \
+		java.lang.reflect	-d javadoc
 
 ## tests and examples #########################################################
 

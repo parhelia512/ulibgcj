@@ -299,6 +299,7 @@ final class ByteBufferHelper
       }
   }
 
+/*#if not ULIBGCJ*/
   public static float getFloat (ByteBuffer buffer, ByteOrder order)
   {
     return Float.intBitsToFloat (getInt (buffer, order));
@@ -340,5 +341,6 @@ final class ByteBufferHelper
   {
     putLong (buffer, index, Double.doubleToRawLongBits (value), order);
   }
+/*#endif*/
 } // ByteBufferHelper
 

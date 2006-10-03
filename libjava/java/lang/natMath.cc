@@ -26,6 +26,7 @@ details.  */
 #include <gcj/array.h>
 
 #ifdef JV_ULIBGCJ
+#include <stdlib.h>
 # ifdef HAVE_MATH_H
 #  include <math.h>
 # else
@@ -194,3 +195,9 @@ isNaN (jlong bits)
 }
 #endif//JV_ULIBGCJ
 
+#ifdef JV_ULIBGCJ
+jdouble java::lang::Math::random()
+{
+  return rand() / (double) RAND_MAX;
+}
+#endif

@@ -67,12 +67,10 @@ public class PrintStream extends FilterOutputStream
    * from the other, and we want to maximize performance. */
 
   // Line separator string.
-/*#if ULIBGCJ
-  private static final char[] line_separator = new char[] { '\n' };
-  #else*/
   private static final char[] line_separator
     = System.getProperty("line.separator").toCharArray();
   
+/*#if not ULIBGCJ*/
   UnicodeToBytes converter;
 
   // Work buffer of characters for converter.

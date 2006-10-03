@@ -75,12 +75,14 @@ static jclass loaded_classes[HASH_LEN];
 // This is the root of a linked list of classes
 static jclass stack_head;
 
+#ifndef JV_ULIBGCJ
 // While bootstrapping we keep a list of classes we found, so that we
 // can register their packages.  There aren't many of these so we
 // just keep a small buffer here and abort if we overflow.
 #define BOOTSTRAP_CLASS_LIST_SIZE 20
 static jclass bootstrap_class_list[BOOTSTRAP_CLASS_LIST_SIZE];
 static int bootstrap_index;
+#endif//JV_ULIBGCJ
 
 
 
@@ -440,6 +442,7 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 	  // Not even a bootstrap loader, try the built-in cache.
 	  klass = _Jv_FindClassInCache (name);
 
+#ifndef JV_ULIBGCJ
 	  if (klass)
 	    {
 	      bool found = false;
@@ -458,6 +461,7 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 		  bootstrap_class_list[bootstrap_index++] = klass;
 		}
 	    }
+#endif//JV_ULIBGCJ
 	}
     }
 

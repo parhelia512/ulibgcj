@@ -380,12 +380,8 @@ public class PrintWriter extends Writer
   /**
    * This is the system dependent line separator
    */
-/*#if ULIBGCJ
-  private static final char[] line_separator = new char[] { '\n' };
-  #else*/
   private static final char[] line_separator
     = System.getProperty("line.separator", "\n").toCharArray();
-/*#endif*/
 
   /**
    * This method prints a line separator sequence to the stream.  The value

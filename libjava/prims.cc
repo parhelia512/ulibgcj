@@ -1418,6 +1418,10 @@ parse_init_args (JvVMInitArgs* vm_args)
   return 0;
 }
 
+#ifdef JV_ULIBGCJ_DARWIN
+extern void _Jv_DarwinStaticLinkDummyFunction(void); 
+#endif//JV_ULIBGCJ_DARWIN
+
 jint
 _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
 {
@@ -1431,6 +1435,11 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
     return -1;
 
   PROCESS_GCJ_PROPERTIES;
+
+#ifdef JV_ULIBGCJ_DARWIN
+  // this is here to force the linker to include darwin.o.
+  _Jv_DarwinStaticLinkDummyFunction();  
+#endif//JV_ULIBGCJ_DARWIN
 
   /* Threads must be initialized before the GC, so that it inherits the
      signal mask.  */
@@ -1586,7 +1595,9 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
   try {
     real(arg_vec);
   } catch (java::lang::Throwable* t) {
-    t->printStackTrace();
+    for (; t; t = t->getCause()) {
+      t->printStackTrace();
+    }
   }
 
   JvDetachCurrentThread();

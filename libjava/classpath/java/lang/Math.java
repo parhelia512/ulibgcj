@@ -670,6 +670,9 @@ public final class Math
    * @see Random#nextDouble()
    * @see System#currentTimeMillis()
    */
+/*#if ULIBGCJ
+  public static native double random();
+  #else*/
   public static synchronized double random()
   {
     if (rand == null)

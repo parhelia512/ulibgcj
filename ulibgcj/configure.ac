@@ -312,6 +312,8 @@ AC_DEFINE(JV_ULIBGCJ, 1, [Define if micro-libgcj is to be built])
 
 AC_DEFINE(HAVE_MEMMOVE, 1, [Define if memmove is available])
 
+AC_DEFINE(HAVE_GETTIMEOFDAY, 1, [Define if gettimeofday is available])
+
 test -f libgcj.spec || echo > libgcj.spec
 
 AC_CHECK_HEADERS([unistd.h bstring.h sys/time.h string.h sys/types.h \

@@ -23,6 +23,18 @@ change directories to i386-apple-darwin8.7.1/ulibgcj and run make.
 Other platforms may work, but have not been tested.
 
 
+Applying the patch
+------------------
+
+To apply the patch included with this release (ulibgcj.patch), first
+download gcc-4.1.1.tar.bz2 from one of the GCC mirrors listed at
+http://gcc.gnu.org/mirrors.html and proceed as follows.
+
+ $ tar xjf gcc-4.1.1.tar.bz2
+ $ cd gcc-4.1.1
+ $ patch -p1 < ../ulibgcj.patch
+
+
 Building with micro-libgcj enabled
 ----------------------------------
 
