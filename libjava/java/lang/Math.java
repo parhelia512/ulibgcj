@@ -699,6 +699,7 @@ public final class Math
    */
   public static native double cosh(double a);
 
+/*#if not ULIBGCJ*/
   /**
    * <p>
    * Returns <code>e<sup>a</sup> - 1.  For values close to 0, the
@@ -718,6 +719,7 @@ public final class Math
    * @since 1.5
    */
   public static native double expm1(double a);
+/*#endif*/
 
   /**
    * <p>
