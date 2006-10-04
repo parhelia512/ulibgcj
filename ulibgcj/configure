@@ -733,6 +733,9 @@ USING_NO_THREADS_FALSE
 HASH_SYNC_SPEC
 GCJH
 JAR
+toolexecdir
+toolexecmainlibdir
+toolexeclibdir
 CPP
 GREP
 EGREP
@@ -4740,7 +4743,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 4743 "configure"
+#line 4746 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -5012,6 +5015,24 @@ if test "$JAR" = no; then
 echo "$as_me: error: cannot find jar program, cannot continue" >&2;}
    { (exit 1); exit 1; }; }
 fi
+
+if test -n "$with_cross_host" &&
+  test x"$with_cross_host" != x"no"; then
+# Install a library built with a cross compiler in tooldir, not libdir.
+  toolexecdir='$(exec_prefix)/$(target_noncanonical)'
+  toolexecmainlibdir='$(toolexecdir)/lib'
+else
+  toolexecdir='$(libdir)/gcc-lib/$(target_noncanonical)'
+  toolexecmainlibdir='$(libdir)'
+fi
+multi_os_directory=`$CC -print-multi-os-directory`
+case $multi_os_directory in
+  .) toolexeclibdir=$toolexecmainlibdir ;; # Avoid trailing /.
+  *) toolexeclibdir=$toolexecmainlibdir/$multi_os_directory ;;
+esac
+
+
+
 
 if test -d sysdep; then true; else mkdir sysdep; fi
 ac_config_links="$ac_config_links sysdep/locks.h:${libjava}/sysdep/$sysdeps_dir/locks.h"
@@ -6804,6 +6825,9 @@ USING_NO_THREADS_FALSE!$USING_NO_THREADS_FALSE$ac_delim
 HASH_SYNC_SPEC!$HASH_SYNC_SPEC$ac_delim
 GCJH!$GCJH$ac_delim
 JAR!$JAR$ac_delim
+toolexecdir!$toolexecdir$ac_delim
+toolexecmainlibdir!$toolexecmainlibdir$ac_delim
+toolexeclibdir!$toolexeclibdir$ac_delim
 CPP!$CPP$ac_delim
 GREP!$GREP$ac_delim
 EGREP!$EGREP$ac_delim
@@ -6811,7 +6835,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 43; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 46; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

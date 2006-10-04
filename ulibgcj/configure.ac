@@ -289,6 +289,24 @@ if test "$JAR" = no; then
   AC_MSG_ERROR([cannot find jar program, cannot continue])
 fi
 
+if test -n "$with_cross_host" &&
+  test x"$with_cross_host" != x"no"; then
+# Install a library built with a cross compiler in tooldir, not libdir.
+  toolexecdir='$(exec_prefix)/$(target_noncanonical)'
+  toolexecmainlibdir='$(toolexecdir)/lib'
+else
+  toolexecdir='$(libdir)/gcc-lib/$(target_noncanonical)'
+  toolexecmainlibdir='$(libdir)'
+fi
+multi_os_directory=`$CC -print-multi-os-directory`
+case $multi_os_directory in
+  .) toolexeclibdir=$toolexecmainlibdir ;; # Avoid trailing /.
+  *) toolexeclibdir=$toolexecmainlibdir/$multi_os_directory ;;
+esac
+AC_SUBST(toolexecdir)
+AC_SUBST(toolexecmainlibdir)
+AC_SUBST(toolexeclibdir)
+
 if test -d sysdep; then true; else mkdir sysdep; fi
 AC_CONFIG_LINKS(sysdep/locks.h:${libjava}/sysdep/$sysdeps_dir/locks.h)
 

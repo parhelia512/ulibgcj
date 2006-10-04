@@ -35,14 +35,8 @@ gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 jardir = $(datadir)/java
 jar_DATA = libgcj-$(gcc_version).jar
 
-gcdir = $(libdir)
-gc_DATA = libgc.a
-
-specdir = $(libdir)
-spec_DATA = libgcj.spec
-
-ulibgcjdir = $(libdir)
-ulibgcj_LIBRARIES = libulibgcj.a
+toolexeclib_LIBRARIES = libulibgcj.a libgc.a
+toolexecmainlib_DATA = libgcj.spec
 
 java_sources = \
 gnu/gcj/Core.java \

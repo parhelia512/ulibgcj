@@ -46,12 +46,13 @@ target_triplet = @target@
 @USING_WIN32_THREADS_TRUE@am__append_8 = win32-threads.cc
 @USING_NO_THREADS_TRUE@am__append_9 = no-threads.cc
 @USING_BOEHMGC_TRUE@@USING_POSIX_PLATFORM_TRUE@am__append_10 = -ldl
-DIST_COMMON = README $(am__configure_deps) $(srcdir)/../config.guess \
-	$(srcdir)/../config.sub $(srcdir)/../depcomp \
-	$(srcdir)/../install-sh $(srcdir)/../missing \
-	$(srcdir)/../mkinstalldirs $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/libgcj.spec.in \
-	$(top_srcdir)/configure $(top_srcdir)/gcj/libgcj-config.h.in \
+DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
+	$(srcdir)/../config.guess $(srcdir)/../config.sub \
+	$(srcdir)/../depcomp $(srcdir)/../install-sh \
+	$(srcdir)/../missing $(srcdir)/../mkinstalldirs \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/libgcj.spec.in $(top_srcdir)/configure \
+	$(top_srcdir)/gcj/libgcj-config.h.in \
 	$(top_srcdir)/include/config.h.in
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -76,12 +77,16 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(ulibgcjdir)" "$(DESTDIR)$(gcdir)" \
-	"$(DESTDIR)$(jardir)" "$(DESTDIR)$(specdir)"
-ulibgcjLIBRARIES_INSTALL = $(INSTALL_DATA)
-LIBRARIES = $(ulibgcj_LIBRARIES)
+am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(jardir)" \
+	"$(DESTDIR)$(toolexecmainlibdir)"
+toolexeclibLIBRARIES_INSTALL = $(INSTALL_DATA)
+LIBRARIES = $(toolexeclib_LIBRARIES)
 AR = ar
 ARFLAGS = cru
+libgc_a_AR = $(AR) $(ARFLAGS)
+libgc_a_LIBADD =
+libgc_a_SOURCES = libgc.c
+libgc_a_OBJECTS = libgc.$(OBJEXT)
 libulibgcj_a_AR = $(AR) $(ARFLAGS)
 am__DEPENDENCIES_1 = $(foreach x,$(java_sources),$(patsubst \
 	%.java,objects/%.o,$(x)))
@@ -109,17 +114,20 @@ libulibgcj_a_OBJECTS = $(am_libulibgcj_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include -I$(top_builddir)/gcj
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(libulibgcj_a_SOURCES)
-DIST_SOURCES = $(am__libulibgcj_a_SOURCES_DIST)
-gcDATA_INSTALL = $(INSTALL_DATA)
+SOURCES = libgc.c $(libulibgcj_a_SOURCES)
+DIST_SOURCES = libgc.c $(am__libulibgcj_a_SOURCES_DIST)
 jarDATA_INSTALL = $(INSTALL_DATA)
-specDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(gc_DATA) $(jar_DATA) $(spec_DATA)
+toolexecmainlibDATA_INSTALL = $(INSTALL_DATA)
+DATA = $(jar_DATA) $(toolexecmainlib_DATA)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -274,6 +282,9 @@ target_cpu = @target_cpu@
 target_noncanonical = @target_noncanonical@
 target_os = @target_os@
 target_vendor = @target_vendor@
+toolexecdir = @toolexecdir@
+toolexeclibdir = @toolexeclibdir@
+toolexecmainlibdir = @toolexecmainlibdir@
 AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = -I .. -I ../config
 SUFFIXES = .class .java .h
@@ -293,12 +304,8 @@ AM_CXXFLAGS = -fno-rtti -fnon-call-exceptions $(THREADCXXFLAGS) \
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 jardir = $(datadir)/java
 jar_DATA = libgcj-$(gcc_version).jar
-gcdir = $(libdir)
-gc_DATA = libgc.a
-specdir = $(libdir)
-spec_DATA = libgcj.spec
-ulibgcjdir = $(libdir)
-ulibgcj_LIBRARIES = libulibgcj.a
+toolexeclib_LIBRARIES = libulibgcj.a libgc.a
+toolexecmainlib_DATA = libgcj.spec
 java_sources = \
 gnu/gcj/Core.java \
 gnu/gcj/RawData.java \
@@ -484,7 +491,7 @@ all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .class .java .h .cc .o .obj
+.SUFFIXES: .class .java .h .c .cc .o .obj
 am--refresh:
 	@:
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -546,35 +553,35 @@ distclean-hdr:
 	-rm -f include/config.h include/stamp-h1 gcj/libgcj-config.h gcj/stamp-h2
 libgcj.spec: $(top_builddir)/config.status $(srcdir)/libgcj.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-install-ulibgcjLIBRARIES: $(ulibgcj_LIBRARIES)
+install-toolexeclibLIBRARIES: $(toolexeclib_LIBRARIES)
 	@$(NORMAL_INSTALL)
-	test -z "$(ulibgcjdir)" || $(mkdir_p) "$(DESTDIR)$(ulibgcjdir)"
-	@list='$(ulibgcj_LIBRARIES)'; for p in $$list; do \
+	test -z "$(toolexeclibdir)" || $(mkdir_p) "$(DESTDIR)$(toolexeclibdir)"
+	@list='$(toolexeclib_LIBRARIES)'; for p in $$list; do \
 	  if test -f $$p; then \
 	    f=$(am__strip_dir) \
-	    echo " $(ulibgcjLIBRARIES_INSTALL) '$$p' '$(DESTDIR)$(ulibgcjdir)/$$f'"; \
-	    $(ulibgcjLIBRARIES_INSTALL) "$$p" "$(DESTDIR)$(ulibgcjdir)/$$f"; \
+	    echo " $(toolexeclibLIBRARIES_INSTALL) '$$p' '$(DESTDIR)$(toolexeclibdir)/$$f'"; \
+	    $(toolexeclibLIBRARIES_INSTALL) "$$p" "$(DESTDIR)$(toolexeclibdir)/$$f"; \
 	  else :; fi; \
 	done
 	@$(POST_INSTALL)
-	@list='$(ulibgcj_LIBRARIES)'; for p in $$list; do \
+	@list='$(toolexeclib_LIBRARIES)'; for p in $$list; do \
 	  if test -f $$p; then \
 	    p=$(am__strip_dir) \
-	    echo " $(RANLIB) '$(DESTDIR)$(ulibgcjdir)/$$p'"; \
-	    $(RANLIB) "$(DESTDIR)$(ulibgcjdir)/$$p"; \
+	    echo " $(RANLIB) '$(DESTDIR)$(toolexeclibdir)/$$p'"; \
+	    $(RANLIB) "$(DESTDIR)$(toolexeclibdir)/$$p"; \
 	  else :; fi; \
 	done
 
-uninstall-ulibgcjLIBRARIES:
+uninstall-toolexeclibLIBRARIES:
 	@$(NORMAL_UNINSTALL)
-	@list='$(ulibgcj_LIBRARIES)'; for p in $$list; do \
+	@list='$(toolexeclib_LIBRARIES)'; for p in $$list; do \
 	  p=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(ulibgcjdir)/$$p'"; \
-	  rm -f "$(DESTDIR)$(ulibgcjdir)/$$p"; \
+	  echo " rm -f '$(DESTDIR)$(toolexeclibdir)/$$p'"; \
+	  rm -f "$(DESTDIR)$(toolexeclibdir)/$$p"; \
 	done
 
-clean-ulibgcjLIBRARIES:
-	-test -z "$(ulibgcj_LIBRARIES)" || rm -f $(ulibgcj_LIBRARIES)
+clean-toolexeclibLIBRARIES:
+	-test -z "$(toolexeclib_LIBRARIES)" || rm -f $(toolexeclib_LIBRARIES)
 libulibgcj.a: $(libulibgcj_a_OBJECTS) $(libulibgcj_a_DEPENDENCIES) 
 	-rm -f libulibgcj.a
 	$(libulibgcj_a_AR) libulibgcj.a $(libulibgcj_a_OBJECTS) $(libulibgcj_a_LIBADD)
@@ -590,6 +597,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/darwin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/defineclass.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exception.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/link.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/no-threads.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nogc.Po@am__quote@
@@ -598,6 +606,22 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prims.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32-threads.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32.Po@am__quote@
+
+.c.o:
+@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`; \
+@am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$$depbase.Tpo" -c -o $@ $<; \
+@am__fastdepCC_TRUE@	then mv -f "$$depbase.Tpo" "$$depbase.Po"; else rm -f "$$depbase.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ $<
+
+.c.obj:
+@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`; \
+@am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$$depbase.Tpo" -c -o $@ `$(CYGPATH_W) '$<'`; \
+@am__fastdepCC_TRUE@	then mv -f "$$depbase.Tpo" "$$depbase.Po"; else rm -f "$$depbase.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .cc.o:
 @am__fastdepCXX_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`; \
@@ -615,23 +639,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 uninstall-info-am:
-install-gcDATA: $(gc_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(gcdir)" || $(mkdir_p) "$(DESTDIR)$(gcdir)"
-	@list='$(gc_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(gcDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(gcdir)/$$f'"; \
-	  $(gcDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(gcdir)/$$f"; \
-	done
-
-uninstall-gcDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(gc_DATA)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(gcdir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(gcdir)/$$f"; \
-	done
 install-jarDATA: $(jar_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(jardir)" || $(mkdir_p) "$(DESTDIR)$(jardir)"
@@ -649,22 +656,22 @@ uninstall-jarDATA:
 	  echo " rm -f '$(DESTDIR)$(jardir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(jardir)/$$f"; \
 	done
-install-specDATA: $(spec_DATA)
+install-toolexecmainlibDATA: $(toolexecmainlib_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(specdir)" || $(mkdir_p) "$(DESTDIR)$(specdir)"
-	@list='$(spec_DATA)'; for p in $$list; do \
+	test -z "$(toolexecmainlibdir)" || $(mkdir_p) "$(DESTDIR)$(toolexecmainlibdir)"
+	@list='$(toolexecmainlib_DATA)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f=$(am__strip_dir) \
-	  echo " $(specDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(specdir)/$$f'"; \
-	  $(specDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(specdir)/$$f"; \
+	  echo " $(toolexecmainlibDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(toolexecmainlibdir)/$$f'"; \
+	  $(toolexecmainlibDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(toolexecmainlibdir)/$$f"; \
 	done
 
-uninstall-specDATA:
+uninstall-toolexecmainlibDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(spec_DATA)'; for p in $$list; do \
+	@list='$(toolexecmainlib_DATA)'; for p in $$list; do \
 	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(specdir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(specdir)/$$f"; \
+	  echo " rm -f '$(DESTDIR)$(toolexecmainlibdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(toolexecmainlibdir)/$$f"; \
 	done
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
@@ -847,7 +854,7 @@ check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LIBRARIES) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(ulibgcjdir)" "$(DESTDIR)$(gcdir)" "$(DESTDIR)$(jardir)" "$(DESTDIR)$(specdir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(jardir)" "$(DESTDIR)$(toolexecmainlibdir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -876,7 +883,7 @@ maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
-clean-am: clean-generic clean-ulibgcjLIBRARIES mostlyclean-am
+clean-am: clean-generic clean-toolexeclibLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -895,10 +902,10 @@ info: info-am
 
 info-am:
 
-install-data-am: install-data-local install-gcDATA install-jarDATA \
-	install-specDATA install-ulibgcjLIBRARIES
+install-data-am: install-data-local install-jarDATA
 
-install-exec-am:
+install-exec-am: install-toolexeclibLIBRARIES \
+	install-toolexecmainlibDATA
 
 install-info: install-info-am
 
@@ -925,24 +932,24 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-gcDATA uninstall-info-am uninstall-jarDATA \
-	uninstall-specDATA uninstall-ulibgcjLIBRARIES
+uninstall-am: uninstall-info-am uninstall-jarDATA \
+	uninstall-toolexeclibLIBRARIES uninstall-toolexecmainlibDATA
 
 .PHONY: CTAGS GTAGS all all-am am--refresh check check-am clean \
-	clean-generic clean-ulibgcjLIBRARIES ctags dist dist-all \
+	clean-generic clean-toolexeclibLIBRARIES ctags dist dist-all \
 	dist-bzip2 dist-gzip dist-shar dist-tarZ dist-zip distcheck \
 	distclean distclean-compile distclean-generic distclean-hdr \
 	distclean-tags distcleancheck distdir distuninstallcheck dvi \
 	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-data-local install-exec \
-	install-exec-am install-gcDATA install-info install-info-am \
-	install-jarDATA install-man install-specDATA install-strip \
-	install-ulibgcjLIBRARIES installcheck installcheck-am \
+	install-exec-am install-info install-info-am install-jarDATA \
+	install-man install-strip install-toolexeclibLIBRARIES \
+	install-toolexecmainlibDATA installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
-	ps ps-am tags uninstall uninstall-am uninstall-gcDATA \
-	uninstall-info-am uninstall-jarDATA uninstall-specDATA \
-	uninstall-ulibgcjLIBRARIES
+	ps ps-am tags uninstall uninstall-am uninstall-info-am \
+	uninstall-jarDATA uninstall-toolexeclibLIBRARIES \
+	uninstall-toolexecmainlibDATA
 
 
 $(processed_java_sources): processed/%.java: %.java
