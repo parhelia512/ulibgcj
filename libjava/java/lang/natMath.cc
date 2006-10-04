@@ -128,10 +128,12 @@ jdouble java::lang::Math::cosh(jdouble x)
   return (jdouble)::cosh((double)x);
 }
 
+#ifndef JV_ULIBGCJ
 jdouble java::lang::Math::expm1(jdouble x)
 {
   return (jdouble)::expm1((double)x);
 }
+#endif//JV_ULIBGCJ
 
 jdouble java::lang::Math::hypot(jdouble x, jdouble y)
 {

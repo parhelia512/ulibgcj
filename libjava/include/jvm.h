@@ -756,15 +756,17 @@ struct natThread
   _Jv_Mutex_t join_mutex;
   _Jv_ConditionVariable_t join_cond;
 
+  // This is private data for the thread system layer.
+  _Jv_Thread_t *thread;
+
+#ifndef JV_ULIBGCJ
   // These are used by Unsafe.park() and Unsafe.unpark().  
   pthread_mutex_t park_mutex;
   pthread_cond_t park_cond;
 
-  // This is private data for the thread system layer.
-  _Jv_Thread_t *thread;
-
   // Each thread has its own JNI object.
-  void *jni_env;
+  JNIEnv *jni_env;
+#endif//JV_ULIBGCJ
 };
 
 #endif /* __JAVA_JVM_H__ */

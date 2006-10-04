@@ -22,12 +22,12 @@ details.  */
 #include <java/lang/Thread$State.h>
 #include <java/lang/Thread$UncaughtExceptionHandler.h>
 #include <java/lang/ThreadGroup.h>
-#endif//JV_ULIBGCJ
+#endif// not JV_ULIBGCJ
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/IllegalThreadStateException.h>
 #ifndef JV_ULIBGCJ
 #include <java/lang/InterruptedException.h>
-#endif//JV_ULIBGCJ
+#endif// not JV_ULIBGCJ
 #include <java/lang/NullPointerException.h>
 
 #ifndef JV_ULIBGCJ
@@ -36,7 +36,7 @@ details.  */
 #ifdef ENABLE_JVMPI
 #include <jvmpi.h>
 #endif
-#endif//JV_ULIBGCJ
+#endif// not JV_ULIBGCJ
 
 
 
@@ -59,15 +59,17 @@ java::lang::Thread::initialize_native (void)
   _Jv_MutexInit (&nt->join_mutex);
   _Jv_CondInit (&nt->join_cond);
 
+#ifndef JV_ULIBGCJ
   pthread_mutex_init (&nt->park_mutex, NULL);
   pthread_cond_init (&nt->park_cond, NULL);
+#endif// not JV_ULIBGCJ
 
   nt->thread = _Jv_ThreadInitData (this);
 #ifndef JV_ULIBGCJ
   // FIXME: if JNI_ENV is set we will want to free it.  It is
   // malloc()d.
   nt->jni_env = NULL;
-#endif//JV_ULIBGCJ
+#endif// not JV_ULIBGCJ
 }
 
 static void
@@ -83,10 +85,10 @@ finalize_native (jobject ptr)
 #endif
 #ifndef JV_ULIBGCJ
   _Jv_FreeJNIEnv((JNIEnv*)nt->jni_env);
-#endif//JV_ULIBGCJ
 
   pthread_mutex_destroy (&nt->park_mutex);
   pthread_cond_destroy (&nt->park_cond);
+#endif// not JV_ULIBGCJ
 }
 
 #ifndef JV_ULIBGCJ
@@ -100,7 +102,7 @@ java::lang::Thread::countStackFrames (void)
 
   return 0;
 }
-#endif//JV_ULIBGCJ
+#endif// not JV_ULIBGCJ
 
 java::lang::Thread *
 java::lang::Thread::currentThread (void)
@@ -180,14 +182,14 @@ java::lang::Thread::resume (void)
   // Old applets still call this method.  Rather than throwing
   // UnsupportedOperationException we simply fail silently.
 }
-#endif//JV_ULIBGCJ
+#endif// not JV_ULIBGCJ
 
 void
 java::lang::Thread::setPriority (jint newPriority)
 {
 #ifndef JV_ULIBGCJ
   checkAccess ();
-#endif//JV_ULIBGCJ
+#endif// not JV_ULIBGCJ
   if (newPriority < MIN_PRIORITY || newPriority > MAX_PRIORITY)
     throw new IllegalArgumentException;
 
@@ -195,7 +197,7 @@ java::lang::Thread::setPriority (jint newPriority)
   jint gmax = group->getMaxPriority();
   if (newPriority > gmax)
     newPriority = gmax;
-#endif//JV_ULIBGCJ
+#endif// not JV_ULIBGCJ
 
   priority = newPriority;
   natThread *nt = (natThread *) data;
@@ -226,7 +228,7 @@ java::lang::Thread::sleep (jlong millis, jint nanos)
 #ifndef JV_ULIBGCJ
   if (current->isInterrupted (true))
     throw new InterruptedException;
-#endif//JV_ULIBGCJ
+#endif// not JV_ULIBGCJ
 }
 
 void
@@ -252,7 +254,7 @@ java::lang::Thread::finish_ ()
       _Jv_EnableGC ();
     }
 #endif
-#endif//JV_ULIBGCJ
+#endif// not JV_ULIBGCJ
 
   // If a method cache was created, free it.
   _Jv_FreeMethodCache();
@@ -354,7 +356,7 @@ _Jv_ThreadRun (java::lang::Thread* thread)
 	{
 	  // Nothing.
 	}
-#endif//JV_ULIBGCJ
+#endif// not JV_ULIBGCJ
     }
 
   thread->finish_ ();
@@ -394,7 +396,7 @@ java::lang::Thread::suspend (void)
   // Old applets still call this method.  Rather than throwing
   // UnsupportedOperationException we simply fail silently.
 }
-#endif//JV_ULIBGCJ
+#endif// not JV_ULIBGCJ
 
 static int nextThreadNumber = 0;
 
@@ -473,7 +475,7 @@ _Jv_SetCurrentJNIEnv (JNIEnv *env)
   JvAssert (t != NULL);
   ((natThread *) t->data)->jni_env = env;
 }
-#endif//JV_ULIBGCJ
+#endif// not JV_ULIBGCJ
 
 // Attach the current native thread to an existing (but unstarted) Thread 
 // object. Does not register thread with the garbage collector.
@@ -527,7 +529,7 @@ _Jv_AttachCurrentThreadAsDaemon(jstring name, java::lang::ThreadGroup* group)
   _Jv_NotifyThreadStart (thread);
   return thread;
 }
-#endif//JV_ULIBGCJ
+#endif// not JV_ULIBGCJ
 
 jint
 _Jv_DetachCurrentThread (void)

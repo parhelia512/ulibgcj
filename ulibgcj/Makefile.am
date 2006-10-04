@@ -427,4 +427,4 @@ test15: \
 		objects/Test15.o \
 		libulibgcj.a \
 		$(GCLIBS)
-	$(GCJ) $(linkflags) --main=Test15 $(^) -o $(@)
+	$(GCJ) -L. $(linkflags) --main=Test15 $(^) -o $(@)
