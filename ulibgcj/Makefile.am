@@ -38,7 +38,6 @@ jar_DATA = libgcj-$(gcc_version).jar
 gcdir = $(libdir)
 gc_DATA = libgc.a
 
-## FIXME - this conflicts with libjava's libgcj.spec
 specdir = $(libdir)
 spec_DATA = libgcj.spec
 
