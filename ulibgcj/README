@@ -17,6 +17,15 @@ http://gcc.gnu.org/ml/java-patches/2006-q1/msg00347.html.
 Other platforms may work, but have not been tested.
 
 
+Darwin (OS X) specific issues
+-----------------------------
+
+gcc 4.2 requires a newer version of binutils than the version that ships
+with Mac OS X 10.4 and the version of ld that ships with XCode 2.2.  If you
+encounter link errors, consider installing a more recent version of cctools.
+See http://gcc.gnu.org/ml/gcc/2006-03/msg00507.html for more details.
+
+
 Applying the patch
 ------------------
 
