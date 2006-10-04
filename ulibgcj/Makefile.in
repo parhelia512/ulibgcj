@@ -1040,7 +1040,7 @@ headers/java/lang/String.h: classes/java/lang/String.class
 $(objects): objects/%.o: classes/%.class $(classes)
 	@mkdir -p $(dir $(@))
 	$(GCJ) -Iclasses $(GCJFLAGS) -o $(@) -c $(<) \
-		$$(find classes -name $(basename $(notdir $(<)))\$$*.class)
+		$$(find classes -wholename '$(basename $(<))$$*.class')
 
 $(native_objects): objects/%.o: %.cc
 	@mkdir -p $(dir $(@))
