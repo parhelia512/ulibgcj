@@ -41,6 +41,12 @@
 #  error can not work out how to access fields of ppc_thread_state64_t
 # endif
 #elif defined(__i386__)
+/* Apple defines MACHINE_THREAD_STATE to be x86_THREAD_STATE as of
+   XCode 2.3, which doesn't work, so we set it to a value that does
+   work. */
+# undef MACHINE_THREAD_STATE
+# define MACHINE_THREAD_STATE x86_THREAD_STATE32
+
 # define THREAD_STATE i386_thread_state_t
 # if defined (HAS_I386_THREAD_STATE_EAX)
 #  define THREAD_FLD(x) x
