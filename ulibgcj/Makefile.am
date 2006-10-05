@@ -345,7 +345,7 @@ objects = $(foreach x,$(java_sources),$(patsubst %.java,objects/%.o,$(x)))
 $(objects): objects/%.o: classes/%.class $(classes)
 	@mkdir -p $(dir $(@))
 	$(GCJ) -Iclasses $(GCJFLAGS) -o $(@) -c $(<) \
-		$$(find classes -wholename '$(basename $(<))$$*.class')
+		$$(find classes -path '$(basename $(<))$$*.class')
 
 native_objects = \
 	$(foreach x,$(native_sources),$(patsubst %.cc,objects/%.o,$(x)))
