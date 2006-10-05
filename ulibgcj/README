@@ -5,25 +5,19 @@ Micro-libgcj is currently supported on the following platforms:
 
   Linux (i386 and amd64)
   Win32 (i386)
-  Mac OS X (PPC)
-
-Mac OS X (i386) can also be made to work.  However, as of this
-writing, the Boehm GC library packaged with GCC does not support
-Darwin (OS X) on the i386 architecture.  Until this is fixed, you can
-substitute the latest upstream version, which does support this
-platform.  See also
-http://gcc.gnu.org/ml/java-patches/2006-q1/msg00347.html.
+  Mac OS X (i386 and PPC)
 
 Other platforms may work, but have not been tested.
 
 
-Darwin (OS X) specific issues
------------------------------
+Darwin (OS X) -specific issues
+------------------------------
 
-gcc 4.2 requires a newer version of binutils than the version that ships
-with Mac OS X 10.4 and the version of ld that ships with XCode 2.2.  If you
-encounter link errors, consider installing a more recent version of cctools.
-See http://gcc.gnu.org/ml/gcc/2006-03/msg00507.html for more details.
+GCC 4.2 requires a newer version of binutils than the version that
+ships with Mac OS X 10.4 and the version of ld that ships with XCode
+2.2.  If you encounter link errors, consider installing a more recent
+version of cctools or XCode.  See
+http://gcc.gnu.org/ml/gcc/2006-03/msg00507.html for more details.
 
 
 Applying the patch
@@ -50,22 +44,27 @@ and that you are building within a sibling directory called gcc-build.
  $ ../gcc-ulibgcj/configure \
   CFLAGS="-Os -g -fPIC" CXXFLAGS="-Os -g -fPIC" GCJFLAGS="-Os -g -fPIC" \
   CPPFLAGS="-fPIC" \
-  --prefix=/usr/local/gcc-ulibgcj \
+  --prefix=/Users/dicej/sw/gcc-ulibgcj \
   --enable-languages=c,c++,java \
   --enable-threads \
+  --disable-shared \
   --disable-bootstrap \
   --disable-nls \
-  --disable-shared \
   --disable-libstdcxx-debug \
   --disable-multilib \
   --without-libidn \
   --disable-tls \
   --without-x \
+  --without-libffi \
+  --disable-libgomp \
+  --disable-libssp \
+  --disable-libffi \
+  --disable-interpreter \
   --enable-java-gc=boehm \
   --enable-hash-synchronization \
   --disable-libgcj \
   --enable-micro-libgcj
- $ nice make -j4
+ $ nice make
  $ make install
 
 Note the --disable-shared argument to configure above.  This forces a
@@ -73,6 +72,9 @@ static libstdc++ to be built and used, which may be desirable if you
 need to build standalone binaries which are immune to C++ ABI changes.
 However, this does not currently work on Darwin (OS X), so you should
 omit it on that platform.
+
+Also note that optimized builds may not work properly on Darwin i386,
+so change the -Os flags to -O0 above for that platform.
 
 If you are cross compiling with mingw32 as the target, replace the
 above configure command with something like the following.  Here we
@@ -94,6 +96,11 @@ w32api packages from mingw.org into /usr/local/mingw32.
   --without-libidn \
   --disable-tls \
   --without-x \
+  --without-libffi \
+  --disable-libgomp \
+  --disable-libssp \
+  --disable-libffi \
+  --disable-interpreter \
   --enable-sjlj-exceptions \
   --enable-java-gc=boehm \
   --enable-hash-synchronization \
