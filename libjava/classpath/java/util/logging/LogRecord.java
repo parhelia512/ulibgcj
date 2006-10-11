@@ -160,7 +160,7 @@ public class LogRecord
     sequenceNumber = allocateSeqNum();
   }
 
-
+/*#if not ULIBGCJ*/
   /**
    * Determined with the serialver tool of the Sun J2SE 1.4.
    */
@@ -227,7 +227,7 @@ public class LogRecord
       }
     }
   }
-
+/*#endif*/
 
   /**
    * Returns the name of the logger where this <code>LogRecord</code>

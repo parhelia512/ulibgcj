@@ -38,7 +38,9 @@ exception statement from your version. */
 
 package java.util.logging;
 
+/*#if not ULIBGCJ*/
 import java.io.UnsupportedEncodingException;
+/*#endif*/
 
 /**
  * A <code>Handler</code> publishes <code>LogRecords</code> to
@@ -55,11 +57,13 @@ import java.io.UnsupportedEncodingException;
  */
 public abstract class Handler
 {
+/*#if not ULIBGCJ*/
   Formatter     formatter;
   Filter        filter;
   Level         level;
   ErrorManager  errorManager;
   String        encoding;
+/*#endif*/
 
   /**
    * Constructs a Handler with a logging severity level of
@@ -87,7 +91,9 @@ h.setFormatter(h.getFormatter());</pre>
    */
   protected Handler()
   {
+/*#if not ULIBGCJ*/
     level = Level.ALL;
+/*#endif*/
   }
 
 
@@ -141,6 +147,7 @@ h.setFormatter(h.getFormatter());</pre>
     throws SecurityException;
 
 
+/*#if not ULIBGCJ*/
   /**
    * Returns the <code>Formatter</code> which will be used to
    * localize the text of log messages and to substitute
@@ -383,4 +390,5 @@ h.setFormatter(h.getFormatter());</pre>
     else
       return true;
   }
+/*#endif*/
 }

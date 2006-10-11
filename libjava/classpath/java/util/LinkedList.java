@@ -37,11 +37,13 @@ exception statement from your version. */
 
 
 package java.util;
+/*#if not ULIBGCJ*/
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
+/*#endif*/
 
 /**
  * Linked list implementation of the List interface. In addition to the
@@ -72,7 +74,11 @@ import java.lang.reflect.Array;
  * @status missing javadoc, but complete to 1.4
  */
 public class LinkedList<T> extends AbstractSequentialList<T>
+/*#if ULIBGCJ
+  implements List<T>
+  #else*/
   implements List<T>, Queue<T>, Cloneable, Serializable
+/*#endif*/
 {
   /**
    * Compatible with JDK 1.2.
@@ -695,7 +701,11 @@ public class LinkedList<T> extends AbstractSequentialList<T>
   public <S> S[] toArray(S[] a)
   {
     if (a.length < size)
+/*#if ULIBGCJ
+      throw new RuntimeException("reflective array creation not supported");
+  #else*/
       a = (S[]) Array.newInstance(a.getClass().getComponentType(), size);
+/*#endif*/
     else if (a.length > size)
       a[size] = null;
     Entry<T> e = first;
@@ -751,6 +761,7 @@ public class LinkedList<T> extends AbstractSequentialList<T>
     return removeFirst();
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Serializes this object to the given stream.
    *
@@ -788,6 +799,7 @@ public class LinkedList<T> extends AbstractSequentialList<T>
     while (--i >= 0)
       addLastEntry(new Entry<T>((T) s.readObject()));
   }
+/*#endif*/
 
   /**
    * A ListIterator over the list. This class keeps track of its

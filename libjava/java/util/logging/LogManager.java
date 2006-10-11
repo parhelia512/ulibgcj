@@ -39,22 +39,28 @@ exception statement from your version. */
 
 package java.util.logging;
 
+/*#if not ULIBGCJ*/
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+/*#endif*/
 import java.lang.ref.WeakReference;
+/*#if not ULIBGCJ*/
 import java.net.URL;
+/*#endif*/
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+/*#if not ULIBGCJ*/
 import java.util.Properties;
 import java.util.StringTokenizer;
 
 import gnu.classpath.SystemProperties;
+/*#endif*/
 
 /**
  * The <code>LogManager</code> maintains a hierarchical namespace
@@ -118,6 +124,7 @@ public class LogManager
    */
   private Map loggers;
 
+/*#if not ULIBGCJ*/
   /**
    * The properties for the logging framework which have been
    * read in last.
@@ -138,6 +145,7 @@ public class LogManager
    */
   private final PropertyChangeSupport pcs = new PropertyChangeSupport( /* source bean */
                                                                       LogManager.class);
+/*#endif*/
 
   protected LogManager()
   {
@@ -151,12 +159,17 @@ public class LogManager
   {
     if (logManager == null)
       {
+/*#if ULIBGCJ
+        logManager = new LogManager();
+  #else*/
         logManager = makeLogManager();
         initLogManager();
+/*#endif*/
       }
     return logManager;
   }
 
+/*#if not ULIBGCJ*/
   private static final String MANAGER_PROPERTY = "java.util.logging.manager";
 
   private static LogManager makeLogManager()
@@ -219,6 +232,7 @@ public class LogManager
     if (listener != null)
       pcs.removePropertyChangeListener(listener);
   }
+/*#endif*/
 
   /**
    * Adds a named logger.  If a logger with the same name has
@@ -268,15 +282,20 @@ public class LogManager
 	loggers.remove(ref);
       }
 
+/*#if not ULIBGCJ*/
     /* Adding a named logger requires a security permission. */
     if ((name != null) && ! name.equals(""))
       checkAccess();
+/*#endif*/
 
     Logger parent = findAncestor(logger);
     loggers.put(name, new WeakReference(logger));
     if (parent != logger.getParent())
       logger.setParent(parent);
 
+/*#if ULIBGCJ
+    logger.setLevel(parent.getLevel());
+  #else*/
     // The level of the newly added logger must be specified.
     // The easiest case is if there is a level for exactly this logger
     // in the properties. If no such level exists the level needs to be 
@@ -298,6 +317,7 @@ public class LogManager
           searchName = "";
       }
     logger.setLevel(logLevel);
+/*#endif*/
 
     /* It can happen that existing loggers should be children of
      * the newly added logger. For example, assume that there
@@ -405,6 +425,7 @@ public class LogManager
       return null;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Returns an Enumeration of currently registered Logger names.
    * Since other threads can register loggers at any time, the
@@ -908,5 +929,6 @@ public class LogManager
         return Class.forName(name, true, loader);
       }
   }
+/*#endif*/
 
 }

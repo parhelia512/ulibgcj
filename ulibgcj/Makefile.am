@@ -110,6 +110,7 @@ java/lang/Object.java \
 java/lang/OutOfMemoryError.java \
 java/lang/Runnable.java \
 java/lang/RuntimeException.java \
+java/lang/SecurityException.java \
 java/lang/Short.java \
 java/lang/String.java \
 java/lang/StringBuffer.java \
@@ -143,6 +144,7 @@ java/util/AbstractCollection.java \
 java/util/AbstractList.java \
 java/util/AbstractMap.java \
 java/util/AbstractSet.java \
+java/util/AbstractSequentialList.java \
 java/util/ArrayList.java \
 java/util/Arrays.java \
 java/util/Collection.java \
@@ -155,6 +157,7 @@ java/util/HashMap.java \
 java/util/HashSet.java \
 java/util/Hashtable.java \
 java/util/Iterator.java \
+java/util/LinkedList.java \
 java/util/List.java \
 java/util/ListIterator.java \
 java/util/Locale.java \
@@ -165,7 +168,12 @@ java/util/Properties.java \
 java/util/PropertyResourceBundle.java \
 java/util/ResourceBundle.java \
 java/util/Set.java \
-java/util/Vector.java
+java/util/Vector.java \
+java/util/logging/Handler.java \
+java/util/logging/Level.java \
+java/util/logging/Logger.java \
+java/util/logging/LogManager.java \
+java/util/logging/LogRecord.java
 
 native_sources = \
 gnu/gcj/natCore.cc \
@@ -242,7 +250,7 @@ $(processed_java_sources): processed/%.java: %.java
 
 $(classes): $(processed_java_sources)
 	@mkdir -p $(dir $(@))
-	$(GCJ) -d classes --classpath classes --bootclasspath processed -C $(^)
+	$(GCJ) -d classes --classpath classes --bootclasspath processed -C -w $(^)
 
 java_headers = $(foreach	x,$(java_sources),$(patsubst %.java,headers/%.h,$(x)))
 
@@ -396,7 +404,7 @@ headers/%.h: classes/%.class
 	$(GCJH) $(hflags) $(patsubst classes/%.class,%,$(<))
 
 classes/%.class: $(srcdir)/test/%.java libulibgcj.a
-	$(GCJ) $(classflags) -C $(<)
+	$(GCJ) $(classflags) -C -w $(<)
 
 libgc.a: $(GCLIBS)
 	cp $(<) $(@)

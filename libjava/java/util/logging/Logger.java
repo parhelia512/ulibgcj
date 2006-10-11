@@ -41,8 +41,10 @@ package java.util.logging;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+/*#if not ULIBGCJ*/
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+/*#endif*/
 
 /**
  * A Logger is used for logging information about events. Usually, there
@@ -72,6 +74,7 @@ public class Logger
 
   static final Logger root = new Logger("", null);
 
+/*#if not ULIBGCJ*/
   /**
    * A logger provided to applications that make only occasional use
    * of the logging framework, typically early prototypes.  Serious
@@ -92,7 +95,7 @@ public class Logger
 	    }
 	  });
     }
-
+/*#endif*/
 
   /**
    * The name of the Logger, or <code>null</code> if the logger is
@@ -128,7 +131,9 @@ public class Logger
    */
   private ResourceBundle resourceBundle;
 
+/*#if not ULIBGCJ*/
   private Filter filter;
+/*#endif*/
 
   private final List handlerList = new java.util.ArrayList(4);
   private Handler[] handlers = new Handler[0];
@@ -477,17 +482,20 @@ public class Logger
    */
   public synchronized void setLevel(Level level)
   {
+/*#if not ULIBGCJ*/
     /* An application is allowed to control an anonymous logger
      * without having the permission to control the logging
      * infrastructure.
      */
     if (!anonymous)
       LogManager.getLogManager().checkAccess();
+/*#endif*/
 
     this.level = level;
   }
 
 
+/*#if not ULIBGCJ*/
   public synchronized Filter getFilter()
   {
     return filter;
@@ -514,7 +522,7 @@ public class Logger
 
     this.filter = filter;
   }
-
+/*#endif*/
 
 
 
@@ -555,8 +563,10 @@ public class Logger
     if (!isLoggable(record.getLevel()))
       return;
 
+/*#if not ULIBGCJ*/
     if ((filter != null) && !filter.isLoggable(record))
       return;
+/*#endif*/
 
     /* If no logger name has been set for the log record,
      * use the name of this logger.
@@ -606,12 +616,16 @@ public class Logger
   {
     if (isLoggable(level))
       {
+/*#if ULIBGCJ
+        logp(level, null, null, message, param);
+  #else*/
         StackTraceElement caller = getCallerStackFrame();
         logp(level,
              caller != null ? caller.getClassName() : "<unknown>",
              caller != null ? caller.getMethodName() : "<unknown>",
              message,
              param);
+/*#endif*/
       }
   }
 
@@ -622,12 +636,16 @@ public class Logger
   {
     if (isLoggable(level))
       {
+/*#if ULIBGCJ
+        logp(level, null, null, message, params);
+  #else*/
         StackTraceElement caller = getCallerStackFrame();
         logp(level,
              caller != null ? caller.getClassName() : "<unknown>",
              caller != null ? caller.getMethodName() : "<unknown>",
              message,
              params);
+/*#endif*/
       }
   }
 
@@ -638,12 +656,16 @@ public class Logger
   {
     if (isLoggable(level))
       {
+/*#if ULIBGCJ
+        logp(level, null, null, message, thrown);
+  #else*/
         StackTraceElement caller = getCallerStackFrame();    
         logp(level,
              caller != null ? caller.getClassName() : "<unknown>",
              caller != null ? caller.getMethodName() : "<unknown>",
              message,
              thrown);
+/*#endif*/
       }
   }
 
@@ -1016,12 +1038,14 @@ public class Logger
     /* Throw a new NullPointerException if handler is null. */
     handler.getClass();
 
+/*#if not ULIBGCJ*/
     /* An application is allowed to control an anonymous logger
      * without having the permission to control the logging
      * infrastructure.
      */
     if (!anonymous)
       LogManager.getLogManager().checkAccess();
+/*#endif*/
 
     if (!handlerList.contains(handler))
     {
@@ -1050,12 +1074,14 @@ public class Logger
   public synchronized void removeHandler(Handler handler)
     throws SecurityException
   {
+/*#if not ULIBGCJ*/
     /* An application is allowed to control an anonymous logger
      * without having the permission to control the logging
      * infrastructure.
      */
     if (!anonymous)
       LogManager.getLogManager().checkAccess();
+/*#endif*/
 
     /* Throw a new NullPointerException if handler is null. */
     handler.getClass();
@@ -1121,12 +1147,14 @@ public class Logger
    */
   public synchronized void setUseParentHandlers(boolean useParentHandlers)
   {
+/*#if not ULIBGCJ*/
     /* An application is allowed to control an anonymous logger
      * without having the permission to control the logging
      * infrastructure.
      */
     if (!anonymous)
       LogManager.getLogManager().checkAccess();
+/*#endif*/
 
     this.useParentHandlers = useParentHandlers;
   }
@@ -1173,22 +1201,26 @@ public class Logger
         throw new IllegalArgumentException(
           "the root logger can only have a null parent");
 
+/*#if not ULIBGCJ*/
     /* An application is allowed to control an anonymous logger
      * without having the permission to control the logging
      * infrastructure.
      */
     if (!anonymous)
       LogManager.getLogManager().checkAccess();
+/*#endif*/
 
     this.parent = parent;
   }
   
+/*#if not ULIBGCJ*/
   /**
    * Gets the StackTraceElement of the first class that is not this class.
    * That should be the initial caller of a logging method.
    * @return caller of the initial logging method or null if unknown.
    */
   private native StackTraceElement getCallerStackFrame();
+/*#endif*/
   
   /**
    * Reset and close handlers attached to this logger. This function is package
