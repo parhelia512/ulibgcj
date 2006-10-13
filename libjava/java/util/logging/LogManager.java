@@ -161,6 +161,8 @@ public class LogManager
       {
 /*#if ULIBGCJ
         logManager = new LogManager();
+        Logger.root.setLevel(Level.INFO);
+        logManager.addLogger(Logger.root);
   #else*/
         logManager = makeLogManager();
         initLogManager();
@@ -293,9 +295,7 @@ public class LogManager
     if (parent != logger.getParent())
       logger.setParent(parent);
 
-/*#if ULIBGCJ
-    logger.setLevel(parent.getLevel());
-  #else*/
+/*#if not ULIBGCJ*/
     // The level of the newly added logger must be specified.
     // The easiest case is if there is a level for exactly this logger
     // in the properties. If no such level exists the level needs to be 
