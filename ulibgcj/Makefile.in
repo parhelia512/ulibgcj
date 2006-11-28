@@ -395,6 +395,7 @@ java/lang/VMClassLoader.java \
 java/lang/VMThrowable.java \
 java/lang/VerifyError.java \
 java/lang/VirtualMachineError.java \
+java/lang/annotation/Annotation.java \
 java/lang/ref/Reference.java \
 java/lang/ref/ReferenceQueue.java \
 java/lang/ref/WeakReference.java \
