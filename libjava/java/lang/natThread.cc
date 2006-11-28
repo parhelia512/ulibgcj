@@ -262,8 +262,10 @@ java::lang::Thread::finish_ ()
   // Clear out thread locals.
   locals = NULL;
 
+#ifndef JV_ULIBGCJ
   // Signal any threads that are waiting to join() us.
   _Jv_MutexLock (&nt->join_mutex);
+#endif// not JV_ULIBGCJ
 
   {
     JvSynchronize sync (this);
@@ -271,8 +273,10 @@ java::lang::Thread::finish_ ()
     state = JV_TERMINATED;
   }
 
+#ifndef JV_ULIBGCJ
   _Jv_CondNotifyAll (&nt->join_cond, &nt->join_mutex);
-  _Jv_MutexUnlock (&nt->join_mutex);  
+  _Jv_MutexUnlock (&nt->join_mutex); 
+#endif// not JV_ULIBGCJ 
 }
 
 // Run once at thread startup, either when thread is attached or when 
