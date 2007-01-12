@@ -385,7 +385,7 @@ public final class System
   public static String getProperty(String key, String def) {
     if ("file.separator".equals(key)) return "/";
     if ("line.separator".equals(key)) return "\n";
-    if ("ulibgcj.version".equals(key)) return "0.2";
+    if ("ulibgcj.version".equals(key)) return "0.1";
     return def;
   }  
   #else*/
