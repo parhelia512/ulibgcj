@@ -450,23 +450,26 @@ if test "${gc_use_mmap}" = "yes"; then
   AC_DEFINE(USE_MMAP, 1, [use MMAP instead of sbrk to get new memory])
 fi
 
-symver=
-case "$target" in
-  *-*-linux* )
-    cat > conftest.c <<EOF
-#include <pthread.h>
-void *tf (void *arg) { (void) arg; return NULL; }
-int main (void) { pthread_t th; pthread_create (&th, NULL, tf, NULL); return 0; }
-EOF
-    if $CC $CFLAGS -pthread -o conftest conftest.c > /dev/null 2>&1; then
-      symver=`readelf -s conftest 2> /dev/null | sed -n '/UND pthread_create@/{s/^.*@//;s/ .*$//;p;q}'`
-    fi
-    rm -f conftest conftest.c
-    ;;
-esac
-if test -n "$symver"; then
-  AC_DEFINE_UNQUOTED(GC_PTHREAD_SYM_VERSION, "$symver", [symbol version of pthread_create])
-fi
+dnl Removed the following because it's not appropriate for static builds.
+dnl Not the right solution, obviously, but does the job.
+
+dnl symver=
+dnl case "$target" in
+dnl   *-*-linux* )
+dnl     cat > conftest.c <<EOF
+dnl #include <pthread.h>
+dnl void *tf (void *arg) { (void) arg; return NULL; }
+dnl int main (void) { pthread_t th; pthread_create (&th, NULL, tf, NULL); return 0; }
+dnl EOF
+dnl     if $CC $CFLAGS -pthread -o conftest conftest.c > /dev/null 2>&1; then
+dnl       symver=`readelf -s conftest 2> /dev/null | sed -n '/UND pthread_create@/{s/^.*@//;s/ .*$//;p;q}'`
+dnl     fi
+dnl     rm -f conftest conftest.c
+dnl     ;;
+dnl esac
+dnl if test -n "$symver"; then
+dnl   AC_DEFINE_UNQUOTED(GC_PTHREAD_SYM_VERSION, "$symver", [symbol version of pthread_create])
+dnl fi
 
 
 if test -n "$with_cross_host" &&
