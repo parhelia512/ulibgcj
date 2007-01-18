@@ -42,12 +42,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-/*#if not ULIBGCJ*/
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
+/*#if not ULIBGCJ*/
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -372,7 +372,6 @@ label   = Name:\\u0020</pre>
       }
   }
 
-/*#if not ULIBGCJ*/
   /**
    * Calls <code>store(OutputStream out, String header)</code> and
    * ignores the IOException that may be thrown.
@@ -424,12 +423,18 @@ label   = Name:\\u0020</pre>
    */
   public void store(OutputStream out, String header) throws IOException
   {
+/*#if ULIBGCJ
+    PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+  #else*/
     // The spec says that the file must be encoded using ISO-8859-1.
     PrintWriter writer
       = new PrintWriter(new OutputStreamWriter(out, "ISO-8859-1"));
+/*#endif*/
     if (header != null)
       writer.println("#" + header);
+/*#if not ULIBGCJ*/
     writer.println ("#" + Calendar.getInstance ().getTime ());
+/*#endif*/
     
     Iterator iter = entrySet ().iterator ();
     int i = size ();
@@ -445,7 +450,6 @@ label   = Name:\\u0020</pre>
 
     writer.flush ();
   }
-/*#endif*/
 
   /**
    * Gets the property with the specified key in this property list.
@@ -569,6 +573,7 @@ label   = Name:\\u0020</pre>
       }
     out.flush ();
   }
+/*#endif*/
 
   /**
    * Formats a key or value for output in a properties file.
@@ -630,6 +635,7 @@ label   = Name:\\u0020</pre>
       }
   }
 
+/*#if not ULIBGCJ*/
   /**
    * <p>
    * Encodes the properties as an XML file using the UTF-8 encoding.
