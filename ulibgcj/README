@@ -55,7 +55,7 @@ and that you are building within a sibling directory called gcc-build.
   --enable-hash-synchronization \
   --disable-libgcj \
   --enable-micro-libgcj
- $ nice make -j4
+ $ nice make
  $ make install
 
 Note the --disable-shared argument to configure above.  This forces a
