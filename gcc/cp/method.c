@@ -350,6 +350,8 @@ use_thunk (tree thunk_fndecl, bool emit_p)
      this translation unit.  */
   TREE_ADDRESSABLE (function) = 1;
   mark_used (function);
+  /* The DECL_ASSEMBLER_NAME of the thunked function may need modification. */
+  targetm.asm_out.change_extern_name (function);
   if (!emit_p)
     return;
 

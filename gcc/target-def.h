@@ -205,6 +205,10 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define TARGET_ASM_OUTPUT_DWARF_DTPREL NULL
 #endif
 
+#ifndef TARGET_ASM_CHANGE_EXTERN_NAME
+#define TARGET_ASM_CHANGE_EXTERN_NAME hook_void_tree
+#endif
+
 #define TARGET_ASM_ALIGNED_INT_OP				\
 		       {TARGET_ASM_ALIGNED_HI_OP,		\
 			TARGET_ASM_ALIGNED_SI_OP,		\
@@ -248,7 +252,8 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
                         TARGET_ASM_FILE_END,			\
 			TARGET_ASM_EXTERNAL_LIBCALL,            \
                         TARGET_ASM_MARK_DECL_PRESERVED,		\
-			TARGET_ASM_OUTPUT_DWARF_DTPREL}
+            TARGET_ASM_OUTPUT_DWARF_DTPREL,         \
+            TARGET_ASM_CHANGE_EXTERN_NAME}
 
 /* Scheduler hooks.  All of these default to null pointers, which
    haifa-sched.c looks for and handles.  */

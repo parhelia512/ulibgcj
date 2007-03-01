@@ -335,6 +335,7 @@ extern void i386_pe_record_exported_symbol (const char *, int);
 extern void i386_pe_file_end (void);
 extern int i386_pe_dllexport_name_p (const char *);
 extern int i386_pe_dllimport_name_p (const char *);
+extern void i386_pe_decorate_assembler_name (tree);
 
 /* For Win32 ABI compatibility */
 #undef DEFAULT_PCC_STRUCT_RETURN
@@ -412,6 +413,7 @@ extern int i386_pe_dllimport_name_p (const char *);
 
 #define TARGET_VALID_DLLIMPORT_ATTRIBUTE_P i386_pe_valid_dllimport_attribute_p
 #define TARGET_CXX_ADJUST_CLASS_AT_DEFINITION i386_pe_adjust_class_at_definition
+#define TARGET_ASM_CHANGE_EXTERN_NAME i386_pe_decorate_assembler_name
 
 #undef TREE
 

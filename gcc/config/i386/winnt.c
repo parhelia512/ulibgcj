@@ -335,33 +335,38 @@ gen_stdcall_or_fastcall_suffix (tree decl, bool fastcall)
 }
 
 void
+i386_pe_decorate_assembler_name (tree decl)
+{
+  tree type_attributes = TYPE_ATTRIBUTES (TREE_TYPE (decl));
+  tree newid = NULL_TREE;
+
+  if (lookup_attribute ("stdcall", type_attributes))
+    newid = gen_stdcall_or_fastcall_suffix (decl, false);
+  else if (lookup_attribute ("fastcall", type_attributes))
+    newid = gen_stdcall_or_fastcall_suffix (decl, true);
+  if (newid != NULL_TREE)
+   {
+      rtx rtlname = XEXP (DECL_RTL (decl), 0);
+      if (GET_CODE (rtlname) == MEM)
+       rtlname = XEXP (rtlname, 0);
+      XSTR (rtlname, 0) = IDENTIFIER_POINTER (newid);
+
+ 	  /* These attributes must be present on first declaration,
+	     change_decl_assembler_name will warn if they are added
+	     later and the decl has been referenced, but duplicate_decls
+	     should catch the mismatch before this is called.  */ 
+	  change_decl_assembler_name (decl, newid);
+    }
+ }
+
+void
 i386_pe_encode_section_info (tree decl, rtx rtl, int first)
 {
   default_encode_section_info (decl, rtl, first);
 
   if (first && TREE_CODE (decl) == FUNCTION_DECL)
-    {
-      tree type_attributes = TYPE_ATTRIBUTES (TREE_TYPE (decl));
-      tree newid = NULL_TREE;
-
-      if (lookup_attribute ("stdcall", type_attributes))
-	newid = gen_stdcall_or_fastcall_suffix (decl, false);
-      else if (lookup_attribute ("fastcall", type_attributes))
-	newid = gen_stdcall_or_fastcall_suffix (decl, true);
-      if (newid != NULL_TREE) 	
-	{
-	  rtx rtlname = XEXP (rtl, 0);
-	  if (GET_CODE (rtlname) == MEM)
-	    rtlname = XEXP (rtlname, 0);
-	  XSTR (rtlname, 0) = IDENTIFIER_POINTER (newid);
-	  /* These attributes must be present on first declaration,
-	     change_decl_assembler_name will warn if they are added
-	     later and the decl has been referenced, but duplicate_decls
-	     should catch the mismatch before this is called.  */ 
-	  change_decl_assembler_name (decl, newid);
-	}
-    }
-
+    i386_pe_decorate_assembler_name (decl);
+  
   /* Mark the decl so we can tell from the rtl whether the object is
      dllexport'd or dllimport'd.  tree.c: merge_dllimport_decl_attributes
      handles dllexport/dllimport override semantics.  */

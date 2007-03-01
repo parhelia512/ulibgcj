@@ -186,6 +186,13 @@ struct gcc_target
     /* Output a DTP-relative reference to a TLS symbol.  */
     void (*output_dwarf_dtprel) (FILE *file, int size, rtx x);
 
+/* This target hook allows the operating system to modify the extern
+    assembler name
+   of a DECL.  For example, windows targets use this to decorate stdcall and
+   fastcall functions
+   with a a trailing '@n'.  */
+    void (*change_extern_name) (tree decl);
+
   } asm_out;
 
   /* Functions relating to instruction scheduling.  */
