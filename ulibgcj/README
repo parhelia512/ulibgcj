@@ -44,7 +44,7 @@ and that you are building within a sibling directory called gcc-build.
  $ ../gcc-ulibgcj/configure \
   CFLAGS="-Os -g -fPIC" CXXFLAGS="-Os -g -fPIC" GCJFLAGS="-Os -g -fPIC" \
   CPPFLAGS="-fPIC" \
-  --prefix=/Users/dicej/sw/gcc-ulibgcj \
+  --prefix=/usr/local/gcc-ulibgcj \
   --enable-languages=c,c++,java \
   --enable-threads \
   --disable-shared \
