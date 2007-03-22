@@ -4743,7 +4743,11 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
+<<<<<<< HEAD/ulibgcj/configure
 #line 4746 "configure"
+=======
+#line 4743 "configure"
+>>>>>>> 7384d2fb00b103564d1ab9a20bbe64aa799e9e0e/ulibgcj/configure
 struct S { ~S(); };
 void bar();
 void foo()

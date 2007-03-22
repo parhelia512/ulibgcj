@@ -79,7 +79,8 @@ so change the -Os flags to -O0 above for that platform.
 If you are cross compiling with mingw32 as the target, replace the
 above configure command with something like the following.  Here we
 assume you have already installed the binutils, mingw-runtime, and
-w32api packages from mingw.org into /usr/local/mingw32.
+w32api packages from mingw.org into /usr/local/mingw32 (see
+scripts/mingw.sh).
 
  $ ../gcc-ulibgcj/configure \
   CFLAGS="-Os -g" CXXFLAGS="-Os -g" GCJFLAGS="-Os -g" \
