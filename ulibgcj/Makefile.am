@@ -150,6 +150,7 @@ java/util/ArrayList.java \
 java/util/Arrays.java \
 java/util/Collection.java \
 java/util/Collections.java \
+java/util/Comparator.java \
 java/util/ConcurrentModificationException.java \
 java/util/Enumeration.java \
 java/util/EventListener.java \

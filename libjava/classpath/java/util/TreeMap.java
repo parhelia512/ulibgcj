@@ -93,7 +93,6 @@ import java.io.Serializable;
  * @status updated to 1.4
  */
 public class TreeMap<K, V> extends AbstractMap<K, V>
-  implements SortedMap<K, V>
 /*#if ULIBGCJ
   implements SortedMap<K, V>
   #else*/
