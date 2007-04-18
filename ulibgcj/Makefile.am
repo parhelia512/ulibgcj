@@ -169,6 +169,10 @@ java/util/Properties.java \
 java/util/PropertyResourceBundle.java \
 java/util/ResourceBundle.java \
 java/util/Set.java \
+java/util/SortedMap.java \
+java/util/SortedSet.java \
+java/util/TreeMap.java \
+java/util/TreeSet.java \
 java/util/Vector.java \
 java/util/logging/Handler.java \
 java/util/logging/Level.java \

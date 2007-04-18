@@ -38,10 +38,12 @@ exception statement from your version. */
 
 package java.util;
 
+/*#if not ULIBGCJ*/
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+/*#endif*/
 
 /**
  * This class provides a TreeMap-backed implementation of the SortedSet
@@ -82,7 +84,11 @@ import java.io.Serializable;
  * @status updated to 1.4
  */
 public class TreeSet<T> extends AbstractSet<T>
+/*#if ULIBGCJ
+  implements SortedSet<T>
+  #else*/
   implements SortedSet<T>, Cloneable, Serializable
+/*#endif*/
 {
   /**
    * Compatible with JDK 1.2.
@@ -381,6 +387,7 @@ public class TreeSet<T> extends AbstractSet<T>
     return new TreeSet<T>(map.tailMap(from));
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Serializes this object to the given stream.
    *
@@ -418,4 +425,5 @@ public class TreeSet<T> extends AbstractSet<T>
     map = new TreeMap<T, String>(comparator);
     ((TreeMap<T, String>) map).putFromObjStream(s, size, false);
   }
+/*#endif*/
 }

@@ -39,10 +39,12 @@ exception statement from your version. */
 
 package java.util;
 
+/*#if not ULIBGCJ*/
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+/*#endif*/
 
 /**
  * This class provides a red-black tree implementation of the SortedMap
@@ -91,7 +93,12 @@ import java.io.Serializable;
  * @status updated to 1.4
  */
 public class TreeMap<K, V> extends AbstractMap<K, V>
+  implements SortedMap<K, V>
+/*#if ULIBGCJ
+  implements SortedMap<K, V>
+  #else*/
   implements SortedMap<K, V>, Cloneable, Serializable
+/*#endif*/
 {
   // Implementation note:
   // A red-black tree is a binary search tree with the additional properties
@@ -1140,6 +1147,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     return parent;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Construct a tree from sorted keys in linear time. Package visible for
    * use by TreeSet.
@@ -1166,6 +1174,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
         node = successor(node);
       }
   }
+/*#endif*/
 
   /**
    * Construct a tree from sorted keys in linear time, with values of "".
@@ -1188,6 +1197,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
       }
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Deserializes this object from the given stream.
    *
@@ -1204,6 +1214,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     int size = s.readInt();
     putFromObjStream(s, size, true);
   }
+/*#endif*/
 
   /**
    * Remove node from tree. This will increment modCount and decrement size.
@@ -1356,6 +1367,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     return parent;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Serializes this object to the given stream.
    *
@@ -1377,6 +1389,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
         node = successor(node);
       }
   }
+/*#endif*/
 
   /**
    * Iterate over TreeMap's entries. This implementation is parameterized
