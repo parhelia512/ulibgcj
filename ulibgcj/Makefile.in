@@ -45,7 +45,6 @@ target_triplet = @target@
 @USING_POSIX_THREADS_TRUE@am__append_7 = posix-threads.cc
 @USING_WIN32_THREADS_TRUE@am__append_8 = win32-threads.cc
 @USING_NO_THREADS_TRUE@am__append_9 = no-threads.cc
-@USING_BOEHMGC_TRUE@@USING_POSIX_PLATFORM_TRUE@am__append_10 = -ldl
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../config.guess \
 	$(srcdir)/../config.sub $(srcdir)/../depcomp \
 	$(srcdir)/../install-sh $(srcdir)/../missing \
@@ -455,7 +454,7 @@ objects = $(foreach x,$(java_sources),$(patsubst %.java,objects/%.o,$(x)))
 native_objects = \
 	$(foreach x,$(native_sources),$(patsubst %.cc,objects/%.o,$(x)))
 
-AM_LDFLAGS = -lm $(am__append_10)
+AM_LDFLAGS = -lm
 linkflags = $(AM_LDFLAGS) $(LDFLAGS) $(THREADLDFLAGS) $(THREADLIBS)
 javaflags = $(CPPFLAGS) -I$(srcdir)/test $(GCJFLAGS) --bootclasspath processed
 hflags = -d headers -classpath classes:$(srcdir)/test -bootclasspath processed

@@ -351,14 +351,6 @@ clean:
 
 AM_LDFLAGS = -lm
 
-## the only reason we need this is that libgc needs libdl on linux for
-## some obscure reason related to pthread_create:
-if USING_POSIX_PLATFORM
-if USING_BOEHMGC
-AM_LDFLAGS += -ldl
-endif
-endif
-
 linkflags = $(AM_LDFLAGS) $(LDFLAGS) $(THREADLDFLAGS) $(THREADLIBS)
 
 javaflags = $(CPPFLAGS) -I$(srcdir)/test $(GCJFLAGS) --bootclasspath processed
