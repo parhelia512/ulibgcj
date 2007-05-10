@@ -16,7 +16,9 @@ details.  */
 #include <gcj/cni.h>
 #include <gcj/javaprims.h>
 
+#ifndef JV_ULIBGCJ
 #include <java-interp.h>
+#endif
 
 #include <java/lang/Class.h>
 #include <java/lang/StackTraceElement.h>

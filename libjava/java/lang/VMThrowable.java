@@ -37,9 +37,7 @@ exception statement from your version. */
 
 package java.lang;
 
-/*#if not ULIBGCJ*/
 import gnu.gcj.RawDataManaged;
-/*#endif*/
 
 /**
  * VM dependent state and support methods Throwable.
@@ -57,7 +55,6 @@ final class VMThrowable
    */
   private VMThrowable() { }
 
-/*#if not ULIBGCJ*/
   /**
    * Fill in the stack trace with the current execution stack.
    * Called by <code>Throwable.fillInStackTrace()</code> to get the state of
@@ -84,5 +81,4 @@ final class VMThrowable
   
   // Native stack data.
   private RawDataManaged data;
-/*#endif*/
 }

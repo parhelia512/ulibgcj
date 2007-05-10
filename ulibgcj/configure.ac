@@ -169,6 +169,12 @@ AC_SUBST(CHECKREFSPEC)
 AC_SUBST(EXCEPTIONSPEC)
 AC_SUBST(BACKTRACESPEC)
 
+AC_CHECK_HEADERS(execinfo.h unistd.h dlfcn.h)
+AC_CHECK_LIB(dl, dladdr, [
+  AC_DEFINE(HAVE_DLADDR, 1, [Define if you have dladdr()])], [
+  AC_CHECK_LIB(dld, dladdr, [
+  AC_DEFINE(HAVE_DLADDR, 1, [Define if you have dladdr()])])])
+
 ## threads ####################################################################
 
 AC_MSG_CHECKING([for thread model used by GCC])
@@ -309,6 +315,8 @@ AC_SUBST(toolexeclibdir)
 
 if test -d sysdep; then true; else mkdir sysdep; fi
 AC_CONFIG_LINKS(sysdep/locks.h:${libjava}/sysdep/$sysdeps_dir/locks.h)
+AC_CONFIG_LINKS(sysdep/backtrace.h:${libjava}/$fallback_backtrace_h)
+AC_CONFIG_LINKS(sysdep/descriptor.h:${libjava}/$descriptor_h)
 
 AC_DEFINE(JV_ULIBGCJ, 1, [Define if micro-libgcj is to be built])
 

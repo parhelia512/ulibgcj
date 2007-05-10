@@ -46,6 +46,7 @@ and that you are building within a sibling directory called gcc-build.
   CPPFLAGS="-fPIC" \
   --prefix=/usr/local/gcc-ulibgcj \
   --enable-languages=c,c++,java \
+  --disable-bootstrap \
   --enable-threads \
   --disable-shared \
   --disable-bootstrap \
@@ -87,6 +88,7 @@ scripts/mingw.sh).
   --prefix=/usr/local/mingw32 \
   --target=mingw32 \
   --with-headers="/usr/local/mingw32/mingw32/include" \
+  --disable-bootstrap \
   --enable-threads \
   --disable-nls \
   --enable-languages=c,c++,java \

@@ -38,16 +38,20 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import gnu.classpath.SystemProperties;
 
 import java.io.File;
+/*#endif*/
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+/*#if not ULIBGCJ*/
 import java.util.StringTokenizer;
+/*#endif*/
 
 /**
  * Runtime represents the Virtual Machine.
@@ -59,6 +63,7 @@ import java.util.StringTokenizer;
 // No idea why this class isn't final, since you can't build a subclass!
 public class Runtime
 {
+/*#if not ULIBGCJ*/
   /**
    * The library path, to search when loading libraries. We can also safely use
    * this as a lock for synchronization.
@@ -87,6 +92,7 @@ public class Runtime
 
   /** True if we should finalize on exit.  */
   private boolean finalizeOnExit;
+/*#endif*/
 
   /**
    * The one and only runtime instance.
@@ -101,10 +107,12 @@ public class Runtime
     if (current != null)
       throw new InternalError("Attempt to recreate Runtime");
     
+/*#if not ULIBGCJ*/
     // We don't use libpath in the libgcj implementation.  We still
     // set it to something to allow the various synchronizations to
     // work.
     libpath = new String[0];
+/*#endif*/
   }
 
   /**
@@ -118,6 +126,7 @@ public class Runtime
     return current;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Exit the Java runtime. This method will either throw a SecurityException
    * or it will never return. The status code is returned to the system; often
@@ -472,6 +481,7 @@ public class Runtime
       cmd[i] = t.nextToken();
     return exec(cmd, env, dir);
   }
+/*#endif*/
 
   /**
    * Create a new subprocess with the specified command line, already
@@ -485,6 +495,41 @@ public class Runtime
    * @throws NullPointerException if cmd is null, or has null entries
    * @throws IndexOutOfBoundsException if cmd is length 0
    */
+/*#if ULIBGCJ
+  private static class ConcreteProcess extends Process {
+    public final String[] command;
+    public long pid;
+    private int exitCode;
+    public OutputStream out;
+    public InputStream in;
+    public InputStream err;
+
+    public ConcreteProcess(String[] command) {
+      this.command = command;
+      start();
+    }
+
+    public OutputStream getOutputStream() {
+      return out;
+    }
+
+    public InputStream getInputStream() {
+      return in;
+    }
+
+    public InputStream getErrorStream() {
+      return err;
+    }
+
+    public native void start();
+    public native int waitFor();
+    public native int exitValue();
+  }
+
+  public Process exec(String[] cmd) throws IOException {
+    return new ConcreteProcess(cmd);
+  }
+  #else*/
   public Process exec(String[] cmd) throws IOException
   {
     return exec(cmd, null, null);
@@ -744,4 +789,5 @@ public class Runtime
    */
   native Process execInternal(String[] cmd, String[] env, File dir)
     throws IOException;
+/*#endif*/
 } // class Runtime

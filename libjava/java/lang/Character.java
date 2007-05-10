@@ -2289,6 +2289,7 @@ public final class Character
     return getType(ch) == LOWERCASE_LETTER;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Determines if a character is a Unicode lowercase letter. For example,
    * <code>'a'</code> is lowercase.  Unlike isLowerCase(char), this method
@@ -2975,6 +2976,7 @@ public final class Character
    */
   public static native char toLowerCase(char ch);
 
+/*#if not ULIBGCJ*/
   /**
    * Converts a Unicode character into its lowercase equivalent mapping.
    * If a mapping does not exist, then the character passed is returned.
@@ -2992,6 +2994,7 @@ public final class Character
    * @since 1.5
    */
   public static native int toLowerCase(int codePoint);
+/*#endif*/
 
   /**
    * Converts a Unicode character into its uppercase equivalent mapping.
@@ -3212,6 +3215,7 @@ public final class Character
                | (1 << PARAGRAPH_SEPARATOR))) != 0;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Determines if a character is a Unicode space character. This includes
    * SPACE_SEPARATOR, LINE_SEPARATOR, and PARAGRAPH_SEPARATOR.  Unlike

@@ -585,7 +585,6 @@ private:
 
   friend jboolean (::_Jv_IsPhantomClass) (jclass);
 
-#ifndef JV_ULIBGCJ
 #ifdef INTERPRETER
   friend void ::_Jv_InitField (jobject, jclass, int);
 
@@ -594,7 +593,6 @@ private:
   friend class ::_Jv_InterpMethod;
 #endif
   friend class ::_Jv_StackTrace;
-#endif//JV_ULIBGCJ
 
 #ifdef JV_MARKOBJ_DECL
   friend JV_MARKOBJ_DECL;

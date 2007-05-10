@@ -39,8 +39,10 @@ exception statement from your version. */
 package java.util;
 
 import java.io.IOException;
+/*#if not ULIBGCJ*/
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+/*#endif*/
 import java.io.Serializable;
 
 /**
@@ -196,6 +198,7 @@ public class IdentityHashMap<K,V> extends AbstractMap<K,V>
       }
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Creates a shallow copy where keys and values are not cloned.
    */
@@ -214,6 +217,7 @@ public class IdentityHashMap<K,V> extends AbstractMap<K,V>
         return null;
       }
   }
+/*#endif*/
 
   /**
    * Tests whether the specified key is in this map.  Unlike normal Maps,
@@ -883,6 +887,7 @@ public class IdentityHashMap<K,V> extends AbstractMap<K,V>
     }
   } // class IdentityEntry
 
+/*#if not ULIBGCJ*/
   /**
    * Reads the object from a serial stream.
    *
@@ -929,4 +934,5 @@ public class IdentityHashMap<K,V> extends AbstractMap<K,V>
           }
       }
   }
+/*#endif*/
 }
