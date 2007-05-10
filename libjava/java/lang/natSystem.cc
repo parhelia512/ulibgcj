@@ -153,6 +153,30 @@ java::lang::System::getenv0 (jstring name)
 #endif//JV_ULIBGCJ
 
 #ifdef JV_ULIBGCJ
+jstring
+java::lang::System::getProperty(jstring key, jstring def) {
+  if (JvNewStringLatin1("file.separator")->equals(key))
+    return JvNewStringLatin1("/");
+
+  if (JvNewStringLatin1("line.separator")->equals(key))
+    return JvNewStringLatin1("\n");
+
+  if (JvNewStringLatin1("ulibgcj.version")->equals(key))
+    return JvNewStringLatin1(JV_ULIBGCJ_VERSION);
+
+  if (JvNewStringLatin1("user.home")->equals(key)) {
+#ifdef JV_ULIBGCJ_WIN32
+    LPWSTR home = _wgetenv(L"USERPROFILE");
+    return JvNewString(reinterpret_cast<jchar*>(home), lstrlenW(home));
+#else
+    return JvNewStringLatin1(::getenv("HOME"));
+#endif
+  }
+
+  return def;
+}
+
+
 void
 java::lang::System$Output::write (jbyteArray b, jint offset, jint length)
 {

@@ -72,6 +72,8 @@ public class CoreTest implements Runnable {
       System.err.println("caught " + e);
     }
 
+    System.out.println("home directory: " + System.getProperty("user.home"));
+
     if (test.trouble)
       trouble();
     else

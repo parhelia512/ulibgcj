@@ -1,5 +1,7 @@
 ## Process this file with automake to produce Makefile.in.
 
+ulibgcj_version = 0.1
+
 AUTOMAKE_OPTIONS = foreign subdir-objects
 
 ACLOCAL_AMFLAGS = -I .. -I ../config
@@ -26,6 +28,7 @@ AM_CXXFLAGS = \
 	-fdollars-in-identifiers \
 	-Wswitch-enum \
 	-D_FILE_OFFSET_BITS=64 \
+	-DJV_ULIBGCJ_VERSION=\"$(ulibgcj_version)\" \
 	@LIBGCJ_CXXFLAGS@ \
 	$(WARNINGS) \
 	-D_GNU_SOURCE
@@ -195,6 +198,7 @@ libulibgcj_a_SOURCES += posix.cc
 endif
 
 if USING_WIN32_PLATFORM
+AM_CXXFLAGS += -DJV_ULIBGCJ_WIN32
 libulibgcj_a_SOURCES += win32.cc
 endif
 
