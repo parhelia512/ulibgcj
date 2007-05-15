@@ -49,6 +49,7 @@ gnu/java/net/protocol/core/CoreInputStream.java \
 gnu/java/util/WeakIdentityHashMap.java \
 java/io/BufferedInputStream.java \
 java/io/BufferedReader.java \
+java/io/ByteArrayInputStream.java \
 java/io/ByteArrayOutputStream.java \
 java/io/FilterInputStream.java \
 java/io/FilterOutputStream.java \
