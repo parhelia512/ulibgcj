@@ -125,9 +125,11 @@ File::createNewFile()
     char buffer[path->length() + 1];
     copy(path, buffer);
 
-    int r = CREAT(buffer, 0600);
-    if (r != 0) {
+    int fd = CREAT(buffer, 0600);
+    if (fd == -1) {
       throw new IOException(errorString());      
+    } else {
+      doClose(fd);
     }
   }
 }
