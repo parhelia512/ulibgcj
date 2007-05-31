@@ -299,6 +299,7 @@ java/io/BufferedInputStream.java \
 java/io/BufferedReader.java \
 java/io/ByteArrayInputStream.java \
 java/io/ByteArrayOutputStream.java \
+java/io/EOFException.java \
 java/io/File.java \
 java/io/FileInputStream.java \
 java/io/FileOutputStream.java \
