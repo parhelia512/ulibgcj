@@ -367,7 +367,6 @@ label   = Name:\\u0020</pre>
       }
   }
 
-/*#if not ULIBGCJ*/
   /**
    * Calls <code>store(OutputStream out, String header)</code> and
    * ignores the IOException that may be thrown.
@@ -441,7 +440,6 @@ label   = Name:\\u0020</pre>
 
     writer.flush ();
   }
-/*#endif*/
 
   /**
    * Gets the property with the specified key in this property list.
