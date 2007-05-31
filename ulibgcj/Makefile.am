@@ -51,6 +51,9 @@ java/io/BufferedInputStream.java \
 java/io/BufferedReader.java \
 java/io/ByteArrayInputStream.java \
 java/io/ByteArrayOutputStream.java \
+java/io/File.java \
+java/io/FileInputStream.java \
+java/io/FileOutputStream.java \
 java/io/FilterInputStream.java \
 java/io/FilterOutputStream.java \
 java/io/IOException.java \
@@ -180,7 +183,9 @@ java/util/logging/Handler.java \
 java/util/logging/Level.java \
 java/util/logging/Logger.java \
 java/util/logging/LogManager.java \
-java/util/logging/LogRecord.java
+java/util/logging/LogRecord.java \
+java/util/zip/DataFormatException.java \
+java/util/zip/Inflater.java
 
 native_sources = \
 gnu/gcj/natCore.cc \
@@ -198,7 +203,9 @@ java/lang/natStringBuilder.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
 java/lang/natVMClassLoader.cc \
-java/lang/ref/natReference.cc
+java/lang/ref/natReference.cc \
+java/util/zip/natInflater.cc \
+java_io.cc
 
 BUILT_SOURCES = $(java_headers)
 
@@ -223,6 +230,7 @@ libulibgcj_a_SOURCES += posix.cc
 endif
 
 if USING_WIN32_PLATFORM
+AM_CXXFLAGS += -DWIN32
 libulibgcj_a_SOURCES += win32.cc
 endif
 
