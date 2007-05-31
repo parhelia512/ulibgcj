@@ -405,12 +405,7 @@ public final class System
    * @throws IllegalArgumentException if key is ""
    */
 /*#if ULIBGCJ
-  public static String getProperty(String key, String def) {
-    if ("file.separator".equals(key)) return "/";
-    if ("line.separator".equals(key)) return "\n";
-    if ("ulibgcj.version".equals(key)) return "0.2";
-    return def;
-  }  
+  public static native String getProperty(String key, String def);
   #else*/
   public static String getProperty(String key, String def)
   {

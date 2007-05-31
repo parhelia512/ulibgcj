@@ -36,7 +36,7 @@ target_triplet = @target@
 @USING_BOEHMGC_TRUE@am__append_1 = boehm.cc
 @USING_NOGC_TRUE@am__append_2 = nogc.cc
 @USING_POSIX_PLATFORM_TRUE@am__append_3 = posix.cc
-@USING_WIN32_PLATFORM_TRUE@am__append_4 = -DWIN32
+@USING_WIN32_PLATFORM_TRUE@am__append_4 = -DJV_ULIBGCJ_WIN32
 @USING_WIN32_PLATFORM_TRUE@am__append_5 = win32.cc
 @USING_DARWIN_CRT_TRUE@am__append_6 = -DJV_ULIBGCJ_DARWIN
 @USING_DARWIN_CRT_TRUE@am__append_7 = darwin.cc
@@ -263,6 +263,7 @@ toolexeclibdir = @toolexeclibdir@
 toolexecmainlibdir = @toolexecmainlibdir@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+ulibgcj_version = 0.2
 AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = -I .. -I ../config
 SUFFIXES = .class .java .h
@@ -278,8 +279,8 @@ AM_CPPFLAGS = \
 
 AM_CXXFLAGS = -fno-rtti -fnon-call-exceptions $(THREADCXXFLAGS) \
 	-fdollars-in-identifiers -Wswitch-enum -D_FILE_OFFSET_BITS=64 \
-	@LIBGCJ_CXXFLAGS@ $(WARNINGS) -D_GNU_SOURCE $(am__append_4) \
-	$(am__append_6)
+	-DJV_ULIBGCJ_VERSION=\"$(ulibgcj_version)\" @LIBGCJ_CXXFLAGS@ \
+	$(WARNINGS) -D_GNU_SOURCE $(am__append_4) $(am__append_6)
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 jardir = $(datadir)/java
 jar_DATA = libgcj-$(gcc_version).jar

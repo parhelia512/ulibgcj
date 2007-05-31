@@ -3,7 +3,7 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#ifdef WIN32
+#ifdef JV_ULIBGCJ_WIN32
 #  include <io.h>
 #  define OPEN _open
 #  define CLOSE _close
