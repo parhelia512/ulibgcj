@@ -57,6 +57,7 @@ java/io/ByteArrayOutputStream.java \
 java/io/EOFException.java \
 java/io/File.java \
 java/io/FileInputStream.java \
+java/io/FileNotFoundException.java \
 java/io/FileOutputStream.java \
 java/io/FilterInputStream.java \
 java/io/FilterOutputStream.java \
