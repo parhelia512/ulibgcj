@@ -3,7 +3,7 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#ifdef JV_ULIBGCJ_WIN32
+#ifdef WIN32
 #  include <io.h>
 #  define OPEN _open
 #  define CLOSE _close
@@ -152,7 +152,11 @@ File::exists()
 jlong
 FileInputStream::open(String* path)
 {
+#ifdef WIN32
+  int fd = doOpen(path, O_RDONLY | O_BINARY);
+#else
   int fd = doOpen(path, O_RDONLY);
+#endif
   if (fd == -1) {
     throw new IOException(errorString());
   } else {
@@ -184,7 +188,11 @@ FileInputStream::read(JArray<jbyte>* b, jint offset, jint length)
 jlong
 FileOutputStream::open(String* path)
 {
+#ifdef WIN32
+  int fd = doOpen(path, O_WRONLY | O_CREAT | O_BINARY);
+#else
   int fd = doOpen(path, O_WRONLY | O_CREAT);
+#endif
   if (fd == -1) {
     throw new IOException(errorString());
   } else {
