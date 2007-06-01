@@ -92,6 +92,7 @@ scripts/mingw.sh).
   --enable-languages=c,c++,java \
   --disable-win32-registry \
   --disable-shared \
+  --disable-bootstrap \
   --disable-libstdcxx-debug \
   --disable-multilib \
   --without-libidn \
