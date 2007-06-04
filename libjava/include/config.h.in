@@ -64,6 +64,10 @@
 /* Define if you have clock_gettime() */
 #undef HAVE_CLOCK_GETTIME
 
+/* Define to 1 if you have the declaration of `tzname', and to 0 if you don't.
+   */
+#undef HAVE_DECL_TZNAME
+
 /* Define to 1 if you have the <dirent.h> header file. */
 #undef HAVE_DIRENT_H
 
@@ -421,7 +425,7 @@
 /* Define if pthread_mutex_t has __m_count member. */
 #undef PTHREAD_MUTEX_HAVE___M_COUNT
 
-/* The size of a `void *', as computed by sizeof. */
+/* The size of `void *', as computed by sizeof. */
 #undef SIZEOF_VOID_P
 
 /* Define if the compiler is configured for setjmp/longjmp exceptions. */
@@ -433,7 +437,7 @@
 
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
-   automatically deduced at run-time.
+   automatically deduced at runtime.
 	STACK_DIRECTION > 0 => grows toward higher addresses
 	STACK_DIRECTION < 0 => grows toward lower addresses
 	STACK_DIRECTION = 0 => direction of growth unknown */
