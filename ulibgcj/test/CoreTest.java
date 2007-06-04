@@ -15,7 +15,15 @@ public class CoreTest implements Runnable {
     System.exit(-1);
   }
 
-  public static void main(String[] args) {
+  private static String doToString(Object o) {
+    return o.toString();
+  }
+
+  private static String toString(Object o) {
+    return doToString(o);
+  }
+
+  public static void main(String[] args) throws Exception {
     System.out.println("a useless constant: " + SOME_USELESS_CONSTANT);
 
     try {
@@ -46,12 +54,31 @@ public class CoreTest implements Runnable {
       System.out.println("as expected, caught: " + e);
     }
 
+    Process p = Runtime.getRuntime().exec(new String[] { "cat" });
+    String hello = "hello, world!\n";
+    p.getOutputStream().write(hello.getBytes());
+    p.getOutputStream().flush();
+    byte[] buffer = new byte[32];
+    int c;
+    int offset = 0;
+    while (offset < hello.length()
+           && (c = p.getInputStream().read
+               (buffer, offset, buffer.length - offset)) != -1)
+      offset += c;
+    String result = new String(buffer, 0, offset);
+    if (! result.equals(hello)) {
+      System.err.println("expected \"" + hello + "\", got \"" + result + "\"");
+      return;
+    }
+    p.getOutputStream().close();
+
     try {
       Object o = null;
-      o.toString();
+      toString(o);
       trouble();
     } catch (NullPointerException e) {
       System.out.println("as expected, caught: " + e);
+      e.printStackTrace();
     }
 
     Object o = new Object();

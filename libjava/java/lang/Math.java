@@ -658,6 +658,7 @@ public final class Math
     return (rads * 180) / PI;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * <p>
    * Take a cube root. If the argument is <code>NaN</code>, an infinity or
@@ -699,7 +700,6 @@ public final class Math
    */
   public static native double cosh(double a);
 
-/*#if not ULIBGCJ*/
   /**
    * <p>
    * Returns <code>e<sup>a</sup> - 1.  For values close to 0, the
@@ -719,7 +719,6 @@ public final class Math
    * @since 1.5
    */
   public static native double expm1(double a);
-/*#endif*/
 
   /**
    * <p>
@@ -881,7 +880,6 @@ public final class Math
    */
   public static native double tanh(double a);
 
-/*#if not ULIBGCJ*/
   /**
    * Return the ulp for the given double argument.  The ulp is the
    * difference between the argument and the next larger double.  Note

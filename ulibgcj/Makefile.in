@@ -33,17 +33,27 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@USING_BOEHMGC_TRUE@am__append_1 = boehm.cc
-@USING_NOGC_TRUE@am__append_2 = nogc.cc
-@USING_POSIX_PLATFORM_TRUE@am__append_3 = posix.cc
-@USING_WIN32_PLATFORM_TRUE@am__append_4 = -DJV_ULIBGCJ_WIN32
-@USING_WIN32_PLATFORM_TRUE@am__append_5 = win32.cc
-@USING_DARWIN_CRT_TRUE@am__append_6 = -DJV_ULIBGCJ_DARWIN
-@USING_DARWIN_CRT_TRUE@am__append_7 = darwin.cc
-@USING_POSIX_THREADS_TRUE@am__append_8 = posix-threads.cc
-@USING_WIN32_THREADS_TRUE@am__append_9 = win32-threads.cc
-@USING_NO_THREADS_TRUE@am__append_10 = no-threads.cc
-@USING_BOEHMGC_TRUE@@USING_POSIX_PLATFORM_TRUE@am__append_11 = -ldl
+@USING_POSIX_PLATFORM_TRUE@am__append_1 = natRuntimePosix.cc
+@USING_POSIX_PLATFORM_TRUE@am__append_2 = \
+@USING_POSIX_PLATFORM_TRUE@	-DJV_ULIBGCJ_WRITE=write \
+@USING_POSIX_PLATFORM_TRUE@	-DJV_ULIBGCJ_READ=read \
+@USING_POSIX_PLATFORM_TRUE@	-DJV_ULIBGCJ_CLOSE=close
+
+@USING_WIN32_PLATFORM_TRUE@am__append_3 = natRuntimeWin32.cc
+@USING_WIN32_PLATFORM_TRUE@am__append_4 = -DJV_ULIBGCJ_WRITE=_write \
+@USING_WIN32_PLATFORM_TRUE@	-DJV_ULIBGCJ_READ=_read \
+@USING_WIN32_PLATFORM_TRUE@	-DJV_ULIBGCJ_CLOSE=_close \
+@USING_WIN32_PLATFORM_TRUE@	-DJV_ULIBGCJ_WIN32
+@USING_BOEHMGC_TRUE@am__append_5 = boehm.cc
+@USING_NOGC_TRUE@am__append_6 = nogc.cc
+@USING_POSIX_PLATFORM_TRUE@am__append_7 = posix.cc
+@USING_WIN32_PLATFORM_TRUE@am__append_8 = win32.cc
+@USING_DARWIN_CRT_TRUE@am__append_9 = -DJV_ULIBGCJ_DARWIN
+@USING_DARWIN_CRT_TRUE@am__append_10 = darwin.cc
+@USING_POSIX_THREADS_TRUE@am__append_11 = posix-threads.cc
+@USING_WIN32_THREADS_TRUE@am__append_12 = win32-threads.cc
+@USING_NO_THREADS_TRUE@am__append_13 = no-threads.cc
+@USING_BOEHMGC_TRUE@@USING_POSIX_PLATFORM_TRUE@am__append_14 = -ldl
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(srcdir)/../config.guess $(srcdir)/../config.sub \
@@ -68,7 +78,8 @@ CONFIG_HEADER = $(top_builddir)/include/config.h \
 	$(top_builddir)/gcj/libgcj-config.h
 CONFIG_CLEAN_FILES = libgcj.spec include/platform.h include/java-gc.h \
 	include/java-threads.h include/java-signal.h \
-	include/java-signal-aux.h sysdep/locks.h
+	include/java-signal-aux.h sysdep/locks.h sysdep/backtrace.h \
+	sysdep/descriptor.h
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -88,8 +99,8 @@ libgc_a_OBJECTS = libgc.$(OBJEXT)
 libulibgcj_a_AR = $(AR) $(ARFLAGS)
 libulibgcj_a_DEPENDENCIES = $(objects) $(native_objects)
 am__libulibgcj_a_SOURCES_DIST = prims.cc exception.cc defineclass.cc \
-	link.cc boehm.cc nogc.cc posix.cc win32.cc darwin.cc \
-	posix-threads.cc win32-threads.cc no-threads.cc
+	link.cc stacktrace.cc boehm.cc nogc.cc posix.cc win32.cc \
+	darwin.cc posix-threads.cc win32-threads.cc no-threads.cc
 @USING_BOEHMGC_TRUE@am__objects_1 = boehm.$(OBJEXT)
 @USING_NOGC_TRUE@am__objects_2 = nogc.$(OBJEXT)
 @USING_POSIX_PLATFORM_TRUE@am__objects_3 = posix.$(OBJEXT)
@@ -99,10 +110,10 @@ am__libulibgcj_a_SOURCES_DIST = prims.cc exception.cc defineclass.cc \
 @USING_WIN32_THREADS_TRUE@am__objects_7 = win32-threads.$(OBJEXT)
 @USING_NO_THREADS_TRUE@am__objects_8 = no-threads.$(OBJEXT)
 am_libulibgcj_a_OBJECTS = prims.$(OBJEXT) exception.$(OBJEXT) \
-	defineclass.$(OBJEXT) link.$(OBJEXT) $(am__objects_1) \
-	$(am__objects_2) $(am__objects_3) $(am__objects_4) \
-	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
-	$(am__objects_8)
+	defineclass.$(OBJEXT) link.$(OBJEXT) stacktrace.$(OBJEXT) \
+	$(am__objects_1) $(am__objects_2) $(am__objects_3) \
+	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
+	$(am__objects_7) $(am__objects_8)
 libulibgcj_a_OBJECTS = $(am_libulibgcj_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)/include -I$(top_builddir)/gcj@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
@@ -280,7 +291,8 @@ AM_CPPFLAGS = \
 AM_CXXFLAGS = -fno-rtti -fnon-call-exceptions $(THREADCXXFLAGS) \
 	-fdollars-in-identifiers -Wswitch-enum -D_FILE_OFFSET_BITS=64 \
 	-DJV_ULIBGCJ_VERSION=\"$(ulibgcj_version)\" @LIBGCJ_CXXFLAGS@ \
-	$(WARNINGS) -D_GNU_SOURCE $(am__append_4) $(am__append_6)
+	$(WARNINGS) -D_GNU_SOURCE $(am__append_2) $(am__append_4) \
+	$(am__append_9)
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 jardir = $(datadir)/java
 jar_DATA = libgcj-$(gcc_version).jar
@@ -291,12 +303,15 @@ gnu/gcj/Core.java \
 gnu/gcj/RawData.java \
 gnu/gcj/RawDataManaged.java \
 gnu/gcj/runtime/FinalizerThread.java \
+gnu/gcj/runtime/NameFinder.java \
 gnu/gcj/runtime/StringBuffer.java \
 gnu/java/net/URLParseError.java \
 gnu/java/net/protocol/core/CoreInputStream.java \
 gnu/java/util/WeakIdentityHashMap.java \
 java/io/BufferedInputStream.java \
+java/io/BufferedOutputStream.java \
 java/io/BufferedReader.java \
+java/io/BufferedWriter.java \
 java/io/ByteArrayInputStream.java \
 java/io/ByteArrayOutputStream.java \
 java/io/EOFException.java \
@@ -315,6 +330,7 @@ java/io/PrintStream.java \
 java/io/PrintWriter.java \
 java/io/Reader.java \
 java/io/Serializable.java \
+java/io/Writer.java \
 java/io/Writer.java \
 java/lang/AbstractMethodError.java \
 java/lang/ArithmeticException.java \
@@ -344,8 +360,8 @@ java/lang/IllegalStateException.java \
 java/lang/IllegalThreadStateException.java \
 java/lang/IncompatibleClassChangeError.java \
 java/lang/IndexOutOfBoundsException.java \
-java/lang/InstantiationException.java \
 java/lang/InheritableThreadLocal.java \
+java/lang/InstantiationException.java \
 java/lang/Integer.java \
 java/lang/InternalError.java \
 java/lang/InterruptedException.java \
@@ -362,10 +378,13 @@ java/lang/Number.java \
 java/lang/NumberFormatException.java \
 java/lang/Object.java \
 java/lang/OutOfMemoryError.java \
+java/lang/Process.java \
 java/lang/Runnable.java \
+java/lang/Runtime.java \
 java/lang/RuntimeException.java \
 java/lang/SecurityException.java \
 java/lang/Short.java \
+java/lang/StackTraceElement.java \
 java/lang/String.java \
 java/lang/StringBuffer.java \
 java/lang/StringBuilder.java \
@@ -398,8 +417,8 @@ java/nio/ReadOnlyBufferException.java \
 java/util/AbstractCollection.java \
 java/util/AbstractList.java \
 java/util/AbstractMap.java \
-java/util/AbstractSet.java \
 java/util/AbstractSequentialList.java \
+java/util/AbstractSet.java \
 java/util/ArrayList.java \
 java/util/Arrays.java \
 java/util/Collection.java \
@@ -412,6 +431,7 @@ java/util/EventObject.java \
 java/util/HashMap.java \
 java/util/HashSet.java \
 java/util/Hashtable.java \
+java/util/IdentityHashMap.java \
 java/util/Iterator.java \
 java/util/LinkedList.java \
 java/util/List.java \
@@ -431,37 +451,29 @@ java/util/TreeSet.java \
 java/util/Vector.java \
 java/util/logging/Handler.java \
 java/util/logging/Level.java \
-java/util/logging/Logger.java \
 java/util/logging/LogManager.java \
 java/util/logging/LogRecord.java \
+java/util/logging/Logger.java \
 java/util/zip/DataFormatException.java \
 java/util/zip/Inflater.java
 
-native_sources = \
-gnu/gcj/natCore.cc \
-gnu/gcj/runtime/natStringBuffer.cc \
-gnu/gcj/runtime/natFinalizerThread.cc \
-gnu/java/net/protocol/core/natCoreInputStream.cc \
-java/lang/natCharacter.cc \
-java/lang/natClass.cc \
-java/lang/natClassLoader.cc \
-java/lang/natMath.cc \
-java/lang/natObject.cc \
-java/lang/natString.cc \
-java/lang/natStringBuffer.cc \
-java/lang/natStringBuilder.cc \
-java/lang/natSystem.cc \
-java/lang/natThread.cc \
-java/lang/natVMClassLoader.cc \
-java/lang/ref/natReference.cc \
-java/util/zip/natInflater.cc \
-java_io.cc
-
+native_sources = gnu/gcj/natCore.cc \
+	gnu/gcj/runtime/natFinalizerThread.cc \
+	gnu/gcj/runtime/natStringBuffer.cc \
+	gnu/java/net/protocol/core/natCoreInputStream.cc \
+	java/lang/natCharacter.cc java/lang/natClass.cc \
+	java/lang/natClassLoader.cc java/lang/natMath.cc \
+	java/lang/natObject.cc java/lang/natString.cc \
+	java/lang/natStringBuffer.cc java/lang/natStringBuilder.cc \
+	java/lang/natSystem.cc java/lang/natThread.cc \
+	java/lang/natVMClassLoader.cc java/lang/natVMThrowable.cc \
+	java/lang/ref/natReference.cc java/util/zip/natInflater.cc \
+	java_io.cc $(am__append_1) $(am__append_3)
 BUILT_SOURCES = $(java_headers)
 libulibgcj_a_SOURCES = prims.cc exception.cc defineclass.cc link.cc \
-	$(am__append_1) $(am__append_2) $(am__append_3) \
-	$(am__append_5) $(am__append_7) $(am__append_8) \
-	$(am__append_9) $(am__append_10)
+	stacktrace.cc $(am__append_5) $(am__append_6) $(am__append_7) \
+	$(am__append_8) $(am__append_10) $(am__append_11) \
+	$(am__append_12) $(am__append_13)
 libulibgcj_a_LIBADD = $(objects) $(native_objects)
 classes = \
 	$(foreach x,$(java_sources),$(patsubst %.java,classes/%.class,$(x)))
@@ -486,7 +498,7 @@ objects = $(foreach x,$(java_sources),$(patsubst %.java,objects/%.o,$(x)))
 native_objects = \
 	$(foreach x,$(native_sources),$(patsubst %.cc,objects/%.o,$(x)))
 
-AM_LDFLAGS = -lm $(am__append_11)
+AM_LDFLAGS = -lm $(am__append_14)
 linkflags = $(AM_LDFLAGS) $(LDFLAGS) $(THREADLDFLAGS) $(THREADLIBS)
 javaflags = $(CPPFLAGS) -I$(srcdir)/test $(GCJFLAGS) --bootclasspath processed
 hflags = -d headers -classpath classes:$(srcdir)/test -bootclasspath processed
@@ -608,6 +620,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix-threads.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prims.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stacktrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32-threads.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32.Po@am__quote@
 
@@ -1023,6 +1036,7 @@ headers/java/lang/Thread.h: classes/java/lang/Thread.class
 		-prepend 'java::lang::Thread* _Jv_AttachCurrentThread (jstring name, java::lang::ThreadGroup* group);' \
 		-prepend 'java::lang::Thread* _Jv_AttachCurrentThreadAsDaemon (jstring name, java::lang::ThreadGroup* group);' \
 		-prepend 'jint _Jv_DetachCurrentThread ();' \
+		-prepend '_Jv_Thread_t* _Jv_ThreadGetData (java::lang::Thread* thread);' \
 		-friend '_Jv_JNIEnv * ::_Jv_GetCurrentJNIEnv ();' \
 		-friend 'void ::_Jv_SetCurrentJNIEnv (_Jv_JNIEnv *env);' \
 		-friend 'void ::_Jv_ThreadRun (java::lang::Thread* thread);' \
@@ -1030,6 +1044,7 @@ headers/java/lang/Thread.h: classes/java/lang/Thread.class
 		-friend 'java::lang::Thread* ::_Jv_AttachCurrentThread (jstring name, java::lang::ThreadGroup* group);' \
 		-friend 'java::lang::Thread* ::_Jv_AttachCurrentThreadAsDaemon (jstring name, java::lang::ThreadGroup* group);' \
 		-friend 'jint (::_Jv_DetachCurrentThread) ();' \
+		-friend '_Jv_Thread_t* ::_Jv_ThreadGetData (java::lang::Thread* thread);' \
 		java/lang/Thread
 
 headers/java/lang/String.h: classes/java/lang/String.class
