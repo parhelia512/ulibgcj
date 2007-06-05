@@ -39,9 +39,7 @@ exception statement from your version. */
 
 package java.lang;
 
-/*#if not ULIBGCJ*/
 import java.io.File;
-/*#endif*/
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -71,14 +69,12 @@ import java.io.OutputStream;
  */
 public abstract class Process
 {
-/*#if not ULIBGCJ*/
   /**
    * Empty constructor does nothing.
    */
   public Process()
   {
   }
-/*#endif*/
 
   /**
    * Obtain the output stream that sends data to the subprocess. This is
@@ -115,11 +111,7 @@ public abstract class Process
    * @return the subprocess exit value; 0 conventionally denotes success
    * @throws InterruptedException if another thread interrupts the blocked one
    */
-  public abstract int waitFor()
-/*#if not ULIBGCJ*/
-    throws InterruptedException
-/*#endif*/
-           ;
+  public abstract int waitFor() throws InterruptedException;
 
   /**
    * When a process terminates there is associated with that termination
@@ -131,10 +123,8 @@ public abstract class Process
    */
   public abstract int exitValue();
 
-/*#if not ULIBGCJ*/
   /**
    * Kills the subprocess and all of its children forcibly.
    */
   public abstract void destroy();
-/*#endif*/
 } // class Process

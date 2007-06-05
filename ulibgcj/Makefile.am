@@ -46,15 +46,12 @@ gnu/gcj/Core.java \
 gnu/gcj/RawData.java \
 gnu/gcj/RawDataManaged.java \
 gnu/gcj/runtime/FinalizerThread.java \
-gnu/gcj/runtime/NameFinder.java \
 gnu/gcj/runtime/StringBuffer.java \
 gnu/java/net/URLParseError.java \
 gnu/java/net/protocol/core/CoreInputStream.java \
 gnu/java/util/WeakIdentityHashMap.java \
 java/io/BufferedInputStream.java \
-java/io/BufferedOutputStream.java \
 java/io/BufferedReader.java \
-java/io/BufferedWriter.java \
 java/io/ByteArrayInputStream.java \
 java/io/ByteArrayOutputStream.java \
 java/io/EOFException.java \
@@ -73,7 +70,6 @@ java/io/PrintStream.java \
 java/io/PrintWriter.java \
 java/io/Reader.java \
 java/io/Serializable.java \
-java/io/Writer.java \
 java/io/Writer.java \
 java/lang/AbstractMethodError.java \
 java/lang/ArithmeticException.java \
@@ -103,8 +99,8 @@ java/lang/IllegalStateException.java \
 java/lang/IllegalThreadStateException.java \
 java/lang/IncompatibleClassChangeError.java \
 java/lang/IndexOutOfBoundsException.java \
-java/lang/InheritableThreadLocal.java \
 java/lang/InstantiationException.java \
+java/lang/InheritableThreadLocal.java \
 java/lang/Integer.java \
 java/lang/InternalError.java \
 java/lang/InterruptedException.java \
@@ -121,13 +117,10 @@ java/lang/Number.java \
 java/lang/NumberFormatException.java \
 java/lang/Object.java \
 java/lang/OutOfMemoryError.java \
-java/lang/Process.java \
 java/lang/Runnable.java \
-java/lang/Runtime.java \
 java/lang/RuntimeException.java \
 java/lang/SecurityException.java \
 java/lang/Short.java \
-java/lang/StackTraceElement.java \
 java/lang/String.java \
 java/lang/StringBuffer.java \
 java/lang/StringBuilder.java \
@@ -160,8 +153,8 @@ java/nio/ReadOnlyBufferException.java \
 java/util/AbstractCollection.java \
 java/util/AbstractList.java \
 java/util/AbstractMap.java \
-java/util/AbstractSequentialList.java \
 java/util/AbstractSet.java \
+java/util/AbstractSequentialList.java \
 java/util/ArrayList.java \
 java/util/Arrays.java \
 java/util/Collection.java \
@@ -174,7 +167,6 @@ java/util/EventObject.java \
 java/util/HashMap.java \
 java/util/HashSet.java \
 java/util/Hashtable.java \
-java/util/IdentityHashMap.java \
 java/util/Iterator.java \
 java/util/LinkedList.java \
 java/util/List.java \
@@ -194,16 +186,16 @@ java/util/TreeSet.java \
 java/util/Vector.java \
 java/util/logging/Handler.java \
 java/util/logging/Level.java \
+java/util/logging/Logger.java \
 java/util/logging/LogManager.java \
 java/util/logging/LogRecord.java \
-java/util/logging/Logger.java \
 java/util/zip/DataFormatException.java \
 java/util/zip/Inflater.java
 
 native_sources = \
 gnu/gcj/natCore.cc \
-gnu/gcj/runtime/natFinalizerThread.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
+gnu/gcj/runtime/natFinalizerThread.cc \
 gnu/java/net/protocol/core/natCoreInputStream.cc \
 java/lang/natCharacter.cc \
 java/lang/natClass.cc \
@@ -216,26 +208,9 @@ java/lang/natStringBuilder.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
 java/lang/natVMClassLoader.cc \
-java/lang/natVMThrowable.cc \
 java/lang/ref/natReference.cc \
 java/util/zip/natInflater.cc \
 java_io.cc
-
-if USING_POSIX_PLATFORM
-native_sources += natRuntimePosix.cc
-AM_CXXFLAGS += \
-	-DJV_ULIBGCJ_WRITE=write \
-	-DJV_ULIBGCJ_READ=read \
-	-DJV_ULIBGCJ_CLOSE=close
-endif
-
-if USING_WIN32_PLATFORM
-native_sources += natRuntimeWin32.cc
-AM_CXXFLAGS += \
-	-DJV_ULIBGCJ_WRITE=_write \
-	-DJV_ULIBGCJ_READ=_read \
-	-DJV_ULIBGCJ_CLOSE=_close
-endif
 
 BUILT_SOURCES = $(java_headers)
 
@@ -243,8 +218,7 @@ libulibgcj_a_SOURCES = \
 prims.cc \
 exception.cc \
 defineclass.cc \
-link.cc \
-stacktrace.cc
+link.cc
 
 libulibgcj_a_LIBADD = $(objects) $(native_objects)
 
@@ -366,7 +340,6 @@ headers/java/lang/Thread.h: classes/java/lang/Thread.class
 		-prepend 'java::lang::Thread* _Jv_AttachCurrentThread (jstring name, java::lang::ThreadGroup* group);' \
 		-prepend 'java::lang::Thread* _Jv_AttachCurrentThreadAsDaemon (jstring name, java::lang::ThreadGroup* group);' \
 		-prepend 'jint _Jv_DetachCurrentThread ();' \
-		-prepend '_Jv_Thread_t* _Jv_ThreadGetData (java::lang::Thread* thread);' \
 		-friend '_Jv_JNIEnv * ::_Jv_GetCurrentJNIEnv ();' \
 		-friend 'void ::_Jv_SetCurrentJNIEnv (_Jv_JNIEnv *env);' \
 		-friend 'void ::_Jv_ThreadRun (java::lang::Thread* thread);' \
@@ -374,7 +347,6 @@ headers/java/lang/Thread.h: classes/java/lang/Thread.class
 		-friend 'java::lang::Thread* ::_Jv_AttachCurrentThread (jstring name, java::lang::ThreadGroup* group);' \
 		-friend 'java::lang::Thread* ::_Jv_AttachCurrentThreadAsDaemon (jstring name, java::lang::ThreadGroup* group);' \
 		-friend 'jint (::_Jv_DetachCurrentThread) ();' \
-		-friend '_Jv_Thread_t* ::_Jv_ThreadGetData (java::lang::Thread* thread);' \
 		java/lang/Thread
 
 headers/java/lang/String.h: classes/java/lang/String.class

@@ -12,9 +12,7 @@ details.  */
 
 #include <jvm.h>
 #include <gcj/cni.h>
-#ifndef JV_ULIBGCJ
 #include <java-interp.h>
-#endif//JV_ULIBGCJ
 #include <java-stack.h>
 
 #ifdef HAVE_DLFCN_H
@@ -25,12 +23,9 @@ details.  */
 
 #include <java/lang/Class.h>
 #include <java/lang/Long.h>
-#include <java/lang/StringBuilder.h>
 #include <java/util/ArrayList.h>
 #include <java/util/IdentityHashMap.h>
-#ifndef JV_ULIBGCJ
 #include <gnu/java/lang/MainThread.h>
-#endif//JV_ULIBGCJ
 #include <gnu/gcj/runtime/NameFinder.h>
 
 #include <sysdep/backtrace.h>
@@ -278,19 +273,17 @@ _Jv_StackTrace::GetStackTraceElements (_Jv_StackTrace *trace,
 
 #ifdef SJLJ_EXCEPTIONS
   // We can't use the nCodeMap without unwinder support. Instead,
-  // fake the method name by giving the IP in hex - better than nothing. 
+  // fake the method name by giving the IP in hex - better than nothing.  
+  jstring hex = JvNewStringUTF ("0x");
+
   for (int i = 0; i < trace->length; i++)
     {
       jstring sourceFileName = NULL;
       jint lineNum = -1;
       _Jv_StackFrame *frame = &trace->frames[i];
       
-      jstring className = NULL; 
-
-      StringBuilder* hex = new StringBuilder(JvNewStringUTF("0x"));
-      hex->append(Long::toHexString ((jlong) frame->ip));
-
-      jstring methodName = hex->toString();
+      jstring className = NULL;
+      jstring methodName = hex->concat (Long::toHexString ((jlong) frame->ip));
 
       StackTraceElement *element = new StackTraceElement (sourceFileName, 
 	lineNum, className, methodName, 0);    
@@ -327,12 +320,10 @@ _Jv_StackTrace::GetStackTraceElements (_Jv_StackTrace *trace,
           && strcmp (frame->meth->name->chars(), "fillInStackTrace") == 0)
 	start_idx = i + 1;
 
-#ifndef JV_ULIBGCJ
       // End the trace at the application's main() method if we see call_main.
       if (frame->klass == &gnu::java::lang::MainThread::class$
           && strcmp (frame->meth->name->chars(), "call_main") == 0)
 	end_idx = i - 1;
-#endif//JV_ULIBGCJ
     }
   
   const jboolean remove_unknown 
@@ -375,7 +366,6 @@ _Jv_StackTrace::GetStackTraceElements (_Jv_StackTrace *trace,
   return (JArray<StackTraceElement *>*) list->toArray (array);
 }
 
-#ifndef JV_ULIBGCJ
 struct CallingClassTraceData
 {
   jclass checkClass;    
@@ -548,78 +538,3 @@ _Jv_StackTrace::GetFirstNonSystemClassLoader ()
   
   return NULL;
 }
-
-struct AccessControlTraceData
-{
-  jint length;
-  jboolean privileged;
-};
-
-_Unwind_Reason_Code
-_Jv_StackTrace::accesscontrol_trace_fn (_Jv_UnwindState *state)
-{
-  AccessControlTraceData *trace_data = (AccessControlTraceData *)
-    state->trace_data;
-  _Jv_StackFrame *frame = &state->frames[state->pos];
-  FillInFrameInfo (frame);
-
-  if (!(frame->klass && frame->meth))
-    return _URC_NO_REASON;
-
-  trace_data->length++;
-
-  // If the previous frame was a call to doPrivileged, then this is
-  // the last frame we look at.
-  if (trace_data->privileged)
-    return _URC_NORMAL_STOP;
-  
-  if (frame->klass == &::java::security::AccessController::class$
-      && strcmp (frame->meth->name->chars(), "doPrivileged") == 0)
-    trace_data->privileged = true;
-
-  return _URC_NO_REASON;
-}
-
-jobjectArray
-_Jv_StackTrace::GetAccessControlStack (void)
-{
-  int trace_size = 100;
-  _Jv_StackFrame frames[trace_size];
-  _Jv_UnwindState state (trace_size);
-  state.frames = (_Jv_StackFrame *) &frames;
-
-  AccessControlTraceData trace_data;
-  trace_data.length = 0;
-  trace_data.privileged = false;
-  
-  state.trace_function = accesscontrol_trace_fn;
-  state.trace_data = (void *) &trace_data;
-
-  UpdateNCodeMap();
-  _Unwind_Backtrace (UnwindTraceFn, &state);
-
-  JArray<jclass> *classes = (JArray<jclass> *)
-    _Jv_NewObjectArray (trace_data.length, &::java::lang::Class::class$, NULL);
-  jclass *c = elements (classes);
-
-  for (int i = 0, j = 0; i < state.pos; i++)
-    {
-      _Jv_StackFrame *frame = &state.frames[i];
-      if (!frame->klass || !frame->meth)
-	continue;
-      c[j] = frame->klass;
-      j++;
-    }
-
-  jobjectArray result =
-    (jobjectArray) _Jv_NewObjectArray (2, &::java::lang::Object::class$,
-					 NULL);
-  jobject *r = elements (result);
-  r[0] = (jobject) classes;
-  r[1] = (jobject) new Boolean (trace_data.privileged);
-  
-  return result;
-}
-
-#endif//JV_ULIBGCJ
-

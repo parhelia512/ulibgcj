@@ -310,7 +310,6 @@ _Jv_RegisterClassHookDefault (jclass klass)
 	{
 	  // If you get this, it means you have the same class in two
 	  // different libraries.
-#undef TEXT
 #define TEXT "Duplicate class registration: "
 	  // We size-limit MESSAGE so that you can't trash the stack.
 	  char message[200];

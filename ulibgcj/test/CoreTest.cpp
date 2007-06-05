@@ -20,7 +20,7 @@ main()
 
     JvDetachCurrentThread();
   } catch (java::lang::Throwable *t) {
-    java::lang::System::err->println (t->toString());
+    java::lang::System::err->println (JvNewStringLatin1("caught something!"));
   }
 
   return 0;

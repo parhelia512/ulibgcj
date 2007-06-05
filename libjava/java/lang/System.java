@@ -41,11 +41,9 @@ package java.lang;
 
 /*#if not ULIBGCJ*/
 import gnu.classpath.SystemProperties;
-/*#endif*/
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-/*#if not ULIBGCJ*/
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -68,7 +66,6 @@ import java.util.PropertyPermission;
 
 /*#if ULIBGCJ
 import java.io.OutputStream;
-import java.io.InputStream;
   #endif*/
 
 /**
@@ -1066,50 +1063,16 @@ public final class System
 /*#endif*/
 
 /*#if ULIBGCJ
-  public static final class Output extends OutputStream {
-    private final int fd;
-    private boolean closed;
-
-    public Output(int fd) {
-      this.fd = fd;
-    }
-
-    public static native OutputStream standardOut();
-    public static native OutputStream standardErr();
-
+  private static final class Output extends OutputStream {
     public native void write(byte[] b, int off, int len);
 
     public native void write(int v);
 
     public native void flush();
-
-    public native void close();
   }
 
-  public static final PrintStream out
-    = new PrintStream(new BufferedOutputStream(Output.standardOut()), true);
-  public static final PrintStream err
-    = new PrintStream(new BufferedOutputStream(Output.standardErr()), true);
-
-  public static final class Input extends InputStream {
-    private final int fd;
-    private boolean closed;
-
-    public Input(int fd) {
-      this.fd = fd;
-    }
-
-    public static native InputStream standardIn();
-
-    public native int read(byte[] b, int off, int len);
-
-    public native int read();
-
-    public native void close();
-  }
-
-  public static final InputStream in
-    = new BufferedInputStream(Input.standardIn());
+  public static final PrintStream out = new PrintStream(new Output());
+  public static final PrintStream err = out;
 #endif*/
 
 } // class System

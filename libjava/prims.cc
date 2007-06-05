@@ -1632,7 +1632,7 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
     real(arg_vec);
   } catch (java::lang::Throwable* t) {
     for (; t; t = t->getCause()) {
-      t->printStackTrace();
+      java::lang::System::err->println (t->toString());
       if (t->getCause()) {
         java::lang::System::err->print (JvNewStringLatin1("  caused by: "));
       }

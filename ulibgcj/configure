@@ -738,9 +738,6 @@ DIVIDESPEC
 CHECKREFSPEC
 EXCEPTIONSPEC
 BACKTRACESPEC
-CPP
-GREP
-EGREP
 THREADLIBS
 THREADSPEC
 USING_POSIX_THREADS_TRUE
@@ -755,6 +752,9 @@ JAR
 toolexecdir
 toolexecmainlibdir
 toolexeclibdir
+CPP
+GREP
+EGREP
 LIBOBJS
 LTLIBOBJS'
 ac_subst_files=''
@@ -4674,6 +4674,254 @@ fi
 
 
 
+## threads ####################################################################
+
+{ echo "$as_me:$LINENO: checking for thread model used by GCC" >&5
+echo $ECHO_N "checking for thread model used by GCC... $ECHO_C" >&6; }
+THREADS=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+{ echo "$as_me:$LINENO: result: $THREADS" >&5
+echo "${ECHO_T}$THREADS" >&6; }
+
+case "$THREADS" in
+ no | none | single)
+    THREADS=none
+    ;;
+ posix | posix95 | pthreads)
+    THREADS=posix
+    case "$host" in
+     *-*-linux*)
+
+cat >>confdefs.h <<\_ACEOF
+#define LINUX_THREADS 1
+_ACEOF
+
+	;;
+    esac
+    ;;
+ win32)
+    ;;
+ *)
+    { { echo "$as_me:$LINENO: error: $THREADS is an unknown thread package" >&5
+echo "$as_me: error: $THREADS is an unknown thread package" >&2;}
+   { (exit 1); exit 1; }; }
+    ;;
+esac
+
+THREADLIBS=
+THREADH=
+THREADSPEC=
+case "$THREADS" in
+ posix)
+    THREADLIBS=-lpthread
+    THREADSPEC=-lpthread
+    THREADH=posix-threads.h
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_PTHREAD_MUTEXATTR_INIT 1
+_ACEOF
+
+
+cat >>confdefs.h <<\_ACEOF
+#define _POSIX_PTHREAD_SEMANTICS 1
+_ACEOF
+
+    ;;
+
+ win32)
+    THREADH=win32-threads.h
+    ;;
+
+ none)
+    THREADH=no-threads.h
+    ;;
+esac
+
+ac_config_links="$ac_config_links include/java-threads.h:${libjava}/include/${THREADH}"
+
+
+
+ if test "${THREADS}" = posix; then
+  USING_POSIX_THREADS_TRUE=
+  USING_POSIX_THREADS_FALSE='#'
+else
+  USING_POSIX_THREADS_TRUE='#'
+  USING_POSIX_THREADS_FALSE=
+fi
+
+ if test "${THREADS}" = win32; then
+  USING_WIN32_THREADS_TRUE=
+  USING_WIN32_THREADS_FALSE='#'
+else
+  USING_WIN32_THREADS_TRUE='#'
+  USING_WIN32_THREADS_FALSE=
+fi
+
+ if test "${THREADS}" = none; then
+  USING_NO_THREADS_TRUE=
+  USING_NO_THREADS_FALSE='#'
+else
+  USING_NO_THREADS_TRUE='#'
+  USING_NO_THREADS_FALSE=
+fi
+
+
+## signals ####################################################################
+
+SIGNAL_HANDLER_AUX=
+case "${host}" in
+ i?86-*-linux*)
+    SIGNAL_HANDLER=include/i386-signal.h
+    ;;
+ powerpc*-*-linux*)
+    SIGNAL_HANDLER=include/powerpc-signal.h
+    ;;
+ x86_64*-*-linux*)
+    SIGNAL_HANDLER=include/x86_64-signal.h
+    SIGNAL_HANDLER_AUX=include/i386-signal.h
+    ;;
+ *mingw*)
+    SIGNAL_HANDLER=include/win32-signal.h
+    ;;
+ *-*-darwin*)
+    SIGNAL_HANDLER=include/darwin-signal.h
+    ;;
+ *)
+    SIGNAL_HANDLER=include/default-signal.h
+    ;;
+esac
+
+# If we're using sjlj exceptions, forget what we just learned.
+if test "$enable_sjlj_exceptions" = yes; then
+   SIGNAL_HANDLER=include/default-signal.h
+   SIGNAL_HANDLER_AUX=
+fi
+
+ac_config_links="$ac_config_links include/java-signal.h:${libjava}/${SIGNAL_HANDLER} include/java-signal-aux.h:${libjava}/${SIGNAL_HANDLER_AUX}"
+
+
+###############################################################################
+
+# Check whether --enable-hash-synchronization was given.
+if test "${enable_hash_synchronization+set}" = set; then
+  enableval=$enable_hash_synchronization;
+fi
+
+
+if test -z "$enable_hash_synchronization"; then
+   enable_hash_synchronization=$enable_hash_synchronization_default
+fi
+
+HASH_SYNC_SPEC=
+# Hash synchronization is only useful with threads right now.
+if test "$enable_hash_synchronization" = yes && test "$THREADS" != "none"; then
+   HASH_SYNC_SPEC=-fhash-synchronization
+
+cat >>confdefs.h <<\_ACEOF
+#define JV_HASH_SYNCHRONIZATION 1
+_ACEOF
+
+fi
+
+
+built_gcc_dir="`cd ../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
+GCJ="${built_gcc_dir}/gcj -B${built_gcc_dir}/"
+GCJH="${built_gcc_dir}/gcjh"
+built_fastjar_dir="`cd ../../${host_subdir}/fastjar && ${PWDCMD-pwd}`"
+
+
+
+
+for ac_prog in jar fastjar
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+if test "${ac_cv_prog_JAR+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$JAR"; then
+  ac_cv_prog_JAR="$JAR" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_JAR="$ac_prog"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+IFS=$as_save_IFS
+
+fi
+fi
+JAR=$ac_cv_prog_JAR
+if test -n "$JAR"; then
+  { echo "$as_me:$LINENO: result: $JAR" >&5
+echo "${ECHO_T}$JAR" >&6; }
+else
+  { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+fi
+
+
+  test -n "$JAR" && break
+done
+test -n "$JAR" || JAR="no"
+
+if test "$JAR" = no; then
+  { { echo "$as_me:$LINENO: error: cannot find jar program, cannot continue" >&5
+echo "$as_me: error: cannot find jar program, cannot continue" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+if test -n "$with_cross_host" &&
+  test x"$with_cross_host" != x"no"; then
+# Install a library built with a cross compiler in tooldir, not libdir.
+  toolexecdir='$(exec_prefix)/$(target_noncanonical)'
+  toolexecmainlibdir='$(toolexecdir)/lib'
+else
+  toolexecdir='$(libdir)/gcc-lib/$(target_noncanonical)'
+  toolexecmainlibdir='$(libdir)'
+fi
+multi_os_directory=`$CC -print-multi-os-directory`
+case $multi_os_directory in
+  .) toolexeclibdir=$toolexecmainlibdir ;; # Avoid trailing /.
+  *) toolexeclibdir=$toolexecmainlibdir/$multi_os_directory ;;
+esac
+
+
+
+
+if test -d sysdep; then true; else mkdir sysdep; fi
+ac_config_links="$ac_config_links sysdep/locks.h:${libjava}/sysdep/$sysdeps_dir/locks.h"
+
+
+
+cat >>confdefs.h <<\_ACEOF
+#define JV_ULIBGCJ 1
+_ACEOF
+
+
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_MEMMOVE 1
+_ACEOF
+
+
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_GETTIMEOFDAY 1
+_ACEOF
+
+
+test -f libgcj.spec || echo > libgcj.spec
+
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -5310,553 +5558,6 @@ fi
 
 done
 
-
-
-
-
-for ac_header in execinfo.h unistd.h dlfcn.h
-do
-as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
-  { echo "$as_me:$LINENO: checking for $ac_header" >&5
-echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6; }
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-fi
-ac_res=`eval echo '${'$as_ac_Header'}'`
-	       { echo "$as_me:$LINENO: result: $ac_res" >&5
-echo "${ECHO_T}$ac_res" >&6; }
-else
-  # Is the header compilable?
-{ echo "$as_me:$LINENO: checking $ac_header usability" >&5
-echo $ECHO_N "checking $ac_header usability... $ECHO_C" >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-$ac_includes_default
-#include <$ac_header>
-_ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_compile") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
-  ac_header_compiler=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_header_compiler=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-{ echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
-echo "${ECHO_T}$ac_header_compiler" >&6; }
-
-# Is the header present?
-{ echo "$as_me:$LINENO: checking $ac_header presence" >&5
-echo $ECHO_N "checking $ac_header presence... $ECHO_C" >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <$ac_header>
-_ACEOF
-if { (ac_try="$ac_cpp conftest.$ac_ext"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } >/dev/null && {
-	 test -z "$ac_c_preproc_warn_flag$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       }; then
-  ac_header_preproc=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-  ac_header_preproc=no
-fi
-
-rm -f conftest.err conftest.$ac_ext
-{ echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
-echo "${ECHO_T}$ac_header_preproc" >&6; }
-
-# So?  What about this header?
-case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
-  yes:no: )
-    { echo "$as_me:$LINENO: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&5
-echo "$as_me: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&2;}
-    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the compiler's result" >&5
-echo "$as_me: WARNING: $ac_header: proceeding with the compiler's result" >&2;}
-    ac_header_preproc=yes
-    ;;
-  no:yes:* )
-    { echo "$as_me:$LINENO: WARNING: $ac_header: present but cannot be compiled" >&5
-echo "$as_me: WARNING: $ac_header: present but cannot be compiled" >&2;}
-    { echo "$as_me:$LINENO: WARNING: $ac_header:     check for missing prerequisite headers?" >&5
-echo "$as_me: WARNING: $ac_header:     check for missing prerequisite headers?" >&2;}
-    { echo "$as_me:$LINENO: WARNING: $ac_header: see the Autoconf documentation" >&5
-echo "$as_me: WARNING: $ac_header: see the Autoconf documentation" >&2;}
-    { echo "$as_me:$LINENO: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&5
-echo "$as_me: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&2;}
-    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
-echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;}
-    { echo "$as_me:$LINENO: WARNING: $ac_header: in the future, the compiler will take precedence" >&5
-echo "$as_me: WARNING: $ac_header: in the future, the compiler will take precedence" >&2;}
-
-    ;;
-esac
-{ echo "$as_me:$LINENO: checking for $ac_header" >&5
-echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6; }
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  eval "$as_ac_Header=\$ac_header_preproc"
-fi
-ac_res=`eval echo '${'$as_ac_Header'}'`
-	       { echo "$as_me:$LINENO: result: $ac_res" >&5
-echo "${ECHO_T}$ac_res" >&6; }
-
-fi
-if test `eval echo '${'$as_ac_Header'}'` = yes; then
-  cat >>confdefs.h <<_ACEOF
-#define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
-{ echo "$as_me:$LINENO: checking for dladdr in -ldl" >&5
-echo $ECHO_N "checking for dladdr in -ldl... $ECHO_C" >&6; }
-if test "${ac_cv_lib_dl_dladdr+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-ldl  $LIBS"
-if test x$gcc_no_link = xyes; then
-  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
-echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char dladdr ();
-int
-main ()
-{
-return dladdr ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (ac_try="$ac_link"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_link") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest$ac_exeext &&
-       $as_test_x conftest$ac_exeext; then
-  ac_cv_lib_dl_dladdr=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_cv_lib_dl_dladdr=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
-      conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ echo "$as_me:$LINENO: result: $ac_cv_lib_dl_dladdr" >&5
-echo "${ECHO_T}$ac_cv_lib_dl_dladdr" >&6; }
-if test $ac_cv_lib_dl_dladdr = yes; then
-
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_DLADDR 1
-_ACEOF
-
-else
-
-  { echo "$as_me:$LINENO: checking for dladdr in -ldld" >&5
-echo $ECHO_N "checking for dladdr in -ldld... $ECHO_C" >&6; }
-if test "${ac_cv_lib_dld_dladdr+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-ldld  $LIBS"
-if test x$gcc_no_link = xyes; then
-  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
-echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char dladdr ();
-int
-main ()
-{
-return dladdr ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (ac_try="$ac_link"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_link") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest$ac_exeext &&
-       $as_test_x conftest$ac_exeext; then
-  ac_cv_lib_dld_dladdr=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_cv_lib_dld_dladdr=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
-      conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ echo "$as_me:$LINENO: result: $ac_cv_lib_dld_dladdr" >&5
-echo "${ECHO_T}$ac_cv_lib_dld_dladdr" >&6; }
-if test $ac_cv_lib_dld_dladdr = yes; then
-
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_DLADDR 1
-_ACEOF
-
-fi
-
-fi
-
-
-## threads ####################################################################
-
-{ echo "$as_me:$LINENO: checking for thread model used by GCC" >&5
-echo $ECHO_N "checking for thread model used by GCC... $ECHO_C" >&6; }
-THREADS=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
-{ echo "$as_me:$LINENO: result: $THREADS" >&5
-echo "${ECHO_T}$THREADS" >&6; }
-
-case "$THREADS" in
- no | none | single)
-    THREADS=none
-    ;;
- posix | posix95 | pthreads)
-    THREADS=posix
-    case "$host" in
-     *-*-linux*)
-
-cat >>confdefs.h <<\_ACEOF
-#define LINUX_THREADS 1
-_ACEOF
-
-	;;
-    esac
-    ;;
- win32)
-    ;;
- *)
-    { { echo "$as_me:$LINENO: error: $THREADS is an unknown thread package" >&5
-echo "$as_me: error: $THREADS is an unknown thread package" >&2;}
-   { (exit 1); exit 1; }; }
-    ;;
-esac
-
-THREADLIBS=
-THREADH=
-THREADSPEC=
-case "$THREADS" in
- posix)
-    THREADLIBS=-lpthread
-    THREADSPEC=-lpthread
-    THREADH=posix-threads.h
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_PTHREAD_MUTEXATTR_INIT 1
-_ACEOF
-
-
-cat >>confdefs.h <<\_ACEOF
-#define _POSIX_PTHREAD_SEMANTICS 1
-_ACEOF
-
-    ;;
-
- win32)
-    THREADH=win32-threads.h
-    ;;
-
- none)
-    THREADH=no-threads.h
-    ;;
-esac
-
-ac_config_links="$ac_config_links include/java-threads.h:${libjava}/include/${THREADH}"
-
-
-
- if test "${THREADS}" = posix; then
-  USING_POSIX_THREADS_TRUE=
-  USING_POSIX_THREADS_FALSE='#'
-else
-  USING_POSIX_THREADS_TRUE='#'
-  USING_POSIX_THREADS_FALSE=
-fi
-
- if test "${THREADS}" = win32; then
-  USING_WIN32_THREADS_TRUE=
-  USING_WIN32_THREADS_FALSE='#'
-else
-  USING_WIN32_THREADS_TRUE='#'
-  USING_WIN32_THREADS_FALSE=
-fi
-
- if test "${THREADS}" = none; then
-  USING_NO_THREADS_TRUE=
-  USING_NO_THREADS_FALSE='#'
-else
-  USING_NO_THREADS_TRUE='#'
-  USING_NO_THREADS_FALSE=
-fi
-
-
-## signals ####################################################################
-
-SIGNAL_HANDLER_AUX=
-case "${host}" in
- i?86-*-linux*)
-    SIGNAL_HANDLER=include/i386-signal.h
-    ;;
- powerpc*-*-linux*)
-    SIGNAL_HANDLER=include/powerpc-signal.h
-    ;;
- x86_64*-*-linux*)
-    SIGNAL_HANDLER=include/x86_64-signal.h
-    SIGNAL_HANDLER_AUX=include/i386-signal.h
-    ;;
- *mingw*)
-    SIGNAL_HANDLER=include/win32-signal.h
-    ;;
- *-*-darwin*)
-    SIGNAL_HANDLER=include/darwin-signal.h
-    ;;
- *)
-    SIGNAL_HANDLER=include/default-signal.h
-    ;;
-esac
-
-# If we're using sjlj exceptions, forget what we just learned.
-if test "$enable_sjlj_exceptions" = yes; then
-   SIGNAL_HANDLER=include/default-signal.h
-   SIGNAL_HANDLER_AUX=
-fi
-
-ac_config_links="$ac_config_links include/java-signal.h:${libjava}/${SIGNAL_HANDLER} include/java-signal-aux.h:${libjava}/${SIGNAL_HANDLER_AUX}"
-
-
-###############################################################################
-
-# Check whether --enable-hash-synchronization was given.
-if test "${enable_hash_synchronization+set}" = set; then
-  enableval=$enable_hash_synchronization;
-fi
-
-
-if test -z "$enable_hash_synchronization"; then
-   enable_hash_synchronization=$enable_hash_synchronization_default
-fi
-
-HASH_SYNC_SPEC=
-# Hash synchronization is only useful with threads right now.
-if test "$enable_hash_synchronization" = yes && test "$THREADS" != "none"; then
-   HASH_SYNC_SPEC=-fhash-synchronization
-
-cat >>confdefs.h <<\_ACEOF
-#define JV_HASH_SYNCHRONIZATION 1
-_ACEOF
-
-fi
-
-
-built_gcc_dir="`cd ../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
-GCJ="${built_gcc_dir}/gcj -B${built_gcc_dir}/"
-GCJH="${built_gcc_dir}/gcjh"
-built_fastjar_dir="`cd ../../${host_subdir}/fastjar && ${PWDCMD-pwd}`"
-
-
-
-
-for ac_prog in jar fastjar
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
-if test "${ac_cv_prog_JAR+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  if test -n "$JAR"; then
-  ac_cv_prog_JAR="$JAR" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_JAR="$ac_prog"
-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-IFS=$as_save_IFS
-
-fi
-fi
-JAR=$ac_cv_prog_JAR
-if test -n "$JAR"; then
-  { echo "$as_me:$LINENO: result: $JAR" >&5
-echo "${ECHO_T}$JAR" >&6; }
-else
-  { echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6; }
-fi
-
-
-  test -n "$JAR" && break
-done
-test -n "$JAR" || JAR="no"
-
-if test "$JAR" = no; then
-  { { echo "$as_me:$LINENO: error: cannot find jar program, cannot continue" >&5
-echo "$as_me: error: cannot find jar program, cannot continue" >&2;}
-   { (exit 1); exit 1; }; }
-fi
-
-if test -n "$with_cross_host" &&
-  test x"$with_cross_host" != x"no"; then
-# Install a library built with a cross compiler in tooldir, not libdir.
-  toolexecdir='$(exec_prefix)/$(target_noncanonical)'
-  toolexecmainlibdir='$(toolexecdir)/lib'
-else
-  toolexecdir='$(libdir)/gcc-lib/$(target_noncanonical)'
-  toolexecmainlibdir='$(libdir)'
-fi
-multi_os_directory=`$CC -print-multi-os-directory`
-case $multi_os_directory in
-  .) toolexeclibdir=$toolexecmainlibdir ;; # Avoid trailing /.
-  *) toolexeclibdir=$toolexecmainlibdir/$multi_os_directory ;;
-esac
-
-
-
-
-if test -d sysdep; then true; else mkdir sysdep; fi
-ac_config_links="$ac_config_links sysdep/locks.h:${libjava}/sysdep/$sysdeps_dir/locks.h"
-
-ac_config_links="$ac_config_links sysdep/backtrace.h:${libjava}/$fallback_backtrace_h"
-
-ac_config_links="$ac_config_links sysdep/descriptor.h:${libjava}/$descriptor_h"
-
-
-
-cat >>confdefs.h <<\_ACEOF
-#define JV_ULIBGCJ 1
-_ACEOF
-
-
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_MEMMOVE 1
-_ACEOF
-
-
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_GETTIMEOFDAY 1
-_ACEOF
-
-
-test -f libgcj.spec || echo > libgcj.spec
 
 
 
@@ -6675,8 +6376,6 @@ do
     "include/java-signal.h") CONFIG_LINKS="$CONFIG_LINKS include/java-signal.h:${libjava}/${SIGNAL_HANDLER}" ;;
     "include/java-signal-aux.h") CONFIG_LINKS="$CONFIG_LINKS include/java-signal-aux.h:${libjava}/${SIGNAL_HANDLER_AUX}" ;;
     "sysdep/locks.h") CONFIG_LINKS="$CONFIG_LINKS sysdep/locks.h:${libjava}/sysdep/$sysdeps_dir/locks.h" ;;
-    "sysdep/backtrace.h") CONFIG_LINKS="$CONFIG_LINKS sysdep/backtrace.h:${libjava}/$fallback_backtrace_h" ;;
-    "sysdep/descriptor.h") CONFIG_LINKS="$CONFIG_LINKS sysdep/descriptor.h:${libjava}/$descriptor_h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "libgcj.spec") CONFIG_FILES="$CONFIG_FILES libgcj.spec" ;;
 
@@ -6908,9 +6607,6 @@ DIVIDESPEC!$DIVIDESPEC$ac_delim
 CHECKREFSPEC!$CHECKREFSPEC$ac_delim
 EXCEPTIONSPEC!$EXCEPTIONSPEC$ac_delim
 BACKTRACESPEC!$BACKTRACESPEC$ac_delim
-CPP!$CPP$ac_delim
-GREP!$GREP$ac_delim
-EGREP!$EGREP$ac_delim
 THREADLIBS!$THREADLIBS$ac_delim
 THREADSPEC!$THREADSPEC$ac_delim
 USING_POSIX_THREADS_TRUE!$USING_POSIX_THREADS_TRUE$ac_delim
@@ -6925,6 +6621,9 @@ JAR!$JAR$ac_delim
 toolexecdir!$toolexecdir$ac_delim
 toolexecmainlibdir!$toolexecmainlibdir$ac_delim
 toolexeclibdir!$toolexeclibdir$ac_delim
+CPP!$CPP$ac_delim
+GREP!$GREP$ac_delim
+EGREP!$EGREP$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF

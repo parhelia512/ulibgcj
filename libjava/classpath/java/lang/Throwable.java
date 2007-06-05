@@ -135,6 +135,7 @@ public class Throwable
    */
   private Throwable cause = this;
 
+/*#if not ULIBGCJ*/
   /**
    * The stack trace, in a serialized form.
    *
@@ -143,6 +144,7 @@ public class Throwable
    * @since 1.4
    */
   private StackTraceElement[] stackTrace;
+/*#endif*/
 
   /**
    * Instantiate this Throwable with an empty message. The cause remains
@@ -163,7 +165,9 @@ public class Throwable
    */
   public Throwable(String message)
   {
+/*#if not ULIBGCJ*/
     fillInStackTrace();
+/*#endif*/
     detailMessage = message;
   }
 
@@ -405,23 +409,24 @@ public class Throwable
     pw.print(stackTraceString());
   }
 
+/*#if not ULIBGCJ*/
   /*
    * We use inner class to avoid a static initializer in this basic class.
    */
   private static class StaticData
   {
-/*#if ULIBGCJ
-    static final String nl = "\n";
-  #else*/
     static final String nl = SystemProperties.getProperty("line.separator");
-/*#endif*/
   }
+/*#endif*/
 
   // Create whole stack trace in a stringbuffer so we don't have to print
   // it line by line. This prevents printing multiple stack traces from
   // different threads to get mixed up when written to the same PrintWriter.
   private String stackTraceString()
   {
+/*#if ULIBGCJ
+    return "<stack trace not available>";
+  #else*/
     StringBuffer sb = new StringBuffer();
 
     // Main stacktrace
@@ -462,8 +467,10 @@ public class Throwable
       }
 
     return sb.toString();
+/*#endif*/
   }
 
+/*#if not ULIBGCJ*/
   // Adds to the given StringBuffer a line containing the name and
   // all stacktrace elements minus the last equal ones.
   private static void stackTraceStringBuffer(StringBuffer sb, String name,
@@ -571,4 +578,5 @@ public class Throwable
    * Cleared when no longer needed.
    */
   private transient VMThrowable vmState;
+/*#endif*/
 }

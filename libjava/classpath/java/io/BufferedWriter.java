@@ -154,11 +154,7 @@ public class BufferedWriter extends Writer
    */
   public void newLine () throws IOException
   {
-/*#if ULIBGCJ
-    write ("\n");
-  #else*/
     write (System.getProperty("line.separator"));
-/*#endif*/
   }
 
   /**

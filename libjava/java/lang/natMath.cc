@@ -113,7 +113,6 @@ jdouble java::lang::Math::ceil(jdouble x)
   return (jdouble)::ceil((double)x);
 }  
 
-#ifndef JV_ULIBGCJ
 jdouble java::lang::Math::log10(jdouble x)
 {
   return (jdouble)::log10((double)x);
@@ -156,6 +155,7 @@ jdouble java::lang::Math::tanh(jdouble x)
   return (jdouble)::tanh((double)x);
 }
 
+#ifndef JV_ULIBGCJ
 static inline int
 floatToIntBits (jfloat value)
 {

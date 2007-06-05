@@ -9,9 +9,7 @@ details.  */
 
 package gnu.gcj.runtime;
 
-/*#if not ULIBGCJ*/
 import gnu.classpath.Configuration;
-/*#endif*/
 import gnu.gcj.RawData;
 
 import java.lang.StringBuffer;
@@ -21,9 +19,7 @@ import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.IOException;
-/*#if not ULIBGCJ*/
 import java.io.File;
-/*#endif*/
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.HashMap;
@@ -118,10 +114,8 @@ public class NameFinder
 	  out.close();
       }
       catch (IOException x) {}
-/*#if not ULIBGCJ*/
       if (proc != null)
 	proc.destroy();
-/*#endif*/
     }
   }
 
@@ -145,11 +139,7 @@ public class NameFinder
     else
       file = binaryFile;
     
-/*#if ULIBGCJ
-    return file;
-  #else*/
     return file.substring(file.lastIndexOf(File.separator) + 1, file.length());
-/*#endif*/
   }
 
   /**
