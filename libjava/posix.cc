@@ -16,10 +16,6 @@ details.  */
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
- 
-#ifdef HAVE_DLFCN_H
-#include <dlfcn.h>
-#endif
 
 #include <jvm.h>
 #include <java-stack.h>
@@ -220,34 +216,6 @@ _Jv_select (int n, fd_set *readfds, fd_set  *writefds,
 // address.
 int
 _Jv_platform_dladdr (void *addr, _Jv_AddrInfo *info)
-{
-  int ret_val = 0;
-
-#if defined (HAVE_DLFCN_H) && defined (HAVE_DLADDR)
-  Dl_info addr_info;
-  ret_val = dladdr (addr, &addr_info);
-  if (ret_val != 0)
-    {
-      info->file_name = addr_info.dli_fname;
-      info->base = addr_info.dli_fbase;
-      info->sym_name = addr_info.dli_sname;
-      info->sym_addr = addr_info.dli_saddr;
-    }
-#else
-  info->file_name = NULL;
-  info->base = NULL;
-  info->sym_name = NULL;
-  info->sym_addr = NULL;
-#endif
-
-  return ret_val;
-}
-
-// Given an address, find the object that defines it and the nearest
-// defined symbol to that address.  Returns 0 if no object defines this
-// address.
-int
-_Jv_platform_dladdr (const void *addr, _Jv_AddrInfo *info)
 {
   int ret_val = 0;
 

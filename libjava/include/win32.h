@@ -11,7 +11,7 @@ details.  */
 #ifndef __JV_WIN32_H__
 #define __JV_WIN32_H__
 
-// Enable UNICODE support?
+// Enable UNICODE Support.?
 
 #ifdef MINGW_LIBGCJ_UNICODE
 #define UNICODE
@@ -177,11 +177,8 @@ _Jv_platform_usleep (unsigned long usecs)
 }
 #endif /* JV_HASH_SYNCHRONIZATION */
 
-// Forward declaration.  See java-stack.h for definition.
-struct _Jv_AddrInfo;
-
-// Given an address, determine the executable or shared object that defines
-// it and the nearest named symbol.
-extern int _Jv_platform_dladdr (const void *addr, _Jv_AddrInfo *info);
+/* Store up to SIZE return address of the current program state in
+   ARRAY and return the exact number of values stored.  */
+extern int backtrace (void **__array, int __size);
 
 #endif /* __JV_WIN32_H__ */

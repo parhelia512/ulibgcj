@@ -74,6 +74,7 @@ java/io/PrintWriter.java \
 java/io/Reader.java \
 java/io/Serializable.java \
 java/io/Writer.java \
+java/io/Writer.java \
 java/lang/AbstractMethodError.java \
 java/lang/ArithmeticException.java \
 java/lang/ArrayIndexOutOfBoundsException.java \

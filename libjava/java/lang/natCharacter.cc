@@ -110,7 +110,6 @@ java::lang::Character::toLowerCase(jchar ch)
   return (jchar) (ch + lower[0][readChar(ch) >> 7]);
 }
 
-#ifndef JV_ULIBGCJ
 jint
 java::lang::Character::toLowerCase(jint codePoint)
 {
@@ -119,7 +118,6 @@ java::lang::Character::toLowerCase(jint codePoint)
     return codePoint;
   return (lower[plane][readCodePoint(codePoint) >> 7]) + codePoint;
 }
-#endif//JV_ULIBGCJ
 
 jchar
 java::lang::Character::toUpperCase(jchar ch)
