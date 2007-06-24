@@ -1,0 +1,107 @@
+Supported platforms
+-------------------
+
+Micro-libgcj is currently supported on the following platforms:
+
+  Linux (i386 and amd64)
+  Win32 (i386)
+  Mac OS X (PPC)
+
+Mac OS X (i386) can also be made to work.  However, as of this
+writing, the Boehm GC library packaged with GCC does not support
+Darwin (OS X) on the i386 architecture.  Until this is fixed, you can
+substitute the latest upstream version, which does support this
+platform.  See also
+http://gcc.gnu.org/ml/java-patches/2006-q1/msg00347.html.
+
+Other platforms may work, but have not been tested.
+
+
+Applying the patch
+------------------
+
+To apply the patch included with this release (ulibgcj.patch), first
+download gcc-4.1.1.tar.bz2 from one of the GCC mirrors listed at
+http://gcc.gnu.org/mirrors.html and proceed as follows.
+
+ $ tar xjf gcc-4.1.1.tar.bz2
+ $ cd gcc-4.1.1
+ $ patch -p1 < ../ulibgcj.patch
+
+
+Building with micro-libgcj enabled
+----------------------------------
+
+To build GCC with micro-libgcj enabled, specify --enable-micro-libgcj
+in your configure command.  The following example assumes you have the
+micro-libgcj-patched GCC source tree in a directory called gcc-ulibgcj
+and that you are building within a sibling directory called gcc-build.
+
+ $ cd gcc-build
+ $ ../gcc-ulibgcj/configure \
+  CFLAGS="-Os -g -fPIC" CXXFLAGS="-Os -g -fPIC" GCJFLAGS="-Os -g -fPIC" \
+  CPPFLAGS="-fPIC" \
+  --prefix=/usr/local/gcc-ulibgcj \
+  --enable-languages=c,c++,java \
+  --enable-threads \
+  --disable-nls \
+  --disable-shared \
+  --disable-bootstrap \
+  --disable-libstdcxx-debug \
+  --disable-multilib \
+  --without-libidn \
+  --disable-tls \
+  --without-x \
+  --enable-java-gc=boehm \
+  --enable-hash-synchronization \
+  --disable-libgcj \
+  --enable-micro-libgcj
+ $ nice make
+ $ make install
+
+Note the --disable-shared argument to configure above.  This forces a
+static libstdc++ to be built and used, which may be desirable if you
+need to build standalone binaries which are immune to C++ ABI changes.
+However, this does not currently work on Darwin (OS X), so you should
+omit it on that platform.
+
+If you are cross compiling with mingw32 as the target, replace the
+above configure command with something like the following.  Here we
+assume you have already installed the binutils, mingw-runtime, and
+w32api packages from mingw.org into /usr/local/mingw32 (see
+scripts/mingw.sh).
+
+ $ ../gcc-ulibgcj/configure \
+  CFLAGS="-Os -g" CXXFLAGS="-Os -g" GCJFLAGS="-Os -g" \
+  --prefix=/usr/local/mingw32 \
+  --target=mingw32 \
+  --with-headers="/usr/local/mingw32/mingw32/include" \
+  --enable-threads \
+  --disable-nls \
+  --enable-languages=c,c++,java \
+  --disable-win32-registry \
+  --disable-shared \
+  --disable-bootstrap \
+  --disable-libstdcxx-debug \
+  --disable-multilib \
+  --without-libidn \
+  --disable-tls \
+  --without-x \
+  --enable-sjlj-exceptions \
+  --enable-java-gc=boehm \
+  --enable-hash-synchronization \
+  --disable-libgcj \
+  --enable-micro-libgcj
+
+
+Linking with micro-libgcj
+-------------------------
+
+Assuming you have a micro-libgcj-enabled build of gcc installed under
+/usr/local/gcc-ulibgcj, the following example should produce a binary
+which is statically linked to libulibgcj.a:
+
+ $ /usr/local/gcc-ulibgcj/bin/gcj --main=Hello Hello.java -o hello
+
+Dynamic linking is not currently supported, but could probably be made
+to work without too much trouble.
