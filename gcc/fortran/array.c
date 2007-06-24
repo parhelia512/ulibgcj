@@ -319,6 +319,15 @@ match_array_element_spec (gfc_array_spec * as)
   if (m == MATCH_NO)
     return AS_ASSUMED_SHAPE;
 
+  /* If the size is negative in this dimension, set it to zero.  */
+  if ((*lower)->expr_type == EXPR_CONSTANT
+      && (*upper)->expr_type == EXPR_CONSTANT
+      && mpz_cmp ((*upper)->value.integer, (*lower)->value.integer) < 0)
+    {
+      gfc_free_expr (*upper);
+      *upper = gfc_copy_expr (*lower);
+      mpz_sub_ui ((*upper)->value.integer, (*upper)->value.integer, 1);
+    }
   return AS_EXPLICIT;
 }
 
@@ -1518,8 +1527,8 @@ resolve_array_list (gfc_constructor * p)
    not specified character length, update character length to the maximum of
    its element constructors' length.  */
 
-static void
-resolve_character_array_constructor (gfc_expr * expr)
+void
+gfc_resolve_character_array_constructor (gfc_expr * expr)
 {
   gfc_constructor * p;
   int max_length;
@@ -1531,20 +1540,53 @@ resolve_character_array_constructor (gfc_expr * expr)
 
   if (expr->ts.cl == NULL)
     {
+      for (p = expr->value.constructor; p; p = p->next)
+	if (p->expr->ts.cl != NULL)
+	  {
+	    /* Ensure that if there is a char_len around that it is
+	       used; otherwise the middle-end confuses them!  */
+	    expr->ts.cl = p->expr->ts.cl;
+	    goto got_charlen;
+	  }
+
       expr->ts.cl = gfc_get_charlen ();
       expr->ts.cl->next = gfc_current_ns->cl_list;
       gfc_current_ns->cl_list = expr->ts.cl;
     }
 
+got_charlen:
+
   if (expr->ts.cl->length == NULL)
     {
       /* Find the maximum length of the elements. Do nothing for variable array
-	 constructor.  */
+	 constructor, unless the character length is constant or there is a
+	constant substring reference.  */
+
       for (p = expr->value.constructor; p; p = p->next)
-	if (p->expr->expr_type == EXPR_CONSTANT)
-	  max_length = MAX (p->expr->value.character.length, max_length);
-	else
-	  return;
+	{
+	  gfc_ref *ref;
+	  for (ref = p->expr->ref; ref; ref = ref->next)
+	    if (ref->type == REF_SUBSTRING
+		  && ref->u.ss.start->expr_type == EXPR_CONSTANT
+		  && ref->u.ss.end->expr_type == EXPR_CONSTANT)
+	      break;
+
+	  if (p->expr->expr_type == EXPR_CONSTANT)
+	    max_length = MAX (p->expr->value.character.length, max_length);
+
+	  else if (ref)
+	    max_length = MAX ((int)(mpz_get_ui (ref->u.ss.end->value.integer)
+			      - mpz_get_ui (ref->u.ss.start->value.integer))
+			      + 1, max_length);
+
+	  else if (p->expr->ts.cl && p->expr->ts.cl->length
+		     && p->expr->ts.cl->length->expr_type == EXPR_CONSTANT)
+	    max_length = MAX ((int)mpz_get_si (p->expr->ts.cl->length->value.integer),
+			      max_length);
+
+	  else
+	    return;
+	}
 
       if (max_length != -1)
 	{
@@ -1552,7 +1594,8 @@ resolve_character_array_constructor (gfc_expr * expr)
 	  expr->ts.cl->length = gfc_int_expr (max_length);
 	  /* Update the element constructors.  */
 	  for (p = expr->value.constructor; p; p = p->next)
-	    gfc_set_constant_character_len (max_length, p->expr);
+	    if (p->expr->expr_type == EXPR_CONSTANT)
+	      gfc_set_constant_character_len (max_length, p->expr, true);
 	}
     }
 }
@@ -1568,7 +1611,7 @@ gfc_resolve_array_constructor (gfc_expr * expr)
   if (t == SUCCESS)
     t = gfc_check_constructor_type (expr);
   if (t == SUCCESS && expr->ts.type == BT_CHARACTER)
-    resolve_character_array_constructor (expr);
+    gfc_resolve_character_array_constructor (expr);
 
   return t;
 }

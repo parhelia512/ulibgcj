@@ -60,7 +60,8 @@
   return (memory_address_p (mode, op) && IS_INDEX_ADDR_P (op));
 })
 
-;; TODO: Add a comment.
+;; Return 1 iff OP is a symbolic operand.
+;; Note: an inline copy of this code is present in pa_secondary_reload.
 
 (define_predicate "symbolic_operand"
   (match_code "symbol_ref,label_ref,const")
@@ -206,9 +207,12 @@
 ;; instruction.
 
 (define_predicate "move_src_operand"
-  (match_code "subreg,reg,const_int,mem")
+  (match_code "subreg,reg,const_int,const_double,mem")
 {
   if (register_operand (op, mode))
+    return 1;
+
+  if (op == CONST0_RTX (mode))
     return 1;
 
   if (GET_CODE (op) == CONST_INT)

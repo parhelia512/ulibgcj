@@ -316,7 +316,7 @@ init_reswords (void)
 	      | D_OBJC
 	      | (flag_no_gnu_keywords ? D_EXT : 0));
 
-  ridpointers = ggc_calloc ((int) RID_MAX, sizeof (tree));
+  ridpointers = GGC_CNEWVEC (tree, (int) RID_MAX);
   for (i = 0; i < ARRAY_SIZE (reswords); i++)
     {
       id = get_identifier (reswords[i].word);
@@ -460,20 +460,19 @@ parse_strconst_pragma (const char* name, int opt)
   tree result, x;
   enum cpp_ttype t;
 
-  t = c_lex (&x);
+  t = pragma_lex (&result);
   if (t == CPP_STRING)
     {
-      result = x;
-      if (c_lex (&x) != CPP_EOF)
+      if (pragma_lex (&x) != CPP_EOF)
 	warning (0, "junk at end of #pragma %s", name);
       return result;
     }
 
   if (t == CPP_EOF && opt)
-    return 0;
+    return NULL_TREE;
 
   error ("invalid #pragma %s", name);
-  return (tree)-1;
+  return error_mark_node;
 }
 
 static void
@@ -497,14 +496,14 @@ handle_pragma_interface (cpp_reader* dfile ATTRIBUTE_UNUSED )
   struct c_fileinfo *finfo;
   const char *filename;
 
-  if (fname == (tree)-1)
+  if (fname == error_mark_node)
     return;
   else if (fname == 0)
     filename = lbasename (input_filename);
   else
     filename = ggc_strdup (TREE_STRING_POINTER (fname));
 
-  finfo = get_fileinfo (filename);
+  finfo = get_fileinfo (input_filename);
 
   if (impl_file_chain == 0)
     {
@@ -537,7 +536,7 @@ handle_pragma_implementation (cpp_reader* dfile ATTRIBUTE_UNUSED )
   const char *filename;
   struct impl_files *ifiles = impl_file_chain;
 
-  if (fname == (tree)-1)
+  if (fname == error_mark_node)
     return;
 
   if (fname == 0)
@@ -571,7 +570,7 @@ handle_pragma_implementation (cpp_reader* dfile ATTRIBUTE_UNUSED )
     }
   if (ifiles == 0)
     {
-      ifiles = xmalloc (sizeof (struct impl_files));
+      ifiles = XNEW (struct impl_files);
       ifiles->filename = filename;
       ifiles->next = impl_file_chain;
       impl_file_chain = ifiles;
@@ -580,10 +579,10 @@ handle_pragma_implementation (cpp_reader* dfile ATTRIBUTE_UNUSED )
 
 /* Indicate that this file uses Java-personality exception handling.  */
 static void
-handle_pragma_java_exceptions (cpp_reader* dfile ATTRIBUTE_UNUSED )
+handle_pragma_java_exceptions (cpp_reader* dfile ATTRIBUTE_UNUSED)
 {
   tree x;
-  if (c_lex (&x) != CPP_EOF)
+  if (pragma_lex (&x) != CPP_EOF)
     warning (0, "junk at end of #pragma GCC java_exceptions");
 
   choose_personality_routine (lang_java);
@@ -810,7 +809,7 @@ cxx_make_type (enum tree_code code)
   /* Set up some flags that give proper default behavior.  */
   if (IS_AGGR_TYPE_CODE (code))
     {
-      struct c_fileinfo *finfo = get_fileinfo (lbasename (input_filename));
+      struct c_fileinfo *finfo = get_fileinfo (input_filename);
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, finfo->interface_unknown);
       CLASSTYPE_INTERFACE_ONLY (t) = finfo->interface_only;
     }

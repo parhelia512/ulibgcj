@@ -98,7 +98,7 @@
 
 
 /* Copy the first part of user declarations.  */
-#line 22 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 22 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
 
 #include "bconfig.h"
 #include "system.h"
@@ -122,7 +122,7 @@
 #endif
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 31 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 31 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
 typedef union YYSTYPE {
   type_p t;
   pair_p p;
@@ -341,9 +341,9 @@ static const unsigned short int yyrline[] =
        0,    65,    65,    66,    67,    68,    72,    71,    81,    80,
       90,    95,   100,   108,   115,   116,   119,   127,   128,   141,
      160,   161,   172,   185,   186,   196,   206,   216,   220,   221,
-     224,   224,   228,   230,   232,   234,   239,   241,   246,   248,
-     250,   254,   255,   257,   259,   263,   264,   267,   271,   273,
-     277,   279,   281,   283,   295,   300,   307,   308,   311,   313
+     224,   224,   228,   230,   232,   234,   236,   238,   240,   242,
+     244,   248,   249,   251,   253,   257,   258,   261,   265,   267,
+     271,   273,   275,   277,   289,   294,   301,   302,   305,   307
 };
 #endif
 
@@ -1149,7 +1149,7 @@ yyreduce:
   switch (yyn)
     {
         case 6:
-#line 72 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 72 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 		     new_structure ((yyvsp[-5].t)->u.s.tag, UNION_P ((yyvsp[-5].t)), &lexer_line,
 				    (yyvsp[-2].p), (yyvsp[-4].o));
@@ -1159,12 +1159,12 @@ yyreduce:
     break;
 
   case 7:
-#line 79 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 79 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {;}
     break;
 
   case 8:
-#line 81 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 81 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 		     new_structure ((yyvsp[-4].t)->u.s.tag, UNION_P ((yyvsp[-4].t)), &lexer_line,
 				    (yyvsp[-1].p), (yyvsp[-3].o));
@@ -1173,12 +1173,12 @@ yyreduce:
     break;
 
   case 9:
-#line 87 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 87 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {;}
     break;
 
   case 10:
-#line 91 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 91 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 	           note_variable ((yyvsp[-1].s), adjust_field_type ((yyvsp[-2].t), (yyvsp[-3].o)), (yyvsp[-3].o),
 				  &lexer_line);
@@ -1186,7 +1186,7 @@ yyreduce:
     break;
 
   case 11:
-#line 96 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 96 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 	           note_variable ((yyvsp[-2].s), create_array ((yyvsp[-3].t), (yyvsp[-1].s)),
 	      		    (yyvsp[-4].o), &lexer_line);
@@ -1194,7 +1194,7 @@ yyreduce:
     break;
 
   case 12:
-#line 101 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 101 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 	           note_variable ((yyvsp[-3].s), create_array (create_array ((yyvsp[-4].t), (yyvsp[-1].s)),
 	      				      (yyvsp[-2].s)),
@@ -1203,7 +1203,7 @@ yyreduce:
     break;
 
   case 13:
-#line 109 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 109 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 	      lexer_toplevel_done = 1;
 	      (yyval.t) = (yyvsp[0].t);
@@ -1211,19 +1211,19 @@ yyreduce:
     break;
 
   case 16:
-#line 121 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 121 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 	        note_yacc_type ((yyvsp[-4].o), (yyvsp[-3].p), (yyvsp[-1].p), &lexer_line);
 	      ;}
     break;
 
   case 17:
-#line 127 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 127 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.p) = NULL; ;}
     break;
 
   case 18:
-#line 129 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 129 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 		     pair_p p;
 		     for (p = (yyvsp[0].p); p->next != NULL; p = p->next)
@@ -1239,7 +1239,7 @@ yyreduce:
     break;
 
   case 19:
-#line 142 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 142 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 		     pair_p p;
 		     type_p newtype = NULL;
@@ -1258,12 +1258,12 @@ yyreduce:
     break;
 
   case 20:
-#line 160 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 160 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.p) = NULL; ;}
     break;
 
   case 21:
-#line 162 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 162 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 	  pair_p p = XCNEW (struct pair);
 	  p->next = (yyvsp[-1].p);
@@ -1277,7 +1277,7 @@ yyreduce:
     break;
 
   case 22:
-#line 173 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 173 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 	  pair_p p = XCNEW (struct pair);
 	  p->next = (yyvsp[-1].p);
@@ -1291,12 +1291,12 @@ yyreduce:
     break;
 
   case 23:
-#line 185 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 185 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.p) = NULL; ;}
     break;
 
   case 24:
-#line 187 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 187 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 	            pair_p p = XNEW (struct pair);
 		    p->type = adjust_field_type ((yyvsp[-5].t), (yyvsp[-4].o));
@@ -1309,7 +1309,7 @@ yyreduce:
     break;
 
   case 25:
-#line 197 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 197 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 	            pair_p p = XNEW (struct pair);
 		    p->type = adjust_field_type (create_array ((yyvsp[-5].t), (yyvsp[-2].s)), (yyvsp[-4].o));
@@ -1322,7 +1322,7 @@ yyreduce:
     break;
 
   case 26:
-#line 207 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 207 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 	            pair_p p = XNEW (struct pair);
 		    p->type = create_array (create_array ((yyvsp[-6].t), (yyvsp[-2].s)), (yyvsp[-3].s));
@@ -1335,136 +1335,130 @@ yyreduce:
     break;
 
   case 27:
-#line 217 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 217 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.p) = (yyvsp[0].p); ;}
     break;
 
   case 31:
-#line 225 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 225 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { ;}
     break;
 
   case 32:
-#line 229 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 229 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.t) = (yyvsp[0].t); ;}
     break;
 
   case 33:
-#line 231 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 231 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.t) = resolve_typedef ((yyvsp[0].s), &lexer_line); ;}
     break;
 
   case 34:
-#line 233 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 233 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.t) = create_pointer ((yyvsp[-1].t)); ;}
     break;
 
   case 35:
-#line 235 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
-    {
-	   new_structure ((yyvsp[-3].s), 0, &lexer_line, (yyvsp[-1].p), NULL);
-           (yyval.t) = find_structure ((yyvsp[-3].s), 0);
-	 ;}
+#line 235 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
+    { (yyval.t) = new_structure ((yyvsp[-3].s), 0, &lexer_line, (yyvsp[-1].p), NULL); ;}
     break;
 
   case 36:
-#line 240 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 237 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.t) = find_structure ((yyvsp[0].s), 0); ;}
     break;
 
   case 37:
-#line 242 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
-    {
-	   new_structure ((yyvsp[-3].s), 1, &lexer_line, (yyvsp[-1].p), NULL);
-           (yyval.t) = find_structure ((yyvsp[-3].s), 1);
-	 ;}
+#line 239 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
+    { (yyval.t) = new_structure ((yyvsp[-3].s), 1, &lexer_line, (yyvsp[-1].p), NULL); ;}
     break;
 
   case 38:
-#line 247 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 241 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.t) = find_structure ((yyvsp[0].s), 1); ;}
     break;
 
   case 39:
-#line 249 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 243 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.t) = create_scalar_type ((yyvsp[0].s), strlen ((yyvsp[0].s))); ;}
     break;
 
   case 40:
-#line 251 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 245 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.t) = create_scalar_type ((yyvsp[-3].s), strlen ((yyvsp[-3].s))); ;}
     break;
 
   case 42:
-#line 256 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 250 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { ;}
     break;
 
   case 43:
-#line 258 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 252 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { ;}
     break;
 
   case 44:
-#line 260 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 254 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { ;}
     break;
 
   case 45:
-#line 263 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 257 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.o) = NULL; ;}
     break;
 
   case 46:
-#line 264 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 258 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.o) = (yyvsp[0].o); ;}
     break;
 
   case 47:
-#line 268 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 262 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.o) = (yyvsp[-2].o); ;}
     break;
 
   case 48:
-#line 272 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 266 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.s) = "ptr_alias"; ;}
     break;
 
   case 49:
-#line 274 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 268 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.s) = (yyvsp[0].s); ;}
     break;
 
   case 50:
-#line 278 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
-    { (yyval.o) = create_option ((yyvsp[0].s), (void *)""); ;}
+#line 272 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
+    { (yyval.o) = create_option (NULL, (yyvsp[0].s), (void *)""); ;}
     break;
 
   case 51:
-#line 280 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
-    { (yyval.o) = create_option ((yyvsp[-3].s), (void *)(yyvsp[-1].s)); ;}
+#line 274 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
+    { (yyval.o) = create_option (NULL, (yyvsp[-3].s), (void *)(yyvsp[-1].s)); ;}
     break;
 
   case 52:
-#line 282 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
-    { (yyval.o) = create_option ((yyvsp[-3].s), adjust_field_type ((yyvsp[-1].t), NULL)); ;}
+#line 276 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
+    { (yyval.o) = create_option (NULL, (yyvsp[-3].s), adjust_field_type ((yyvsp[-1].t), NULL)); ;}
     break;
 
   case 53:
-#line 284 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 278 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 	      struct nested_ptr_data d;
 
 	      d.type = adjust_field_type ((yyvsp[-5].t), NULL);
 	      d.convert_to = (yyvsp[-3].s);
 	      d.convert_from = (yyvsp[-1].s);
-	      (yyval.o) = create_option ("nested_ptr",
+	      (yyval.o) = create_option (NULL, "nested_ptr",
 				  xmemdup (&d, sizeof (d), sizeof (d)));
 	    ;}
     break;
 
   case 54:
-#line 296 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 290 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 	        (yyvsp[0].o)->next = NULL;
 		(yyval.o) = (yyvsp[0].o);
@@ -1472,7 +1466,7 @@ yyreduce:
     break;
 
   case 55:
-#line 301 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 295 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 	        (yyvsp[0].o)->next = (yyvsp[-2].o);
 		(yyval.o) = (yyvsp[0].o);
@@ -1480,22 +1474,22 @@ yyreduce:
     break;
 
   case 56:
-#line 307 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 301 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.o) = NULL; ;}
     break;
 
   case 57:
-#line 308 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 302 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.o) = (yyvsp[0].o); ;}
     break;
 
   case 58:
-#line 312 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 306 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     { (yyval.s) = (yyvsp[0].s); ;}
     break;
 
   case 59:
-#line 314 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 308 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
     {
 	       size_t l1 = strlen ((yyvsp[-1].s));
 	       size_t l2 = strlen ((yyvsp[0].s));
@@ -1510,7 +1504,7 @@ yyreduce:
     }
 
 /* Line 1037 of yacc.c.  */
-#line 1514 "gengtype-yacc.c"
+#line 1508 "gengtype-yacc.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1738,6 +1732,6 @@ yyreturn:
 }
 
 
-#line 323 "/scratch/mitchell/gcc-releases/gcc-4.1.1/gcc-4.1.1/gcc/gengtype-yacc.y"
+#line 317 "/scratch/mitchell/gcc-releases/gcc-4.2.0/gcc-4.2.0/gcc/gengtype-yacc.y"
 
 

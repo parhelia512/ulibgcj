@@ -37,6 +37,8 @@ Boston, MA 02110-1301, USA.  */
     {						\
       builtin_define ("__mn10300__");		\
       builtin_define ("__MN10300__");		\
+      builtin_assert ("cpu=mn10300");		\
+      builtin_assert ("machine=mn10300");	\
     }						\
   while (0)
 
@@ -425,7 +427,7 @@ enum reg_class {
   (!TARGET_AM33 && (MODE == QImode || MODE == HImode) ? DATA_REGS : CLASS)
 
 #define SECONDARY_RELOAD_CLASS(CLASS,MODE,IN) \
-  secondary_reload_class(CLASS,MODE,IN)
+  mn10300_secondary_reload_class(CLASS,MODE,IN)
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */

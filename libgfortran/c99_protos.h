@@ -1,5 +1,5 @@
 /* Declarations of various C99 functions 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -35,7 +35,7 @@ Boston, MA 02110-1301, USA.  */
 extern float acosf(float);
 #endif
 
-#ifndef HAVE_ACOSHF
+#if HAVE_ACOSH && !HAVE_ACOSHF
 #define HAVE_ACOSHF 1
 extern float acoshf(float);
 #endif
@@ -45,7 +45,7 @@ extern float acoshf(float);
 extern float asinf(float);
 #endif
 
-#ifndef HAVE_ASINHF
+#if HAVE_ASINH && !HAVE_ASINHF
 #define HAVE_ASINHF 1
 extern float asinhf(float);
 #endif
@@ -60,7 +60,7 @@ extern float atan2f(float, float);
 extern float atanf(float);
 #endif
 
-#ifndef HAVE_ATANHF
+#if HAVE_ATANH && !HAVE_ATANHF
 #define HAVE_ATANHF 1
 extern float atanhf(float);
 #endif
@@ -98,6 +98,21 @@ extern float fabsf(float);
 #ifndef HAVE_FLOORF
 #define HAVE_FLOORF 1
 extern float floorf(float);
+#endif
+
+#ifndef HAVE_FLOORL
+#define HAVE_FLOORL 1
+extern long double floorl (long double x);
+#endif
+
+#ifndef HAVE_FMODF
+#define HAVE_FMODF 1
+extern float fmodf (float x, float y);
+#endif
+
+#ifndef HAVE_FMODL
+#define HAVE_FMODL 1
+extern long double fmodl (long double x, long double y);
 #endif
 
 #ifndef HAVE_FREXPF

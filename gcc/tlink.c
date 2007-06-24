@@ -125,7 +125,7 @@ symbol_hash_lookup (const char *string, int create)
   if (*e == NULL)
     {
       struct symbol_hash_entry *v;
-      *e = v = xcalloc (1, sizeof (*v));
+      *e = v = XCNEW (struct symbol_hash_entry);
       v->key = xstrdup (string);
     }
   return *e;
@@ -145,7 +145,7 @@ file_hash_lookup (const char *string)
   if (*e == NULL)
     {
       struct file_hash_entry *v;
-      *e = v = xcalloc (1, sizeof (*v));
+      *e = v = XCNEW (struct file_hash_entry);
       v->key = xstrdup (string);
     }
   return *e;
@@ -167,7 +167,7 @@ demangled_hash_lookup (const char *string, int create)
   if (*e == NULL)
     {
       struct demangled_hash_entry *v;
-      *e = v = xcalloc (1, sizeof (*v));
+      *e = v = XCNEW (struct demangled_hash_entry);
       v->key = xstrdup (string);
     }
   return *e;
@@ -607,12 +607,20 @@ scan_linker_output (const char *fname)
 {
   FILE *stream = fopen (fname, "r");
   char *line;
+  int skip_next_in_line = 0;
 
   while ((line = tfgets (stream)) != NULL)
     {
       char *p = line, *q;
       symbol *sym;
       int end;
+      int ok = 0;
+
+      /* On darwin9, we might have to skip " in " lines as well.  */
+      if (skip_next_in_line
+	  && strstr (p, " in "))
+	  continue;
+      skip_next_in_line = 0;
 
       while (*p && ISSPACE ((unsigned char) *p))
 	++p;
@@ -654,6 +662,21 @@ scan_linker_output (const char *fname)
 	  demangled *dem = 0;
 	  q = 0;
 
+	  /* On darwin9, we look for "foo" referenced from:\n\(.* in .*\n\)*  */
+	  if (strcmp (oldq, "referenced from:") == 0)
+	    {
+	      /* We have to remember that we found a symbol to tweak.  */
+	      ok = 1;
+
+	      /* We actually want to start from the first word on the
+		 line.  */
+	      oldq = p;
+
+	      /* Since the format is multiline, we have to skip
+		 following lines with " in ".  */
+	      skip_next_in_line = 1;
+	    }
+
 	  /* First try `GNU style'.  */
 	  p = strchr (oldq, '`');
 	  if (p)
@@ -681,7 +704,8 @@ scan_linker_output (const char *fname)
 
 	  /* We need to check for certain error keywords here, or we would
 	     mistakenly use GNU ld's "In function `foo':" message.  */
-	  if (q && (strstr (oldq, "ndefined")
+	  if (q && (ok
+		    || strstr (oldq, "ndefined")
 		    || strstr (oldq, "nresolved")
 		    || strstr (oldq, "nsatisfied")
 		    || strstr (oldq, "ultiple")))

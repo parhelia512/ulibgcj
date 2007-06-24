@@ -53,6 +53,7 @@ Boston, MA 02110-1301, USA.  */
 #include "ggc.h"
 #include "tree-gimple.h"
 #include "cfgloop.h"
+#include "alloc-pool.h"
 
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
@@ -207,7 +208,7 @@ static int sh_issue_rate (void);
 static int sh_dfa_new_cycle (FILE *, int, rtx, int, int, int *sort_p);
 static short find_set_regmode_weight (rtx, enum machine_mode);
 static short find_insn_regmode_weight (rtx, enum machine_mode);
-static void find_regmode_weight (int, enum machine_mode);
+static void find_regmode_weight (basic_block, enum machine_mode);
 static void  sh_md_init_global (FILE *, int, int);
 static void  sh_md_finish_global (FILE *, int);
 static int rank_for_reorder (const void *, const void *);
@@ -473,6 +474,9 @@ static int hard_regs_intersect_p (HARD_REG_SET *, HARD_REG_SET *);
 #define TARGET_ADJUST_UNROLL_MAX sh_adjust_unroll_max
 #endif
 
+#undef TARGET_SECONDARY_RELOAD
+#define TARGET_SECONDARY_RELOAD sh_secondary_reload
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Implement TARGET_HANDLE_OPTION.  */
@@ -520,18 +524,26 @@ sh_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED,
       return true;
 
     case OPT_m4:
+    case OPT_m4_100:
+    case OPT_m4_200:
       target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4;
       return true;
 
     case OPT_m4_nofpu:
+    case OPT_m4_400:
+    case OPT_m4_500:
       target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4_NOFPU;
       return true;
 
     case OPT_m4_single:
+    case OPT_m4_100_single:
+    case OPT_m4_200_single:
       target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4_SINGLE;
       return true;
 
     case OPT_m4_single_only:
+    case OPT_m4_100_single_only:
+    case OPT_m4_200_single_only:
       target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4_SINGLE_ONLY;
       return true;
 
@@ -650,7 +662,8 @@ print_operand_address (FILE *stream, rtx x)
    'R'  print the LSW of a dp value - changes if in little endian
    'S'  print the MSW of a dp value - changes if in little endian
    'T'  print the next word of a dp value - same as 'R' in big endian mode.
-   'M'  print an `x' if `m' will print `base,index'.
+   'M'  SHMEDIA: print an `x' if `m' will print `base,index'.
+        otherwise: print .b / .w / .l / .s / .d suffix if operand is a MEM.
    'N'  print 'r63' if the operand is (const_int 0).
    'd'  print a V2SF reg as dN instead of fpN.
    'm'  print a pair `base,offset' or `base,index', for LD and ST.
@@ -808,11 +821,29 @@ print_operand (FILE *stream, rtx x, int code)
 	}
       break;
     case 'M':
-      if (GET_CODE (x) == MEM
-	  && GET_CODE (XEXP (x, 0)) == PLUS
-	  && (GET_CODE (XEXP (XEXP (x, 0), 1)) == REG
-	      || GET_CODE (XEXP (XEXP (x, 0), 1)) == SUBREG))
-	fputc ('x', stream);
+      if (TARGET_SHMEDIA)
+	{
+	  if (GET_CODE (x) == MEM
+	      && GET_CODE (XEXP (x, 0)) == PLUS
+	      && (GET_CODE (XEXP (XEXP (x, 0), 1)) == REG
+		  || GET_CODE (XEXP (XEXP (x, 0), 1)) == SUBREG))
+	    fputc ('x', stream);
+	}
+      else
+	{
+	  if (GET_CODE (x) == MEM)
+	    {
+	      switch (GET_MODE (x))
+		{
+		case QImode: fputs (".b", stream); break;
+		case HImode: fputs (".w", stream); break;
+		case SImode: fputs (".l", stream); break;
+		case SFmode: fputs (".s", stream); break;
+		case DFmode: fputs (".d", stream); break;
+		default: gcc_unreachable ();
+		}
+	    }
+	}
       break;
 
     case 'm':
@@ -951,34 +982,37 @@ print_operand (FILE *stream, rtx x, int code)
 
 	case CONST:
 	  if (TARGET_SHMEDIA
-	      && GET_CODE (XEXP (x, 0)) == SIGN_EXTEND
+	      && (GET_CODE (XEXP (x, 0)) == SIGN_EXTEND
+		  || GET_CODE (XEXP (x, 0)) == ZERO_EXTEND)
 	      && (GET_MODE (XEXP (x, 0)) == DImode
 		  || GET_MODE (XEXP (x, 0)) == SImode)
 	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == TRUNCATE
 	      && GET_MODE (XEXP (XEXP (x, 0), 0)) == HImode)
 	    {
 	      rtx val = XEXP (XEXP (XEXP (x, 0), 0), 0);
+	      rtx val2 = val;
+	      bool nested_expr = false;
 
 	      fputc ('(', stream);
 	      if (GET_CODE (val) == ASHIFTRT)
 		{
 		  fputc ('(', stream);
-		  if (GET_CODE (XEXP (val, 0)) == CONST)
-		    fputc ('(', stream);
-		  output_addr_const (stream, XEXP (val, 0));
-		  if (GET_CODE (XEXP (val, 0)) == CONST)
-		    fputc (')', stream);
+		  val2 = XEXP (val, 0);
+		}
+	      if (GET_CODE (val2) == CONST
+		  || GET_RTX_CLASS (GET_CODE (val2)) != RTX_OBJ)
+		{
+		  fputc ('(', stream);
+		  nested_expr = true;
+		}
+	      output_addr_const (stream, val2);
+	      if (nested_expr)
+		fputc (')', stream);
+	      if (GET_CODE (val) == ASHIFTRT)
+		{
 		  fputs (" >> ", stream);
 		  output_addr_const (stream, XEXP (val, 1));
 		  fputc (')', stream);
-		}
-	      else
-		{
-		  if (GET_CODE (val) == CONST)
-		    fputc ('(', stream);
-		  output_addr_const (stream, val);
-		  if (GET_CODE (val) == CONST)
-		    fputc (')', stream);
 		}
 	      fputs (" & 65535)", stream);
 	      break;
@@ -1760,7 +1794,7 @@ sh_file_start (void)
   else
     /* Switch to the data section so that the coffsem symbol
        isn't in the text section.  */
-    data_section ();
+    switch_to_section (data_section);
 
   if (TARGET_LITTLE_ENDIAN)
     fputs ("\t.little\n", asm_out_file);
@@ -1910,7 +1944,7 @@ shiftcosts (rtx x)
 	return 2;
 
       /* Everything else is invalid, because there is no pattern for it.  */
-      return 10000;
+      return MAX_COST;
     }
   /* If shift by a non constant, then this will be expensive.  */
   if (GET_CODE (XEXP (x, 1)) != CONST_INT)
@@ -1946,12 +1980,12 @@ andcosts (rtx x)
 
   if (TARGET_SHMEDIA)
     {
-      if ((GET_CODE (XEXP (x, 1)) == CONST_INT
-	   && CONST_OK_FOR_I16 (INTVAL (XEXP (x, 1))))
-	  || EXTRA_CONSTRAINT_C16 (XEXP (x, 1)))
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && (CONST_OK_FOR_I10 (INTVAL (XEXP (x, 1)))
+	      || CONST_OK_FOR_J16 (INTVAL (XEXP (x, 1)))))
 	return 1;
       else
-	return 2;
+	return 1 + rtx_cost (XEXP (x, 1), AND);
     }
 
   /* These constants are single cycle extu.[bw] instructions.  */
@@ -2071,9 +2105,9 @@ sh_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  else if (CONST_OK_FOR_I16 (INTVAL (x) >> 16))
 	    *total = COSTS_N_INSNS ((outer_code != SET) + 1);
 	  else if (CONST_OK_FOR_I16 ((INTVAL (x) >> 16) >> 16))
-	    *total = COSTS_N_INSNS (3);
+	    *total = COSTS_N_INSNS ((outer_code != SET) + 2);
           else
-	    *total = COSTS_N_INSNS (4);
+	    *total = COSTS_N_INSNS ((outer_code != SET) + 3);
 	  return true;
         }
       if (CONST_OK_FOR_I08 (INTVAL (x)))
@@ -2958,6 +2992,14 @@ gen_datalabel_ref (rtx sym)
 }
 
 
+static alloc_pool label_ref_list_pool;
+
+typedef struct label_ref_list_d
+{
+  rtx label;
+  struct label_ref_list_d *next;
+} *label_ref_list_t;
+
 /* The SH cannot load a large constant into a register, constants have to
    come from a pc relative load.  The reference of a pc relative load
    instruction must be less than 1k in front of the instruction.  This
@@ -3015,7 +3057,7 @@ typedef struct
 {
   rtx value;			/* Value in table.  */
   rtx label;			/* Label of value.  */
-  rtx wend;			/* End of window.  */
+  label_ref_list_t wend;	/* End of window.  */
   enum machine_mode mode;	/* Mode of value.  */
 
   /* True if this constant is accessed as part of a post-increment
@@ -3033,6 +3075,8 @@ static int pool_size;
 static rtx pool_window_label;
 static int pool_window_last;
 
+static int max_labelno_before_reorg;
+
 /* ??? If we need a constant in HImode which is the truncated value of a
    constant we need in SImode, we could combine the two entries thus saving
    two bytes.  Is this common enough to be worth the effort of implementing
@@ -3049,7 +3093,8 @@ static rtx
 add_constant (rtx x, enum machine_mode mode, rtx last_value)
 {
   int i;
-  rtx lab, new, ref, newref;
+  rtx lab, new;
+  label_ref_list_t ref, newref;
 
   /* First see if we've already got it.  */
   for (i = 0; i < pool_size; i++)
@@ -3075,9 +3120,10 @@ add_constant (rtx x, enum machine_mode mode, rtx last_value)
 		}
 	      if (lab && pool_window_label)
 		{
-		  newref = gen_rtx_LABEL_REF (VOIDmode, pool_window_label);
+		  newref = (label_ref_list_t) pool_alloc (label_ref_list_pool);
+		  newref->label = pool_window_label;
 		  ref = pool_vector[pool_window_last].wend;
-		  LABEL_NEXTREF (newref) = ref;
+		  newref->next = ref;
 		  pool_vector[pool_window_last].wend = newref;
 		}
 	      if (new)
@@ -3099,13 +3145,14 @@ add_constant (rtx x, enum machine_mode mode, rtx last_value)
     lab = gen_label_rtx ();
   pool_vector[pool_size].mode = mode;
   pool_vector[pool_size].label = lab;
-  pool_vector[pool_size].wend = NULL_RTX;
+  pool_vector[pool_size].wend = NULL;
   pool_vector[pool_size].part_of_sequence_p = (lab == 0);
   if (lab && pool_window_label)
     {
-      newref = gen_rtx_LABEL_REF (VOIDmode, pool_window_label);
+      newref = (label_ref_list_t) pool_alloc (label_ref_list_pool);
+      newref->label = pool_window_label;
       ref = pool_vector[pool_window_last].wend;
-      LABEL_NEXTREF (newref) = ref;
+      newref->next = ref;
       pool_vector[pool_window_last].wend = newref;
     }
   if (lab)
@@ -3127,7 +3174,8 @@ dump_table (rtx start, rtx barrier)
   rtx scan = barrier;
   int i;
   int need_align = 1;
-  rtx lab, ref;
+  rtx lab;
+  label_ref_list_t ref;
   int have_df = 0;
 
   /* Do two passes, first time dump out the HI sized constants.  */
@@ -3147,9 +3195,9 @@ dump_table (rtx start, rtx barrier)
 	    scan = emit_label_after (lab, scan);
 	  scan = emit_insn_after (gen_consttable_2 (p->value, const0_rtx),
 				  scan);
-	  for (ref = p->wend; ref; ref = LABEL_NEXTREF (ref))
+	  for (ref = p->wend; ref; ref = ref->next)
 	    {
-	      lab = XEXP (ref, 0);
+	      lab = ref->label;
 	      scan = emit_insn_after (gen_consttable_window_end (lab), scan);
 	    }
 	}
@@ -3197,9 +3245,9 @@ dump_table (rtx start, rtx barrier)
 		    emit_label_before (lab, align_insn);
 		  emit_insn_before (gen_consttable_4 (p->value, const0_rtx),
 				    align_insn);
-		  for (ref = p->wend; ref; ref = LABEL_NEXTREF (ref))
+		  for (ref = p->wend; ref; ref = ref->next)
 		    {
-		      lab = XEXP (ref, 0);
+		      lab = ref->label;
 		      emit_insn_before (gen_consttable_window_end (lab),
 					align_insn);
 		    }
@@ -3235,9 +3283,9 @@ dump_table (rtx start, rtx barrier)
 
 	  if (p->mode != HImode)
 	    {
-	      for (ref = p->wend; ref; ref = LABEL_NEXTREF (ref))
+	      for (ref = p->wend; ref; ref = ref->next)
 		{
-		  lab = XEXP (ref, 0);
+		  lab = ref->label;
 		  scan = emit_insn_after (gen_consttable_window_end (lab),
 					  scan);
 		}
@@ -3287,9 +3335,9 @@ dump_table (rtx start, rtx barrier)
 
       if (p->mode != HImode)
 	{
-	  for (ref = p->wend; ref; ref = LABEL_NEXTREF (ref))
+	  for (ref = p->wend; ref; ref = ref->next)
 	    {
-	      lab = XEXP (ref, 0);
+	      lab = ref->label;
 	      scan = emit_insn_after (gen_consttable_window_end (lab), scan);
 	    }
 	}
@@ -3312,6 +3360,8 @@ hi_const (rtx src)
 	  && INTVAL (src) >= -32768
 	  && INTVAL (src) <= 32767);
 }
+
+#define MOVA_LABELREF(mova) XVECEXP (SET_SRC (PATTERN (mova)), 0, 0)
 
 /* Nonzero if the insn is a move instruction which needs to be fixed.  */
 
@@ -3372,16 +3422,17 @@ mova_p (rtx insn)
 	  && GET_CODE (SET_SRC (PATTERN (insn))) == UNSPEC
 	  && XINT (SET_SRC (PATTERN (insn)), 1) == UNSPEC_MOVA
 	  /* Don't match mova_const.  */
-	  && GET_CODE (XVECEXP (SET_SRC (PATTERN (insn)), 0, 0)) == LABEL_REF);
+	  && GET_CODE (MOVA_LABELREF (insn)) == LABEL_REF);
 }
 
 /* Fix up a mova from a switch that went out of range.  */
 static void
 fixup_mova (rtx mova)
 {
+  PUT_MODE (XEXP (MOVA_LABELREF (mova), 0), QImode);
   if (! flag_pic)
     {
-      SET_SRC (PATTERN (mova)) = XVECEXP (SET_SRC (PATTERN (mova)), 0, 0);
+      SET_SRC (PATTERN (mova)) = MOVA_LABELREF (mova);
       INSN_CODE (mova) = -1;
     }
   else
@@ -3412,6 +3463,53 @@ fixup_mova (rtx mova)
       diff = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, diff), UNSPEC_PIC);
       SET_SRC (PATTERN (mova)) = gen_rtx_CONST (Pmode, diff);
       INSN_CODE (mova) = -1;
+    }
+}
+
+/* NEW_MOVA is a mova we've just encountered while scanning forward.  Update
+   *num_mova, and check if the new mova is not nested within the first one.
+   return 0 if *first_mova was replaced, 1 if new_mova was replaced,
+   2 if new_mova has been assigned to *first_mova, -1 otherwise..  */
+static int
+untangle_mova (int *num_mova, rtx *first_mova, rtx new_mova)
+{
+  int n_addr = 0; /* Initialization to shut up spurious warning.  */
+  int f_target, n_target = 0; /* Likewise.  */
+
+  if (optimize)
+    {
+      n_addr = INSN_ADDRESSES (INSN_UID (new_mova));
+      n_target = INSN_ADDRESSES (INSN_UID (XEXP (MOVA_LABELREF (new_mova), 0)));
+      if (n_addr > n_target || n_addr + 1022 < n_target)
+	{
+	  /* Change the mova into a load.
+	     broken_move will then return true for it.  */
+	  fixup_mova (new_mova);
+	  return 1;
+	}
+    }
+  if (!(*num_mova)++)
+    {
+      *first_mova = new_mova;
+      return 2;
+    }
+  if (!optimize
+      || ((f_target
+	   = INSN_ADDRESSES (INSN_UID (XEXP (MOVA_LABELREF (*first_mova), 0))))
+	  >= n_target))
+    return -1;
+
+  (*num_mova)--;
+  if (f_target - INSN_ADDRESSES (INSN_UID (*first_mova))
+      > n_target - n_addr)
+    {
+      fixup_mova (*first_mova);
+      return 0;
+    }
+  else
+    {
+      fixup_mova (new_mova);
+      return 1;
     }
 }
 
@@ -3458,7 +3556,12 @@ find_barrier (int num_mova, rtx mova, rtx from)
       int inc = get_attr_length (from);
       int new_align = 1;
 
-      if (GET_CODE (from) == CODE_LABEL)
+      /* If this is a label that existed at the time of the compute_alignments
+	 call, determine the alignment.  N.B.  When find_barrier recurses for
+	 an out-of-reach mova, we might see labels at the start of previously
+	 inserted constant tables.  */
+      if (GET_CODE (from) == CODE_LABEL
+	  && CODE_LABEL_NUMBER (from) <= max_labelno_before_reorg)
 	{
 	  if (optimize)
 	    new_align = 1 << label_to_alignment (from);
@@ -3468,6 +3571,22 @@ find_barrier (int num_mova, rtx mova, rtx from)
 	    new_align = 1;
 	  inc = 0;
 	}
+      /* In case we are scanning a constant table because of recursion, check
+	 for explicit alignments.  If the table is long, we might be forced
+	 to emit the new table in front of it; the length of the alignment
+	 might be the last straw.  */
+      else if (GET_CODE (from) == INSN
+	       && GET_CODE (PATTERN (from)) == UNSPEC_VOLATILE
+	       && XINT (PATTERN (from), 1) == UNSPECV_ALIGN)
+	new_align = INTVAL (XVECEXP (PATTERN (from), 0, 0));
+      /* When we find the end of a constant table, paste the new constant
+	 at the end.  That is better than putting it in front because
+	 this way, we don't need extra alignment for adding a 4-byte-aligned
+	 mov(a) label to a 2/4 or 8/4 byte aligned table.  */
+      else if (GET_CODE (from) == INSN
+	       && GET_CODE (PATTERN (from)) == UNSPEC_VOLATILE
+	       && XINT (PATTERN (from), 1) == UNSPECV_CONST_END)
+	return from;
 
       if (GET_CODE (from) == BARRIER)
 	{
@@ -3532,11 +3651,16 @@ find_barrier (int num_mova, rtx mova, rtx from)
 
       if (mova_p (from))
 	{
-	  if (! num_mova++)
+	  switch (untangle_mova (&num_mova, &mova, from))
 	    {
-	      leading_mova = 0;
-	      mova = from;
-	      barrier_before_mova = good_barrier ? good_barrier : found_barrier;
+	      case 0:	return find_barrier (0, 0, mova);
+	      case 2:
+		{
+		  leading_mova = 0;
+		  barrier_before_mova
+		    = good_barrier ? good_barrier : found_barrier;
+		}
+	      default:	break;
 	    }
 	  if (found_si > count_si)
 	    count_si = found_si;
@@ -3545,7 +3669,10 @@ find_barrier (int num_mova, rtx mova, rtx from)
 	       && (GET_CODE (PATTERN (from)) == ADDR_VEC
 		   || GET_CODE (PATTERN (from)) == ADDR_DIFF_VEC))
 	{
-	  if (num_mova)
+	  if ((num_mova > 1 && GET_MODE (prev_nonnote_insn (from)) == VOIDmode)
+	      || (num_mova
+		  && (prev_nonnote_insn (from)
+		      == XEXP (MOVA_LABELREF (mova), 0))))
 	    num_mova--;
 	  if (barrier_align (next_real_insn (from)) == align_jumps_log)
 	    {
@@ -4265,6 +4392,7 @@ sh_reorg (void)
   rtx r0_inc_rtx = gen_rtx_POST_INC (Pmode, r0_rtx);
 
   first = get_insns ();
+  max_labelno_before_reorg = max_label_num ();
 
   /* We must split call insns before introducing `mova's.  If we're
      optimizing, they'll have already been split.  Otherwise, make
@@ -4338,12 +4466,17 @@ sh_reorg (void)
 
 	  for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
 	    {
+	      rtx linked_insn;
+
 	      if (REG_NOTE_KIND (link) != 0)
 		continue;
-	      set = single_set (XEXP (link, 0));
-	      if (set && rtx_equal_p (reg, SET_DEST (set)))
+	      linked_insn = XEXP (link, 0);
+	      set = single_set (linked_insn);
+	      if (set
+		  && rtx_equal_p (reg, SET_DEST (set))
+		  && ! INSN_DELETED_P (linked_insn))
 		{
-		  link = XEXP (link, 0);
+		  link = linked_insn;
 		  break;
 		}
 	    }
@@ -4511,9 +4644,12 @@ sh_reorg (void)
       mdep_reorg_phase = SH_SHORTEN_BRANCHES0;
       shorten_branches (first);
     }
+
   /* Scan the function looking for move instructions which have to be
      changed to pc-relative loads and insert the literal tables.  */
-
+  label_ref_list_pool = create_alloc_pool ("label references list",
+					   sizeof (struct label_ref_list_d),
+					   30);
   mdep_reorg_phase = SH_FIXUP_PCLOAD;
   for (insn = first, num_mova = 0; insn; insn = NEXT_INSN (insn))
     {
@@ -4523,21 +4659,23 @@ sh_reorg (void)
 	     below the switch table.  Check if that has happened.
 	     We only have the addresses available when optimizing; but then,
 	     this check shouldn't be needed when not optimizing.  */
-	  rtx label_ref = XVECEXP (SET_SRC (PATTERN (insn)), 0, 0);
-	  if (optimize
-	      && (INSN_ADDRESSES (INSN_UID (insn))
-		  > INSN_ADDRESSES (INSN_UID (XEXP (label_ref, 0)))))
+	  if (!untangle_mova (&num_mova, &mova, insn))
 	    {
-	      /* Change the mova into a load.
-		 broken_move will then return true for it.  */
-	      fixup_mova (insn);
+	      insn = mova;
+	      num_mova = 0;
 	    }
-	  else if (! num_mova++)
-	    mova = insn;
 	}
       else if (GET_CODE (insn) == JUMP_INSN
 	       && GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
-	       && num_mova)
+	       && num_mova
+	       /* ??? loop invariant motion can also move a mova out of a
+		  loop.  Since loop does this code motion anyway, maybe we
+		  should wrap UNSPEC_MOVA into a CONST, so that reload can
+		  move it back.  */
+	       && ((num_mova > 1
+		    && GET_MODE (prev_nonnote_insn (insn)) == VOIDmode)
+		   || (prev_nonnote_insn (insn)
+		       == XEXP (MOVA_LABELREF (mova), 0))))
 	{
 	  rtx scan;
 	  int total;
@@ -4694,6 +4832,9 @@ sh_reorg (void)
 	  insn = barrier;
 	}
     }
+  free_alloc_pool (label_ref_list_pool);
+  for (insn = first; insn; insn = NEXT_INSN (insn))
+    PUT_MODE (insn, VOIDmode);
 
   mdep_reorg_phase = SH_SHORTEN_BRANCHES1;
   INSN_ADDRESSES_FREE ();
@@ -6652,20 +6793,20 @@ sh_va_start (tree valist, rtx nextarg)
   f_next_fp_limit = TREE_CHAIN (f_next_fp);
   f_next_stack = TREE_CHAIN (f_next_fp_limit);
 
-  next_o = build (COMPONENT_REF, TREE_TYPE (f_next_o), valist, f_next_o,
-		  NULL_TREE);
-  next_o_limit = build (COMPONENT_REF, TREE_TYPE (f_next_o_limit),
-			valist, f_next_o_limit, NULL_TREE);
-  next_fp = build (COMPONENT_REF, TREE_TYPE (f_next_fp), valist, f_next_fp,
+  next_o = build3 (COMPONENT_REF, TREE_TYPE (f_next_o), valist, f_next_o,
 		   NULL_TREE);
-  next_fp_limit = build (COMPONENT_REF, TREE_TYPE (f_next_fp_limit),
-			 valist, f_next_fp_limit, NULL_TREE);
-  next_stack = build (COMPONENT_REF, TREE_TYPE (f_next_stack),
-		      valist, f_next_stack, NULL_TREE);
+  next_o_limit = build3 (COMPONENT_REF, TREE_TYPE (f_next_o_limit),
+			 valist, f_next_o_limit, NULL_TREE);
+  next_fp = build3 (COMPONENT_REF, TREE_TYPE (f_next_fp), valist, f_next_fp,
+		    NULL_TREE);
+  next_fp_limit = build3 (COMPONENT_REF, TREE_TYPE (f_next_fp_limit),
+			  valist, f_next_fp_limit, NULL_TREE);
+  next_stack = build3 (COMPONENT_REF, TREE_TYPE (f_next_stack),
+		       valist, f_next_stack, NULL_TREE);
 
   /* Call __builtin_saveregs.  */
   u = make_tree (ptr_type_node, expand_builtin_saveregs ());
-  t = build (MODIFY_EXPR, ptr_type_node, next_fp, u);
+  t = build2 (MODIFY_EXPR, ptr_type_node, next_fp, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -6674,13 +6815,13 @@ sh_va_start (tree valist, rtx nextarg)
     nfp = 8 - nfp;
   else
     nfp = 0;
-  u = fold (build (PLUS_EXPR, ptr_type_node, u,
-		   build_int_cst (NULL_TREE, UNITS_PER_WORD * nfp)));
-  t = build (MODIFY_EXPR, ptr_type_node, next_fp_limit, u);
+  u = fold_build2 (PLUS_EXPR, ptr_type_node, u,
+		   build_int_cst (NULL_TREE, UNITS_PER_WORD * nfp));
+  t = build2 (MODIFY_EXPR, ptr_type_node, next_fp_limit, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  t = build (MODIFY_EXPR, ptr_type_node, next_o, u);
+  t = build2 (MODIFY_EXPR, ptr_type_node, next_o, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -6689,19 +6830,19 @@ sh_va_start (tree valist, rtx nextarg)
     nint = 4 - nint;
   else
     nint = 0;
-  u = fold (build (PLUS_EXPR, ptr_type_node, u,
-		   build_int_cst (NULL_TREE, UNITS_PER_WORD * nint)));
-  t = build (MODIFY_EXPR, ptr_type_node, next_o_limit, u);
+  u = fold_build2 (PLUS_EXPR, ptr_type_node, u,
+		   build_int_cst (NULL_TREE, UNITS_PER_WORD * nint));
+  t = build2 (MODIFY_EXPR, ptr_type_node, next_o_limit, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   u = make_tree (ptr_type_node, nextarg);
-  t = build (MODIFY_EXPR, ptr_type_node, next_stack, u);
+  t = build2 (MODIFY_EXPR, ptr_type_node, next_stack, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 }
 
-/* TYPE is a RECORD_TYPE.  If there is only a single non-zero-sized
+/* TYPE is a RECORD_TYPE.  If there is only a single nonzero-sized
    member, return it.  */
 static tree
 find_sole_member (tree type)
@@ -6756,16 +6897,16 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
       f_next_fp_limit = TREE_CHAIN (f_next_fp);
       f_next_stack = TREE_CHAIN (f_next_fp_limit);
 
-      next_o = build (COMPONENT_REF, TREE_TYPE (f_next_o), valist, f_next_o,
-		      NULL_TREE);
-      next_o_limit = build (COMPONENT_REF, TREE_TYPE (f_next_o_limit),
-			    valist, f_next_o_limit, NULL_TREE);
-      next_fp = build (COMPONENT_REF, TREE_TYPE (f_next_fp),
-		       valist, f_next_fp, NULL_TREE);
-      next_fp_limit = build (COMPONENT_REF, TREE_TYPE (f_next_fp_limit),
-			     valist, f_next_fp_limit, NULL_TREE);
-      next_stack = build (COMPONENT_REF, TREE_TYPE (f_next_stack),
-			  valist, f_next_stack, NULL_TREE);
+      next_o = build3 (COMPONENT_REF, TREE_TYPE (f_next_o), valist, f_next_o,
+		       NULL_TREE);
+      next_o_limit = build3 (COMPONENT_REF, TREE_TYPE (f_next_o_limit),
+			     valist, f_next_o_limit, NULL_TREE);
+      next_fp = build3 (COMPONENT_REF, TREE_TYPE (f_next_fp),
+		        valist, f_next_fp, NULL_TREE);
+      next_fp_limit = build3 (COMPONENT_REF, TREE_TYPE (f_next_fp_limit),
+			      valist, f_next_fp_limit, NULL_TREE);
+      next_stack = build3 (COMPONENT_REF, TREE_TYPE (f_next_stack),
+			   valist, f_next_stack, NULL_TREE);
 
       /* Structures with a single member with a distinct mode are passed
 	 like their member.  This is relevant if the latter has a REAL_TYPE
@@ -6825,10 +6966,10 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 	  if (size > 4 && !is_double)
 	    tmp = build2 (PLUS_EXPR, TREE_TYPE (tmp), tmp,
 			  fold_convert (TREE_TYPE (tmp), size_int (4 - size)));
-	  tmp = build (GE_EXPR, boolean_type_node, next_fp_tmp, tmp);
-	  cmp = build (COND_EXPR, void_type_node, tmp,
-		       build (GOTO_EXPR, void_type_node, lab_false),
-		       NULL);
+	  tmp = build2 (GE_EXPR, boolean_type_node, next_fp_tmp, tmp);
+	  cmp = build3 (COND_EXPR, void_type_node, tmp,
+		        build1 (GOTO_EXPR, void_type_node, lab_false),
+		        NULL_TREE);
 	  if (!is_double)
 	    gimplify_and_add (cmp, pre_p);
 
@@ -6836,9 +6977,9 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 	      || (is_double || size == 16))
 	    {
 	      tmp = fold_convert (ptr_type_node, size_int (UNITS_PER_WORD));
-	      tmp = build (BIT_AND_EXPR, ptr_type_node, next_fp_tmp, tmp);
-	      tmp = build (PLUS_EXPR, ptr_type_node, next_fp_tmp, tmp);
-	      tmp = build (MODIFY_EXPR, ptr_type_node, next_fp_tmp, tmp);
+	      tmp = build2 (BIT_AND_EXPR, ptr_type_node, next_fp_tmp, tmp);
+	      tmp = build2 (PLUS_EXPR, ptr_type_node, next_fp_tmp, tmp);
+	      tmp = build2 (MODIFY_EXPR, ptr_type_node, next_fp_tmp, tmp);
 	      gimplify_and_add (tmp, pre_p);
 	    }
 	  if (is_double)
@@ -6859,19 +7000,19 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 		= std_gimplify_va_arg_expr (next_fp_tmp, subtype, pre_p, NULL);
 	      real = get_initialized_tmp_var (real, pre_p, NULL);
 
-	      result = build (COMPLEX_EXPR, type, real, imag);
+	      result = build2 (COMPLEX_EXPR, type, real, imag);
 	      result = get_initialized_tmp_var (result, pre_p, NULL);
 	    }
 #endif /* FUNCTION_ARG_SCmode_WART */
 
-	  tmp = build (GOTO_EXPR, void_type_node, lab_over);
+	  tmp = build1 (GOTO_EXPR, void_type_node, lab_over);
 	  gimplify_and_add (tmp, pre_p);
 
-	  tmp = build (LABEL_EXPR, void_type_node, lab_false);
+	  tmp = build1 (LABEL_EXPR, void_type_node, lab_false);
 	  gimplify_and_add (tmp, pre_p);
 
 	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_stack);
-	  tmp = build (MODIFY_EXPR, void_type_node, addr, tmp);
+	  tmp = build2 (MODIFY_EXPR, void_type_node, addr, tmp);
 	  gimplify_and_add (tmp, pre_p);
 	  tmp = build2 (MODIFY_EXPR, ptr_type_node, next_fp_tmp, valist);
 	  gimplify_and_add (tmp, pre_p);
@@ -6883,37 +7024,37 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
       else
 	{
 	  tmp = fold_convert (ptr_type_node, size_int (rsize));
-	  tmp = build (PLUS_EXPR, ptr_type_node, next_o, tmp);
-	  tmp = build (GT_EXPR, boolean_type_node, tmp, next_o_limit);
-	  tmp = build (COND_EXPR, void_type_node, tmp,
-		       build (GOTO_EXPR, void_type_node, lab_false),
-		       NULL);
+	  tmp = build2 (PLUS_EXPR, ptr_type_node, next_o, tmp);
+	  tmp = build2 (GT_EXPR, boolean_type_node, tmp, next_o_limit);
+	  tmp = build3 (COND_EXPR, void_type_node, tmp,
+		        build1 (GOTO_EXPR, void_type_node, lab_false),
+		        NULL_TREE);
 	  gimplify_and_add (tmp, pre_p);
 
 	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_o);
-	  tmp = build (MODIFY_EXPR, void_type_node, addr, tmp);
+	  tmp = build2 (MODIFY_EXPR, void_type_node, addr, tmp);
 	  gimplify_and_add (tmp, pre_p);
 
-	  tmp = build (GOTO_EXPR, void_type_node, lab_over);
+	  tmp = build1 (GOTO_EXPR, void_type_node, lab_over);
 	  gimplify_and_add (tmp, pre_p);
 
-	  tmp = build (LABEL_EXPR, void_type_node, lab_false);
+	  tmp = build1 (LABEL_EXPR, void_type_node, lab_false);
 	  gimplify_and_add (tmp, pre_p);
 
 	  if (size > 4 && ! TARGET_SH4)
 	    {
-	      tmp = build (MODIFY_EXPR, ptr_type_node, next_o, next_o_limit);
+	      tmp = build2 (MODIFY_EXPR, ptr_type_node, next_o, next_o_limit);
 	      gimplify_and_add (tmp, pre_p);
 	    }
 
 	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_stack);
-	  tmp = build (MODIFY_EXPR, void_type_node, addr, tmp);
+	  tmp = build2 (MODIFY_EXPR, void_type_node, addr, tmp);
 	  gimplify_and_add (tmp, pre_p);
 	}
 
       if (!result)
 	{
-	  tmp = build (LABEL_EXPR, void_type_node, lab_over);
+	  tmp = build1 (LABEL_EXPR, void_type_node, lab_over);
 	  gimplify_and_add (tmp, pre_p);
 	}
     }
@@ -6924,10 +7065,10 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
   tmp = std_gimplify_va_arg_expr (valist, type, pre_p, NULL);
   if (result)
     {
-      tmp = build (MODIFY_EXPR, void_type_node, result, tmp);
+      tmp = build2 (MODIFY_EXPR, void_type_node, result, tmp);
       gimplify_and_add (tmp, pre_p);
 
-      tmp = build (LABEL_EXPR, void_type_node, lab_over);
+      tmp = build1 (LABEL_EXPR, void_type_node, lab_over);
       gimplify_and_add (tmp, pre_p);
     }
   else
@@ -8639,11 +8780,11 @@ find_insn_regmode_weight (rtx insn, enum machine_mode mode)
 
 /* Calculate regmode weights for all insns of a basic block.  */
 static void
-find_regmode_weight (int b, enum machine_mode mode)
+find_regmode_weight (basic_block b, enum machine_mode mode)
 {
   rtx insn, next_tail, head, tail;
 
-  get_block_head_tail (b, &head, &tail);
+  get_ebb_head_tail (b, b, &head, &tail);
   next_tail = NEXT_INSN (tail);
 
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
@@ -8724,8 +8865,8 @@ sh_md_init_global (FILE *dump ATTRIBUTE_UNUSED,
 
   FOR_EACH_BB_REVERSE (b)
   {
-    find_regmode_weight (b->index, SImode);
-    find_regmode_weight (b->index, SFmode);
+    find_regmode_weight (b, SImode);
+    find_regmode_weight (b, SFmode);
   }
 
   CURR_REGMODE_PRESSURE (SImode) = 0;
@@ -9818,11 +9959,11 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
       if (flag_schedule_insns_after_reload)
 	{
-	  life_analysis (dump_file, PROP_FINAL);
+	  life_analysis (PROP_FINAL);
 
 	  split_all_insns (1);
 
-	  schedule_insns (dump_file);
+	  schedule_insns ();
 	}
       /* We must split jmp insn in PIC case.  */
       else if (flag_pic)
@@ -9832,7 +9973,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   sh_reorg ();
 
   if (optimize > 0 && flag_delayed_branch)
-    dbr_schedule (insns, dump_file);
+    dbr_schedule (insns);
 
   shorten_branches (insns);
   final_start_function (insns, file, 1);
@@ -10294,10 +10435,10 @@ sh_adjust_unroll_max (struct loop * loop, int insn_count,
 			  if (TREE_CODE (type) != ARRAY_TYPE
 			      || ! TYPE_SIZE (type) || ! TYPE_SIZE_UNIT (type))
 			    break;
-			  size_tree = fold (build (TRUNC_DIV_EXPR,
+			  size_tree = fold_build2 (TRUNC_DIV_EXPR,
 						   bitsizetype,
 						   TYPE_SIZE (type),
-						   TYPE_SIZE_UNIT (type)));
+						   TYPE_SIZE_UNIT (type));
 			  if (TREE_CODE (size_tree) == INTEGER_CST
 			      && ! TREE_INT_CST_HIGH (size_tree)
 			      && TREE_INT_CST_LOW  (size_tree) < max_iterations)
@@ -10690,23 +10831,106 @@ shmedia_prepare_call_address (rtx fnaddr, int is_sibcall)
   return fnaddr;
 }
 
-/* ??? insn-conditions.c contains the insn conditions from sh.md,
-   but does not include tree.h.  This is fixed in 4.2 20060127. */
-bool
-sh_cfun_trap_exit_p (void)
+enum reg_class
+sh_secondary_reload (bool in_p, rtx x, enum reg_class class,
+		     enum machine_mode mode, secondary_reload_info *sri)
 {
-  return (lookup_attribute ("trap_exit",
-			    DECL_ATTRIBUTES (current_function_decl))
-	  == NULL_TREE);
+  if (in_p)
+    {
+      if (REGCLASS_HAS_FP_REG (class)
+	  && ! TARGET_SHMEDIA
+	  && immediate_operand ((x), mode)
+	  && ! ((fp_zero_operand (x) || fp_one_operand (x))
+		&& mode == SFmode && fldi_ok ()))
+	switch (mode)
+	  {
+	  case SFmode:
+	    sri->icode = CODE_FOR_reload_insf__frn;
+	    return NO_REGS;
+	  case DFmode:
+	    sri->icode = CODE_FOR_reload_indf__frn;
+	    return NO_REGS;
+	  case SImode:
+	    /* ??? If we knew that we are in the appropriate mode -
+	       single precision - we could use a reload pattern directly.  */
+	    return FPUL_REGS;
+	  default:
+	    abort ();
+	  }
+      if (class == FPUL_REGS
+          && ((GET_CODE (x) == REG
+               && (REGNO (x) == MACL_REG || REGNO (x) == MACH_REG
+                   || REGNO (x) == T_REG))
+              || GET_CODE (x) == PLUS))
+        return GENERAL_REGS;
+      if (class == FPUL_REGS && immediate_operand (x, mode))
+	{
+	  if (GET_CODE (x) == CONST_INT && CONST_OK_FOR_I08 (INTVAL (x)))
+	    return GENERAL_REGS;
+	  sri->icode = CODE_FOR_reload_insi__i_fpul;
+	  return NO_REGS;
+	}
+      if (class == FPSCR_REGS
+          && ((GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER)
+              || (GET_CODE (x) == MEM && GET_CODE (XEXP (x, 0)) == PLUS)))
+        return GENERAL_REGS;
+      if (REGCLASS_HAS_FP_REG (class)
+          && TARGET_SHMEDIA
+          && immediate_operand (x, mode)
+          && x != CONST0_RTX (GET_MODE (x))
+          && GET_MODE (x) != V4SFmode)
+        return GENERAL_REGS;
+      if ((mode == QImode || mode == HImode)
+          && TARGET_SHMEDIA && inqhi_operand (x, mode))
+	{
+	  sri->icode = ((mode == QImode)
+			? CODE_FOR_reload_inqi : CODE_FOR_reload_inhi);
+	  return NO_REGS;
+	}
+      if (TARGET_SHMEDIA && class == GENERAL_REGS
+          && (GET_CODE (x) == LABEL_REF || PIC_DIRECT_ADDR_P (x)))
+        return TARGET_REGS;
+    } /* end of input-only processing.  */
+
+  if (((REGCLASS_HAS_FP_REG (class)
+	&& (GET_CODE (x) == REG
+	    && (GENERAL_OR_AP_REGISTER_P (REGNO (x))
+		|| (FP_REGISTER_P (REGNO (x)) && mode == SImode
+		    && TARGET_FMOVD))))
+       || (REGCLASS_HAS_GENERAL_REG (class)
+	   && GET_CODE (x) == REG
+	   && FP_REGISTER_P (REGNO (x))))
+      && ! TARGET_SHMEDIA
+      && (mode == SFmode || mode == SImode))
+    return FPUL_REGS;
+  if ((class == FPUL_REGS
+       || (REGCLASS_HAS_FP_REG (class)
+           && ! TARGET_SHMEDIA && mode == SImode))
+      && (GET_CODE (x) == MEM
+          || (GET_CODE (x) == REG
+              && (REGNO (x) >= FIRST_PSEUDO_REGISTER
+                  || REGNO (x) == T_REG
+                  || system_reg_operand (x, VOIDmode)))))
+    {
+      if (class == FPUL_REGS)
+	return GENERAL_REGS;
+      return FPUL_REGS;
+    }
+  if ((class == TARGET_REGS
+       || (TARGET_SHMEDIA && class == SIBCALL_REGS))
+      && !EXTRA_CONSTRAINT_Csy (x)
+      && (GET_CODE (x) != REG || ! GENERAL_REGISTER_P (REGNO (x))))
+    return GENERAL_REGS;
+  if ((class == MAC_REGS || class == PR_REGS)
+      && GET_CODE (x) == REG && ! GENERAL_REGISTER_P (REGNO (x))
+      && class != REGNO_REG_CLASS (REGNO (x)))
+    return GENERAL_REGS;
+  if (class != GENERAL_REGS && GET_CODE (x) == REG
+      && TARGET_REGISTER_P (REGNO (x)))
+    return GENERAL_REGS;
+  return NO_REGS;
 }
 
 enum sh_divide_strategy_e sh_div_strategy = SH_DIV_STRATEGY_DEFAULT;
-
-/* This defines the storage for the variable part of a -mboard= option.
-   It is only required when using the sh-superh-elf target */
-#ifdef _SUPERH_H
-const char * boardtype = "7750p2";
-const char * osruntime = "bare";
-#endif
 
 #include "gt-sh.h"

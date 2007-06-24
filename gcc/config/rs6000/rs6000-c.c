@@ -62,17 +62,17 @@ rs6000_pragma_longcall (cpp_reader *pfile ATTRIBUTE_UNUSED)
   /* If we get here, generic code has already scanned the directive
      leader and the word "longcall".  */
 
-  if (c_lex (&x) != CPP_OPEN_PAREN)
+  if (pragma_lex (&x) != CPP_OPEN_PAREN)
     SYNTAX_ERROR ("missing open paren");
-  if (c_lex (&n) != CPP_NUMBER)
+  if (pragma_lex (&n) != CPP_NUMBER)
     SYNTAX_ERROR ("missing number");
-  if (c_lex (&x) != CPP_CLOSE_PAREN)
+  if (pragma_lex (&x) != CPP_CLOSE_PAREN)
     SYNTAX_ERROR ("missing close paren");
 
   if (n != integer_zero_node && n != integer_one_node)
     SYNTAX_ERROR ("number must be 0 or 1");
 
-  if (c_lex (&x) != CPP_EOF)
+  if (pragma_lex (&x) != CPP_EOF)
     warning (OPT_Wpragmas, "junk at end of #pragma longcall");
 
   rs6000_default_long_calls = (n == integer_one_node);
@@ -125,6 +125,9 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
   /* Used by lwarx/stwcx. errata work-around.  */
   if (rs6000_cpu == PROCESSOR_PPC405)
     builtin_define ("__PPC405__");
+  /* Used by libstdc++.  */
+  if (TARGET_NO_LWSYNC)
+    builtin_define ("__NO_LWSYNC__");
 
   /* May be overridden by target configuration.  */
   RS6000_CPU_CPP_ENDIAN_BUILTINS();

@@ -104,7 +104,8 @@ static int shift_cost[NUM_MACHINE_MODES][MAX_BITS_PER_WORD];
 static int shiftadd_cost[NUM_MACHINE_MODES][MAX_BITS_PER_WORD];
 static int shiftsub_cost[NUM_MACHINE_MODES][MAX_BITS_PER_WORD];
 static int mul_cost[NUM_MACHINE_MODES];
-static int div_cost[NUM_MACHINE_MODES];
+static int sdiv_cost[NUM_MACHINE_MODES];
+static int udiv_cost[NUM_MACHINE_MODES];
 static int mul_widen_cost[NUM_MACHINE_MODES];
 static int mul_highpart_cost[NUM_MACHINE_MODES];
 
@@ -116,11 +117,12 @@ init_expmed (void)
     struct rtx_def reg;		rtunion reg_fld[2];
     struct rtx_def plus;	rtunion plus_fld1;
     struct rtx_def neg;
-    struct rtx_def udiv;	rtunion udiv_fld1;
     struct rtx_def mult;	rtunion mult_fld1;
-    struct rtx_def div;		rtunion div_fld1;
-    struct rtx_def mod;		rtunion mod_fld1;
+    struct rtx_def sdiv;	rtunion sdiv_fld1;
+    struct rtx_def udiv;	rtunion udiv_fld1;
     struct rtx_def zext;
+    struct rtx_def sdiv_32;	rtunion sdiv_32_fld1;
+    struct rtx_def smod_32;	rtunion smod_32_fld1;
     struct rtx_def wide_mult;	rtunion wide_mult_fld1;
     struct rtx_def wide_lshr;	rtunion wide_lshr_fld1;
     struct rtx_def wide_trunc;
@@ -156,21 +158,25 @@ init_expmed (void)
   PUT_CODE (&all.neg, NEG);
   XEXP (&all.neg, 0) = &all.reg;
 
-  PUT_CODE (&all.udiv, UDIV);
-  XEXP (&all.udiv, 0) = &all.reg;
-  XEXP (&all.udiv, 1) = &all.reg;
-
   PUT_CODE (&all.mult, MULT);
   XEXP (&all.mult, 0) = &all.reg;
   XEXP (&all.mult, 1) = &all.reg;
 
-  PUT_CODE (&all.div, DIV);
-  XEXP (&all.div, 0) = &all.reg;
-  XEXP (&all.div, 1) = 32 < MAX_BITS_PER_WORD ? cint[32] : GEN_INT (32);
+  PUT_CODE (&all.sdiv, DIV);
+  XEXP (&all.sdiv, 0) = &all.reg;
+  XEXP (&all.sdiv, 1) = &all.reg;
 
-  PUT_CODE (&all.mod, MOD);
-  XEXP (&all.mod, 0) = &all.reg;
-  XEXP (&all.mod, 1) = XEXP (&all.div, 1);
+  PUT_CODE (&all.udiv, UDIV);
+  XEXP (&all.udiv, 0) = &all.reg;
+  XEXP (&all.udiv, 1) = &all.reg;
+
+  PUT_CODE (&all.sdiv_32, DIV);
+  XEXP (&all.sdiv_32, 0) = &all.reg;
+  XEXP (&all.sdiv_32, 1) = 32 < MAX_BITS_PER_WORD ? cint[32] : GEN_INT (32);
+
+  PUT_CODE (&all.smod_32, MOD);
+  XEXP (&all.smod_32, 0) = &all.reg;
+  XEXP (&all.smod_32, 1) = XEXP (&all.sdiv_32, 1);
 
   PUT_CODE (&all.zext, ZERO_EXTEND);
   XEXP (&all.zext, 0) = &all.reg;
@@ -206,10 +212,11 @@ init_expmed (void)
       PUT_MODE (&all.reg, mode);
       PUT_MODE (&all.plus, mode);
       PUT_MODE (&all.neg, mode);
-      PUT_MODE (&all.udiv, mode);
       PUT_MODE (&all.mult, mode);
-      PUT_MODE (&all.div, mode);
-      PUT_MODE (&all.mod, mode);
+      PUT_MODE (&all.sdiv, mode);
+      PUT_MODE (&all.udiv, mode);
+      PUT_MODE (&all.sdiv_32, mode);
+      PUT_MODE (&all.smod_32, mode);
       PUT_MODE (&all.wide_trunc, mode);
       PUT_MODE (&all.shift, mode);
       PUT_MODE (&all.shift_mult, mode);
@@ -218,11 +225,14 @@ init_expmed (void)
 
       add_cost[mode] = rtx_cost (&all.plus, SET);
       neg_cost[mode] = rtx_cost (&all.neg, SET);
-      div_cost[mode] = rtx_cost (&all.udiv, SET);
       mul_cost[mode] = rtx_cost (&all.mult, SET);
+      sdiv_cost[mode] = rtx_cost (&all.sdiv, SET);
+      udiv_cost[mode] = rtx_cost (&all.udiv, SET);
 
-      sdiv_pow2_cheap[mode] = (rtx_cost (&all.div, SET) <= 2 * add_cost[mode]);
-      smod_pow2_cheap[mode] = (rtx_cost (&all.mod, SET) <= 4 * add_cost[mode]);
+      sdiv_pow2_cheap[mode] = (rtx_cost (&all.sdiv_32, SET)
+			       <= 2 * add_cost[mode]);
+      smod_pow2_cheap[mode] = (rtx_cost (&all.smod_32, SET)
+			       <= 4 * add_cost[mode]);
 
       wider_mode = GET_MODE_WIDER_MODE (mode);
       if (wider_mode != VOIDmode)
@@ -623,7 +633,6 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   if (HAVE_insv
       && GET_MODE (value) != BLKmode
-      && !(bitsize == 1 && GET_CODE (value) == CONST_INT)
       && bitsize > 0
       && GET_MODE_BITSIZE (op_mode) >= bitsize
       && ! ((REG_P (op0) || GET_CODE (op0) == SUBREG)
@@ -2185,7 +2194,7 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
      and shifted in the other direction; but that does not work
      on all machines.  */
 
-  op1 = expand_expr (amount, NULL_RTX, VOIDmode, 0);
+  op1 = expand_normal (amount);
 
   if (SHIFT_COUNT_TRUNCATED)
     {
@@ -2208,7 +2217,9 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
       && GET_CODE (op1) == CONST_INT
       && INTVAL (op1) > 0
       && INTVAL (op1) < GET_MODE_BITSIZE (mode)
-      && shift_cost[mode][INTVAL (op1)] > INTVAL (op1) * add_cost[mode])
+      && INTVAL (op1) < MAX_BITS_PER_WORD
+      && shift_cost[mode][INTVAL (op1)] > INTVAL (op1) * add_cost[mode]
+      && shift_cost[mode][INTVAL (op1)] != MAX_COST)
     {
       int i;
       for (i = 0; i < INTVAL (op1); i++)
@@ -2251,13 +2262,17 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
 		 code below.  */
 
 	      rtx subtarget = target == shifted ? 0 : target;
+	      tree new_amount, other_amount;
 	      rtx temp1;
 	      tree type = TREE_TYPE (amount);
-	      tree new_amount = make_tree (type, op1);
-	      tree other_amount
+	      if (GET_MODE (op1) != TYPE_MODE (type)
+		  && GET_MODE (op1) != VOIDmode)
+		op1 = convert_to_mode (TYPE_MODE (type), op1, 1);
+	      new_amount = make_tree (type, op1);
+	      other_amount
 		= fold_build2 (MINUS_EXPR, type,
 			       build_int_cst (type, GET_MODE_BITSIZE (mode)),
-			       amount);
+			       new_amount);
 
 	      shifted = force_reg (mode, shifted);
 
@@ -2386,7 +2401,7 @@ struct algorithm
 /* The entry for our multiplication cache/hash table.  */
 struct alg_hash_entry {
   /* The number we are multiplying by.  */
-  unsigned int t;
+  unsigned HOST_WIDE_INT t;
 
   /* The mode in which we are multiplying something by T.  */
   enum machine_mode mode;
@@ -2401,7 +2416,11 @@ struct alg_hash_entry {
 };
 
 /* The number of cache/hash entries.  */
+#if HOST_BITS_PER_WIDE_INT == 64
+#define NUM_ALG_HASH_ENTRIES 1031
+#else
 #define NUM_ALG_HASH_ENTRIES 307
+#endif
 
 /* Each entry of ALG_HASH caches alg_code for some integer.  This is
    actually a hash table.  If we have a collision, that the older
@@ -3192,7 +3211,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 
   /* Expand x*2.0 as x+x.  */
   if (GET_CODE (op1) == CONST_DOUBLE
-      && GET_MODE_CLASS (mode) == MODE_FLOAT)
+      && SCALAR_FLOAT_MODE_P (mode))
     {
       REAL_VALUE_TYPE d;
       REAL_VALUE_FROM_CONST_DOUBLE (d, op1);
@@ -3398,6 +3417,8 @@ extract_high_half (enum machine_mode mode, rtx op)
   if (mode == word_mode)
     return gen_highpart (mode, op);
 
+  gcc_assert (!SCALAR_FLOAT_MODE_P (mode));
+
   wider_mode = GET_MODE_WIDER_MODE (mode);
   op = expand_shift (RSHIFT_EXPR, wider_mode, op,
 		     build_int_cst (NULL_TREE, GET_MODE_BITSIZE (mode)), 0, 1);
@@ -3416,6 +3437,8 @@ expand_mult_highpart_optab (enum machine_mode mode, rtx op0, rtx op1,
   optab moptab;
   rtx tem;
   int size;
+
+  gcc_assert (!SCALAR_FLOAT_MODE_P (mode));
 
   wider_mode = GET_MODE_WIDER_MODE (mode);
   size = GET_MODE_BITSIZE (mode);
@@ -3527,6 +3550,7 @@ expand_mult_highpart (enum machine_mode mode, rtx op0, rtx op1,
   struct algorithm alg;
   rtx tem;
 
+  gcc_assert (!SCALAR_FLOAT_MODE_P (mode));
   /* We can't support modes wider than HOST_BITS_PER_INT.  */
   gcc_assert (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT);
 
@@ -3936,11 +3960,10 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
   /* Only deduct something for a REM if the last divide done was
      for a different constant.   Then set the constant of the last
      divide.  */
-  max_cost = div_cost[compute_mode]
-    - (rem_flag && ! (last_div_const != 0 && op1_is_constant
-		      && INTVAL (op1) == last_div_const)
-       ? mul_cost[compute_mode] + add_cost[compute_mode]
-       : 0);
+  max_cost = unsignedp ? udiv_cost[compute_mode] : sdiv_cost[compute_mode];
+  if (rem_flag && ! (last_div_const != 0 && op1_is_constant
+		     && INTVAL (op1) == last_div_const))
+    max_cost -= mul_cost[compute_mode] + add_cost[compute_mode];
 
   last_div_const = ! rem_flag && op1_is_constant ? INTVAL (op1) : 0;
 
@@ -4953,17 +4976,17 @@ make_tree (tree type, rtx x)
 
     case CONST_VECTOR:
       {
-	int i, units;
-	rtx elt;
+	int units = CONST_VECTOR_NUNITS (x);
+	tree itype = TREE_TYPE (type);
 	tree t = NULL_TREE;
+	int i;
 
-	units = CONST_VECTOR_NUNITS (x);
 
 	/* Build a tree with vector elements.  */
 	for (i = units - 1; i >= 0; --i)
 	  {
-	    elt = CONST_VECTOR_ELT (x, i);
-	    t = tree_cons (NULL_TREE, make_tree (type, elt), t);
+	    rtx elt = CONST_VECTOR_ELT (x, i);
+	    t = tree_cons (NULL_TREE, make_tree (itype, elt), t);
 	  }
 
 	return build_vector (type, t);
@@ -5021,6 +5044,15 @@ make_tree (tree type, rtx x)
 					  GET_CODE (x) == ZERO_EXTEND);
       return fold_convert (type, make_tree (t, XEXP (x, 0)));
 
+    case CONST:
+      return make_tree (type, XEXP (x, 0));
+
+    case SYMBOL_REF:
+      t = SYMBOL_REF_DECL (x);
+      if (t)
+	return fold_convert (type, build_fold_addr_expr (t));
+      /* else fall through.  */
+
     default:
       t = build_decl (VAR_DECL, NULL_TREE, type);
 
@@ -5035,69 +5067,6 @@ make_tree (tree type, rtx x)
 
       return t;
     }
-}
-
-/* Check whether the multiplication X * MULT + ADD overflows.
-   X, MULT and ADD must be CONST_*.
-   MODE is the machine mode for the computation.
-   X and MULT must have mode MODE.  ADD may have a different mode.
-   So can X (defaults to same as MODE).
-   UNSIGNEDP is nonzero to do unsigned multiplication.  */
-
-bool
-const_mult_add_overflow_p (rtx x, rtx mult, rtx add,
-			   enum machine_mode mode, int unsignedp)
-{
-  tree type, mult_type, add_type, result;
-
-  type = lang_hooks.types.type_for_mode (mode, unsignedp);
-
-  /* In order to get a proper overflow indication from an unsigned
-     type, we have to pretend that it's a sizetype.  */
-  mult_type = type;
-  if (unsignedp)
-    {
-      /* FIXME:It would be nice if we could step directly from this
-	 type to its sizetype equivalent.  */
-      mult_type = build_distinct_type_copy (type);
-      TYPE_IS_SIZETYPE (mult_type) = 1;
-    }
-
-  add_type = (GET_MODE (add) == VOIDmode ? mult_type
-	      : lang_hooks.types.type_for_mode (GET_MODE (add), unsignedp));
-
-  result = fold_build2 (PLUS_EXPR, mult_type,
-			fold_build2 (MULT_EXPR, mult_type,
-				     make_tree (mult_type, x),
-				     make_tree (mult_type, mult)),
-			make_tree (add_type, add));
-
-  return TREE_CONSTANT_OVERFLOW (result);
-}
-
-/* Return an rtx representing the value of X * MULT + ADD.
-   TARGET is a suggestion for where to store the result (an rtx).
-   MODE is the machine mode for the computation.
-   X and MULT must have mode MODE.  ADD may have a different mode.
-   So can X (defaults to same as MODE).
-   UNSIGNEDP is nonzero to do unsigned multiplication.
-   This may emit insns.  */
-
-rtx
-expand_mult_add (rtx x, rtx target, rtx mult, rtx add, enum machine_mode mode,
-		 int unsignedp)
-{
-  tree type = lang_hooks.types.type_for_mode (mode, unsignedp);
-  tree add_type = (GET_MODE (add) == VOIDmode
-		   ? type: lang_hooks.types.type_for_mode (GET_MODE (add),
-							   unsignedp));
-  tree result = fold_build2 (PLUS_EXPR, type,
-			     fold_build2 (MULT_EXPR, type,
-					  make_tree (type, x),
-					  make_tree (type, mult)),
-			     make_tree (add_type, add));
-
-  return expand_expr (result, target, VOIDmode, 0);
 }
 
 /* Compute the logical-and of OP0 and OP1, storing it in TARGET
@@ -5614,66 +5583,14 @@ emit_store_flag_force (rtx target, enum rtx_code code, rtx op0, rtx op1,
 }
 
 /* Perform possibly multi-word comparison and conditional jump to LABEL
-   if ARG1 OP ARG2 true where ARG1 and ARG2 are of mode MODE
-
-   The algorithm is based on the code in expr.c:do_jump.
-
-   Note that this does not perform a general comparison.  Only
-   variants generated within expmed.c are correctly handled, others
-   could be handled if needed.  */
+   if ARG1 OP ARG2 true where ARG1 and ARG2 are of mode MODE.  This is
+   now a thin wrapper around do_compare_rtx_and_jump.  */
 
 static void
 do_cmp_and_jump (rtx arg1, rtx arg2, enum rtx_code op, enum machine_mode mode,
 		 rtx label)
 {
-  /* If this mode is an integer too wide to compare properly,
-     compare word by word.  Rely on cse to optimize constant cases.  */
-
-  if (GET_MODE_CLASS (mode) == MODE_INT
-      && ! can_compare_p (op, mode, ccp_jump))
-    {
-      rtx label2 = gen_label_rtx ();
-
-      switch (op)
-	{
-	case LTU:
-	  do_jump_by_parts_greater_rtx (mode, 1, arg2, arg1, label2, label);
-	  break;
-
-	case LEU:
-	  do_jump_by_parts_greater_rtx (mode, 1, arg1, arg2, label, label2);
-	  break;
-
-	case LT:
-	  do_jump_by_parts_greater_rtx (mode, 0, arg2, arg1, label2, label);
-	  break;
-
-	case GT:
-	  do_jump_by_parts_greater_rtx (mode, 0, arg1, arg2, label2, label);
-	  break;
-
-	case GE:
-	  do_jump_by_parts_greater_rtx (mode, 0, arg2, arg1, label, label2);
-	  break;
-
-	  /* do_jump_by_parts_equality_rtx compares with zero.  Luckily
-	     that's the only equality operations we do */
-	case EQ:
-	  gcc_assert (arg2 == const0_rtx && mode == GET_MODE(arg1));
-	  do_jump_by_parts_equality_rtx (arg1, label2, label);
-	  break;
-
-	case NE:
-	  gcc_assert (arg2 == const0_rtx && mode == GET_MODE(arg1));
-	  do_jump_by_parts_equality_rtx (arg1, label, label2);
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-
-      emit_label (label2);
-    }
-  else
-    emit_cmp_and_jump_insns (arg1, arg2, op, NULL_RTX, mode, 0, label);
+  int unsignedp = (op == LTU || op == LEU || op == GTU || op == GEU);
+  do_compare_rtx_and_jump (arg1, arg2, op, unsignedp, mode,
+			   NULL_RTX, NULL_RTX, label);
 }

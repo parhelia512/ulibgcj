@@ -532,16 +532,6 @@ extern struct rtx_def *hppa_pic_save_rtx (void);
    in some cases it is preferable to use a more restrictive class.  */
 #define PREFERRED_RELOAD_CLASS(X,CLASS) (CLASS)
 
-/* Return the register class of a scratch register needed to copy
-   IN into a register in CLASS in MODE, or a register in CLASS in MODE
-   to IN.  If it can be done directly NO_REGS is returned. 
-
-  Avoid doing any work for the common case calls.  */
-#define SECONDARY_RELOAD_CLASS(CLASS,MODE,IN) \
-  ((CLASS == BASE_REG_CLASS && GET_CODE (IN) == REG		\
-    && REGNO (IN) < FIRST_PSEUDO_REGISTER)			\
-   ? NO_REGS : secondary_reload_class (CLASS, MODE, IN))
-
 #define MAYBE_FP_REG_CLASS_P(CLASS) \
   reg_classes_intersect_p ((CLASS), FP_REGS)
 
@@ -1584,72 +1574,6 @@ do { 									\
   ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
    && DECL_SECTION_NAME (DECL) != NULL_TREE)
 
-/* The following extra sections and extra section functions are only used
-   for SOM, but they must be provided unconditionally because pa.c's calls
-   to the functions might not get optimized out when other object formats
-   are in use.  */
-
-#define EXTRA_SECTIONS							\
-  in_som_readonly_data,							\
-  in_som_one_only_readonly_data,					\
-  in_som_one_only_data
-
-#define EXTRA_SECTION_FUNCTIONS						\
-  SOM_READONLY_DATA_SECTION_FUNCTION					\
-  SOM_ONE_ONLY_READONLY_DATA_SECTION_FUNCTION				\
-  SOM_ONE_ONLY_DATA_SECTION_FUNCTION					\
-  FORGET_SECTION_FUNCTION
-
-/* SOM puts readonly data in the default $LIT$ subspace when PIC code
-   is not being generated.  */
-#define SOM_READONLY_DATA_SECTION_FUNCTION				\
-void									\
-som_readonly_data_section (void)					\
-{									\
-  if (!TARGET_SOM)							\
-    return;								\
-  if (in_section != in_som_readonly_data)				\
-    {									\
-      in_section = in_som_readonly_data;				\
-      fputs ("\t.SPACE $TEXT$\n\t.SUBSPA $LIT$\n", asm_out_file);	\
-    }									\
-}
-
-/* When secondary definitions are not supported, SOM makes readonly data one
-   only by creating a new $LIT$ subspace in $TEXT$ with the comdat flag.  */
-#define SOM_ONE_ONLY_READONLY_DATA_SECTION_FUNCTION			\
-void									\
-som_one_only_readonly_data_section (void)				\
-{									\
-  if (!TARGET_SOM)							\
-    return;								\
-  in_section = in_som_one_only_readonly_data;				\
-  fputs ("\t.SPACE $TEXT$\n"						\
-	 "\t.NSUBSPA $LIT$,QUAD=0,ALIGN=8,ACCESS=0x2c,SORT=16,COMDAT\n",\
-	 asm_out_file);							\
-}
-
-/* When secondary definitions are not supported, SOM makes data one only by
-   creating a new $DATA$ subspace in $PRIVATE$ with the comdat flag.  */
-#define SOM_ONE_ONLY_DATA_SECTION_FUNCTION				\
-void									\
-som_one_only_data_section (void)					\
-{									\
-  if (!TARGET_SOM)							\
-    return;								\
-  in_section = in_som_one_only_data;					\
-  fputs ("\t.SPACE $PRIVATE$\n"						\
-	 "\t.NSUBSPA $DATA$,QUAD=1,ALIGN=8,ACCESS=31,SORT=24,COMDAT\n",	\
-	 asm_out_file);							\
-}
-
-#define FORGET_SECTION_FUNCTION						\
-void									\
-forget_section (void)							\
-{									\
-  in_section = no_section;						\
-}
-
 /* Define this macro if references to a symbol must be treated
    differently depending on something about the variable or
    function named by the symbol (such as what section it is in).
@@ -1818,9 +1742,14 @@ forget_section (void)							\
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
 
-#define ASM_OUTPUT_LABEL(FILE, NAME)	\
-  do { assemble_name (FILE, NAME); 	\
-       fputc ('\n', FILE); } while (0)
+#define ASM_OUTPUT_LABEL(FILE,NAME) \
+  do {							\
+    assemble_name ((FILE), (NAME));			\
+    if (TARGET_GAS)					\
+      fputs (":\n", (FILE));				\
+    else						\
+      fputc ('\n', (FILE));				\
+  } while (0)
 
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */
@@ -1852,6 +1781,17 @@ forget_section (void)							\
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%c$%s%04ld", (PREFIX)[0], (PREFIX) + 1, (long)(NUM))
+
+/* Output the definition of a compiler-generated label named NAME.  */
+
+#define ASM_OUTPUT_INTERNAL_LABEL(FILE,NAME) \
+  do {							\
+    assemble_name_raw ((FILE), (NAME));			\
+    if (TARGET_GAS)					\
+      fputs (":\n", (FILE));				\
+    else						\
+      fputc ('\n', (FILE));				\
+  } while (0)
 
 #define TARGET_ASM_GLOBALIZE_LABEL pa_globalize_label
 

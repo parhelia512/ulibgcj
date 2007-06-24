@@ -1,6 +1,6 @@
 ;;- Machine description for HP PA-RISC architecture for GCC compiler
 ;;   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-;;   2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+;;   2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
 
@@ -50,6 +50,16 @@
    (UNSPECV_OPC		3)	; outline_prologue_call
    (UNSPECV_OEC		4)	; outline_epilogue_call
    (UNSPECV_LONGJMP	5)	; builtin_longjmp
+  ])
+
+;; Maximum pc-relative branch offsets.
+
+;; These numbers are a bit smaller than the maximum allowable offsets
+;; so that a few instructions may be inserted before the actual branch.
+
+(define_constants
+  [(MAX_12BIT_OFFSET     8184)	; 12-bit branch
+   (MAX_17BIT_OFFSET   262100)	; 17-bit branch
   ])
 
 ;; Insn type.  Used to default other attribute values.
@@ -139,7 +149,7 @@
 (define_delay (eq_attr "type" "btable_branch,branch,parallel_branch")
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
-;; Floating point conditional branch delay slot description and
+;; Floating point conditional branch delay slot description.
 (define_delay (eq_attr "type" "fbranch")
   [(eq_attr "in_branch_delay" "true")
    (eq_attr "in_nullified_branch_delay" "true")
@@ -1708,17 +1718,18 @@
   ""
   "*
 {
-  return output_cbranch (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn), 0, insn);
+  return output_cbranch (operands, 0, insn);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
     (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-	       (const_int 8184))
+	       (const_int MAX_12BIT_OFFSET))
 	   (const_int 4)
 	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-	       (const_int 262100))
+	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
 	   (const_int 20)]
 	  (const_int 28)))])
@@ -1736,17 +1747,18 @@
   ""
   "*
 {
-  return output_cbranch (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn), 1, insn);
+  return output_cbranch (operands, 1, insn);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
     (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-	       (const_int 8184))
+	       (const_int MAX_12BIT_OFFSET))
 	   (const_int 4)
 	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-	       (const_int 262100))
+	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
 	   (const_int 20)]
 	  (const_int 28)))])
@@ -1762,17 +1774,18 @@
   "TARGET_64BIT"
   "*
 {
-  return output_cbranch (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn), 0, insn);
+  return output_cbranch (operands, 0, insn);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
     (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-	       (const_int 8184))
+	       (const_int MAX_12BIT_OFFSET))
 	   (const_int 4)
 	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-	       (const_int 262100))
+	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
 	   (const_int 20)]
 	  (const_int 28)))])
@@ -1790,17 +1803,18 @@
   "TARGET_64BIT"
   "*
 {
-  return output_cbranch (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn), 1, insn);
+  return output_cbranch (operands, 1, insn);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
     (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-	       (const_int 8184))
+	       (const_int MAX_12BIT_OFFSET))
 	   (const_int 4)
 	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-	       (const_int 262100))
+	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
 	   (const_int 20)]
 	  (const_int 28)))])
@@ -1815,17 +1829,18 @@
   "TARGET_64BIT"
   "*
 {
-  return output_cbranch (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn), 0, insn);
+  return output_cbranch (operands, 0, insn);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
     (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-	       (const_int 8184))
+	       (const_int MAX_12BIT_OFFSET))
 	   (const_int 4)
 	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-	       (const_int 262100))
+	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
 	   (const_int 20)]
 	  (const_int 28)))])
@@ -1843,17 +1858,18 @@
   "TARGET_64BIT"
   "*
 {
-  return output_cbranch (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn), 1, insn);
+  return output_cbranch (operands, 1, insn);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
     (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-	       (const_int 8184))
+	       (const_int MAX_12BIT_OFFSET))
 	   (const_int 4)
 	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-	       (const_int 262100))
+	       (const_int MAX_17BIT_OFFSET))
 	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
 	   (eq (symbol_ref "flag_pic") (const_int 0))
 	   (const_int 20)]
 	  (const_int 28)))])
@@ -1871,15 +1887,21 @@
   ""
   "*
 {
-  return output_bb (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn), 0, insn, 0);
+  return output_bb (operands, 0, insn, 0);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -1893,15 +1915,21 @@
   "TARGET_64BIT"
   "*
 {
-  return output_bb (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn), 0, insn, 0);
+  return output_bb (operands, 0, insn, 0);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -1915,15 +1943,21 @@
   ""
   "*
 {
-  return output_bb (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn), 1, insn, 0);
+  return output_bb (operands, 1, insn, 0);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -1937,15 +1971,21 @@
   "TARGET_64BIT"
   "*
 {
-  return output_bb (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn), 1, insn, 0);
+  return output_bb (operands, 1, insn, 0);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -1959,15 +1999,21 @@
   ""
   "*
 {
-  return output_bb (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn), 0, insn, 1);
+  return output_bb (operands, 0, insn, 1);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -1981,15 +2027,21 @@
   "TARGET_64BIT"
   "*
 {
-  return output_bb (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn), 0, insn, 1);
+  return output_bb (operands, 0, insn, 1);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2003,15 +2055,21 @@
   ""
   "*
 {
-  return output_bb (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn), 1, insn, 1);
+  return output_bb (operands, 1, insn, 1);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2025,15 +2083,21 @@
   "TARGET_64BIT"
   "*
 {
-  return output_bb (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn), 1, insn, 1);
+  return output_bb (operands, 1, insn, 1);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 ;; Branch on Variable Bit patterns.
 (define_insn ""
@@ -2048,15 +2112,21 @@
   ""
   "*
 {
-  return output_bvb (operands, INSN_ANNULLED_BRANCH_P (insn),
-		     get_attr_length (insn), 0, insn, 0);
+  return output_bvb (operands, 0, insn, 0);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2070,15 +2140,21 @@
   "TARGET_64BIT"
   "*
 {
-  return output_bvb (operands, INSN_ANNULLED_BRANCH_P (insn),
-		     get_attr_length (insn), 0, insn, 0);
+  return output_bvb (operands, 0, insn, 0);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2092,15 +2168,21 @@
   ""
   "*
 {
-  return output_bvb (operands, INSN_ANNULLED_BRANCH_P (insn),
-		     get_attr_length (insn), 1, insn, 0);
+  return output_bvb (operands, 1, insn, 0);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2114,15 +2196,21 @@
   "TARGET_64BIT"
   "*
 {
-  return output_bvb (operands, INSN_ANNULLED_BRANCH_P (insn),
-		     get_attr_length (insn), 1, insn, 0);
+  return output_bvb (operands, 1, insn, 0);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2136,15 +2224,21 @@
   ""
   "*
 {
-  return output_bvb (operands, INSN_ANNULLED_BRANCH_P (insn),
-		     get_attr_length (insn), 0, insn, 1);
+  return output_bvb (operands, 0, insn, 1);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2158,15 +2252,21 @@
   "TARGET_64BIT"
   "*
 {
-  return output_bvb (operands, INSN_ANNULLED_BRANCH_P (insn),
-		     get_attr_length (insn), 0, insn, 1);
+  return output_bvb (operands, 0, insn, 1);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2180,15 +2280,21 @@
   ""
   "*
 {
-  return output_bvb (operands, INSN_ANNULLED_BRANCH_P (insn),
-		     get_attr_length (insn), 1, insn, 1);
+  return output_bvb (operands, 1, insn, 1);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc)
@@ -2202,46 +2308,114 @@
   "TARGET_64BIT"
   "*
 {
-  return output_bvb (operands, INSN_ANNULLED_BRANCH_P (insn),
-		     get_attr_length (insn), 1, insn, 1);
+  return output_bvb (operands, 1, insn, 1);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 ;; Floating point branches
+
+;; ??? Nullification is handled differently from other branches.
+;; If nullification is specified, the delay slot is nullified on any
+;; taken branch regardless of branch direction.
 (define_insn ""
   [(set (pc) (if_then_else (ne (reg:CCFP 0) (const_int 0))
 			   (label_ref (match_operand 0 "" ""))
 			   (pc)))]
-  "! TARGET_SOFT_FLOAT"
+  "!TARGET_SOFT_FLOAT"
   "*
 {
-  if (INSN_ANNULLED_BRANCH_P (insn))
-    return \"ftest\;b,n %0\";
+  int length = get_attr_length (insn);
+  rtx xoperands[1];
+  int nullify, xdelay;
+
+  if (length < 16)
+    return \"ftest\;b%* %l0\";
+
+  if (dbr_sequence_length () == 0 || INSN_ANNULLED_BRANCH_P (insn))
+    {
+      nullify = 1;
+      xdelay = 0;
+      xoperands[0] = GEN_INT (length - 8);
+    }
   else
-    return \"ftest\;b%* %0\";
+    {
+      nullify = 0;
+      xdelay = 1;
+      xoperands[0] = GEN_INT (length - 4);
+    }
+
+  if (nullify)
+    output_asm_insn (\"ftest\;add,tr %%r0,%%r0,%%r0\;b,n .+%0\", xoperands);
+  else
+    output_asm_insn (\"ftest\;add,tr %%r0,%%r0,%%r0\;b .+%0\", xoperands);
+  return output_lbranch (operands[0], insn, xdelay);
 }"
-  [(set_attr "type" "fbranch")
-   (set_attr "length" "8")])
+[(set_attr "type" "fbranch")
+ (set (attr "length")
+    (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 32)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 28)]
+	  (const_int 36)))])
 
 (define_insn ""
   [(set (pc) (if_then_else (ne (reg:CCFP 0) (const_int 0))
 			   (pc)
 			   (label_ref (match_operand 0 "" ""))))]
-  "! TARGET_SOFT_FLOAT"
+  "!TARGET_SOFT_FLOAT"
   "*
 {
-  if (INSN_ANNULLED_BRANCH_P (insn))
-    return \"ftest\;add,tr %%r0,%%r0,%%r0\;b,n %0\";
-  else
+  int length = get_attr_length (insn);
+  rtx xoperands[1];
+  int nullify, xdelay;
+
+  if (length < 16)
     return \"ftest\;add,tr %%r0,%%r0,%%r0\;b%* %0\";
+
+  if (dbr_sequence_length () == 0 || INSN_ANNULLED_BRANCH_P (insn))
+    {
+      nullify = 1;
+      xdelay = 0;
+      xoperands[0] = GEN_INT (length - 4);
+    }
+  else
+    {
+      nullify = 0;
+      xdelay = 1;
+      xoperands[0] = GEN_INT (length);
+    }
+
+  if (nullify)
+    output_asm_insn (\"ftest\;b,n .+%0\", xoperands);
+  else
+    output_asm_insn (\"ftest\;b .+%0\", xoperands);
+  return output_lbranch (operands[0], insn, xdelay);
 }"
-  [(set_attr "type" "fbranch")
-   (set_attr "length" "12")])
+[(set_attr "type" "fbranch")
+ (set (attr "length")
+    (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 12)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 28)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 24)]
+	  (const_int 32)))])
 
 ;; Move instructions
 
@@ -2255,9 +2429,24 @@
     DONE;
 }")
 
-;; Reloading an SImode or DImode value requires a scratch register if
-;; going in to or out of float point registers.
+;; Handle SImode input reloads requiring %r1 as a scratch register.
+(define_expand "reload_insi_r1"
+  [(set (match_operand:SI 0 "register_operand" "=Z")
+	(match_operand:SI 1 "non_hard_reg_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" "=&a"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, SImode, operands[2]))
+    DONE;
 
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  DONE;
+}")
+
+;; Handle SImode input reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_insi"
   [(set (match_operand:SI 0 "register_operand" "=Z")
 	(match_operand:SI 1 "non_hard_reg_operand" ""))
@@ -2273,6 +2462,8 @@
   DONE;
 }")
 
+;; Handle SImode output reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_outsi"
   [(set (match_operand:SI 0 "non_hard_reg_operand" "")
 	(match_operand:SI 1  "register_operand" "Z"))
@@ -2290,9 +2481,9 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "move_dest_operand"
-			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T,!r,!f")
+			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T,?r,?*f")
 	(match_operand:SI 1 "move_src_operand"
-			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f,!f,!r"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f,*f,r"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && !TARGET_SOFT_FLOAT
@@ -2932,9 +3123,9 @@
 
 (define_insn ""
   [(set (match_operand:HI 0 "move_dest_operand"
-	 		  "=r,r,r,r,r,Q,!*q,!r,!*f,!r,!f")
+	 		  "=r,r,r,r,r,Q,!*q,!r,!*f,?r,?*f")
 	(match_operand:HI 1 "move_src_operand"
-			  "r,J,N,K,RQ,rM,!rM,!*q,!*fM,!f,!r"))]
+			  "r,J,N,K,RQ,rM,!rM,!*q,!*fM,*f,r"))]
   "(register_operand (operands[0], HImode)
     || reg_or_0_operand (operands[1], HImode))
    && !TARGET_SOFT_FLOAT
@@ -3105,9 +3296,9 @@
 
 (define_insn ""
   [(set (match_operand:QI 0 "move_dest_operand"
-			  "=r,r,r,r,r,Q,!*q,!r,!*f,!r,!f")
+			  "=r,r,r,r,r,Q,!*q,!r,!*f,?r,?*f")
 	(match_operand:QI 1 "move_src_operand"
-			  "r,J,N,K,RQ,rM,!rM,!*q,!*fM,!f,!r"))]
+			  "r,J,N,K,RQ,rM,!rM,!*q,!*fM,*f,r"))]
   "(register_operand (operands[0], QImode)
     || reg_or_0_operand (operands[1], QImode))
    && !TARGET_SOFT_FLOAT
@@ -3907,16 +4098,27 @@
   ""
   "
 {
-  if (GET_CODE (operands[1]) == CONST_DOUBLE && TARGET_64BIT)
-    operands[1] = force_const_mem (DFmode, operands[1]);
+  if (GET_CODE (operands[1]) == CONST_DOUBLE
+      && operands[1] != CONST0_RTX (DFmode))
+    {
+      /* Reject CONST_DOUBLE loads to all hard registers when
+	 generating 64-bit code and to floating point registers
+	 when generating 32-bit code.  */
+      if (REG_P (operands[0])
+	  && HARD_REGISTER_P (operands[0])
+	  && (TARGET_64BIT || REGNO (operands[0]) >= 32))
+	FAIL;
+
+      if (TARGET_64BIT)
+	operands[1] = force_const_mem (DFmode, operands[1]);
+    }
 
   if (emit_move_sequence (operands, DFmode, 0))
     DONE;
 }")
 
-;; Reloading an SImode or DImode value requires a scratch register if
-;; going in to or out of float point registers.
-
+;; Handle DFmode input reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_indf"
   [(set (match_operand:DF 0 "register_operand" "=Z")
 	(match_operand:DF 1 "non_hard_reg_operand" ""))
@@ -3932,6 +4134,8 @@
   DONE;
 }")
 
+;; Handle DFmode output reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_outdf" 
  [(set (match_operand:DF 0 "non_hard_reg_operand" "")
 	(match_operand:DF 1  "register_operand" "Z"))
@@ -3949,9 +4153,9 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
-			  "=f,*r,Q,?o,?Q,f,*r,*r,!r,!f")
+			  "=f,*r,Q,?o,?Q,f,*r,*r,?*r,?f")
 	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fG,*rG,f,*r,*r,RQ,o,RQ,!f,!r"))]
+			  "fG,*rG,f,*r,*r,RQ,o,RQ,f,*r"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
    && !(GET_CODE (operands[1]) == CONST_DOUBLE
@@ -4123,9 +4327,9 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
-			  "=r,?o,?Q,r,r,!r,!f")
+			  "=r,?o,?Q,r,r")
 	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "rG,r,r,o,RQ,!f,!r"))]
+			  "rG,r,r,o,RQ"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
    && !TARGET_64BIT
@@ -4134,14 +4338,14 @@
 {
   return output_move_double (operands);
 }"
-  [(set_attr "type" "move,store,store,load,load,move,move")
-   (set_attr "length" "8,8,16,8,16,12,12")])
+  [(set_attr "type" "move,store,store,load,load")
+   (set_attr "length" "8,8,16,8,16")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
 			  "=!*r,*r,*r,*r,*r,Q,f,f,T")
 	(match_operand:DF 1 "move_src_operand"
-			  "!*r,J,N,K,RQ,*rM,fM,RT,f"))]
+			  "!*r,J,N,K,RQ,*rG,fG,RT,f"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
    && !TARGET_SOFT_FLOAT && TARGET_64BIT"
@@ -4166,13 +4370,40 @@
   ""
   "
 {
-  if (GET_CODE (operands[1]) == CONST_DOUBLE && TARGET_64BIT)
-    operands[1] = force_const_mem (DImode, operands[1]);
+  /* Except for zero, we don't support loading a CONST_INT directly
+     to a hard floating-point register since a scratch register is
+     needed for the operation.  While the operation could be handled
+     before no_new_pseudos is true, the simplest solution is to fail.  */
+  if (TARGET_64BIT
+      && GET_CODE (operands[1]) == CONST_INT
+      && operands[1] != CONST0_RTX (DImode)
+      && REG_P (operands[0])
+      && HARD_REGISTER_P (operands[0])
+      && REGNO (operands[0]) >= 32)
+    FAIL;
 
   if (emit_move_sequence (operands, DImode, 0))
     DONE;
 }")
 
+;; Handle DImode input reloads requiring %r1 as a scratch register.
+(define_expand "reload_indi_r1"
+  [(set (match_operand:DI 0 "register_operand" "=Z")
+	(match_operand:DI 1 "non_hard_reg_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" "=&a"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, DImode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  DONE;
+}")
+
+;; Handle DImode input reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_indi"
   [(set (match_operand:DI 0 "register_operand" "=Z")
 	(match_operand:DI 1 "non_hard_reg_operand" ""))
@@ -4188,6 +4419,8 @@
   DONE;
 }")
 
+;; Handle DImode output reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_outdi"
   [(set (match_operand:DI 0 "non_hard_reg_operand" "")
 	(match_operand:DI 1 "register_operand" "Z"))
@@ -4215,6 +4448,7 @@
   switch (GET_CODE (op1))
     {
     case CONST_INT:
+#if HOST_BITS_PER_WIDE_INT <= 32
       operands[0] = operand_subword (op0, 1, 0, DImode);
       output_asm_insn (\"ldil L'%1,%0\", operands);
 
@@ -4223,6 +4457,15 @@
 	output_asm_insn (\"ldi -1,%0\", operands);
       else
 	output_asm_insn (\"ldi 0,%0\", operands);
+#else
+      operands[0] = operand_subword (op0, 1, 0, DImode);
+      operands[1] = GEN_INT (INTVAL (op1) & 0xffffffff);
+      output_asm_insn (\"ldil L'%1,%0\", operands);
+
+      operands[0] = operand_subword (op0, 0, 0, DImode);
+      operands[1] = GEN_INT (INTVAL (op1) >> 32);
+      output_asm_insn (singlemove_string (operands), operands);
+#endif
       break;
 
     case CONST_DOUBLE:
@@ -4241,13 +4484,13 @@
   return \"\";
 }"
   [(set_attr "type" "move")
-   (set_attr "length" "8")])
+   (set_attr "length" "12")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "move_dest_operand"
-			  "=r,o,Q,r,r,r,*f,*f,T,!r,!f")
+			  "=r,o,Q,r,r,r,*f,*f,T,?r,?*f")
 	(match_operand:DI 1 "general_operand"
-			  "rM,r,r,o*R,Q,i,*fM,RT,*f,!f,!r"))]
+			  "rM,r,r,o*R,Q,i,*fM,RT,*f,*f,r"))]
   "(register_operand (operands[0], DImode)
     || reg_or_0_operand (operands[1], DImode))
    && !TARGET_64BIT
@@ -4401,6 +4644,9 @@
      handle it correctly.  */
   if (GET_CODE (operands[2]) == CONST_DOUBLE)
     operands[2] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
+  else if (HOST_BITS_PER_WIDE_INT > 32
+	   && GET_CODE (operands[2]) == CONST_INT)
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffffffff);
   if (which_alternative == 1)
     output_asm_insn (\"copy %1,%0\", operands);
   return \"ldo R'%G2(%R1),%R0\";
@@ -4434,13 +4680,20 @@
   ""
   "
 {
+  /* Reject CONST_DOUBLE loads to floating point registers.  */
+  if (GET_CODE (operands[1]) == CONST_DOUBLE
+      && operands[1] != CONST0_RTX (SFmode)
+      && REG_P (operands[0])
+      && HARD_REGISTER_P (operands[0])
+      && REGNO (operands[0]) >= 32)
+    FAIL;
+
   if (emit_move_sequence (operands, SFmode, 0))
     DONE;
 }")
 
-;; Reloading an SImode or DImode value requires a scratch register if
-;; going in to or out of float point registers.
-
+;; Handle SFmode input reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_insf"
   [(set (match_operand:SF 0 "register_operand" "=Z")
 	(match_operand:SF 1 "non_hard_reg_operand" ""))
@@ -4456,6 +4709,8 @@
   DONE;
 }")
 
+;; Handle SFmode output reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_outsf"
   [(set (match_operand:SF 0 "non_hard_reg_operand" "")
 	(match_operand:SF 1  "register_operand" "Z"))
@@ -4473,9 +4728,9 @@
 
 (define_insn ""
   [(set (match_operand:SF 0 "move_dest_operand"
-			  "=f,!*r,f,*r,Q,Q,!r,!f")
+			  "=f,!*r,f,*r,Q,Q,?*r,?f")
 	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fG,!*rG,RQ,RQ,f,*rG,!f,!r"))]
+			  "fG,!*rG,RQ,RQ,f,*rG,f,*r"))]
   "(register_operand (operands[0], SFmode)
     || reg_or_0_operand (operands[1], SFmode))
    && !TARGET_SOFT_FLOAT
@@ -5365,10 +5620,10 @@
 						GEN_INT (32)));
   emit_move_insn (op2shifted, gen_rtx_LSHIFTRT (DImode, operands[2],
 						GEN_INT (32)));
-  op1r = gen_rtx_SUBREG (SImode, operands[1], 4);
-  op2r = gen_rtx_SUBREG (SImode, operands[2], 4);
-  op1l = gen_rtx_SUBREG (SImode, op1shifted, 4);
-  op2l = gen_rtx_SUBREG (SImode, op2shifted, 4);
+  op1r = force_reg (SImode, gen_rtx_SUBREG (SImode, operands[1], 4));
+  op2r = force_reg (SImode, gen_rtx_SUBREG (SImode, operands[2], 4));
+  op1l = force_reg (SImode, gen_rtx_SUBREG (SImode, op1shifted, 4));
+  op2l = force_reg (SImode, gen_rtx_SUBREG (SImode, op2shifted, 4));
 
   /* Emit multiplies for the cross products.  */
   emit_insn (gen_umulsidi3 (cross_product1, op2r, op1l));
@@ -6516,7 +6771,7 @@
 				     (match_operand:SI 2 "register_operand" "q")))
 		(match_operand:SI 3 "register_operand" "0")))]
   ; accept ...0001...1, can this be generalized?
-  "exact_log2 (INTVAL (operands[1]) + 1) >= 0"
+  "exact_log2 (INTVAL (operands[1]) + 1) > 0"
   "*
 {
   int x = INTVAL (operands[1]);
@@ -6615,7 +6870,7 @@
 				     (match_operand:DI 2 "register_operand" "q")))
 		(match_operand:DI 3 "register_operand" "0")))]
   ; accept ...0001...1, can this be generalized?
-  "TARGET_64BIT && exact_log2 (INTVAL (operands[1]) + 1) >= 0"
+  "TARGET_64BIT && exact_log2 (INTVAL (operands[1]) + 1) > 0"
   "*
 {
   int x = INTVAL (operands[1]);
@@ -6811,7 +7066,7 @@
 	(and:SI (ashift:SI (match_operand:SI 1 "register_operand" "r")
 			   (match_operand:SI 2 "const_int_operand" ""))
 		(match_operand:SI 3 "const_int_operand" "")))]
-  "exact_log2 (1 + (INTVAL (operands[3]) >> (INTVAL (operands[2]) & 31))) >= 0"
+  "exact_log2 (1 + (INTVAL (operands[3]) >> (INTVAL (operands[2]) & 31))) > 0"
   "*
 {
   int cnt = INTVAL (operands[2]) & 31;
@@ -6967,11 +7222,10 @@
   "*
 {
   /* An unconditional branch which can reach its target.  */
-  if (get_attr_length (insn) != 24
-      && get_attr_length (insn) != 16)
+  if (get_attr_length (insn) < 16)
     return \"b%* %l0\";
 
-  return output_lbranch (operands[0], insn);
+  return output_lbranch (operands[0], insn, 1);
 }"
   [(set_attr "type" "uncond_branch")
    (set_attr "pa_combine_type" "uncond_branch")
@@ -6979,15 +7233,17 @@
     (cond [(eq (symbol_ref "jump_in_call_delay (insn)") (const_int 1))
 	   (if_then_else (lt (abs (minus (match_dup 0)
 					 (plus (pc) (const_int 8))))
-			     (const_int 8184))
-			 (const_int 4)
-			 (const_int 8))
-	   (ge (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-	       (const_int 262100))
-	   (if_then_else (eq (symbol_ref "flag_pic") (const_int 0))
-			 (const_int 16)
-			 (const_int 24))]
-	  (const_int 4)))])
+			     (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (const_int 8))
+	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 4)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 20)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 16)]
+	  (const_int 24)))])
 
 ;;; Hope this is only within a function...
 (define_insn "indirect_jump"
@@ -8801,39 +9057,71 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
       (if_then_else (eq_attr "alternative" "0")
 ;; Loop counter in register case
 ;; Short branch has length of 4
-;; Long branch has length of 8
-	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8))
+;; Long branch has length of 8, 20, 24 or 28
+	(cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28))
 
 ;; Loop counter in FP reg case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else (eq_attr "alternative" "1")
 	  (if_then_else (lt (match_dup 3) (pc))
-	    (if_then_else
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 24))))
-		  (const_int 8184))
-	      (const_int 24)
-	      (const_int 28))
-	    (if_then_else
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		  (const_int 8184))
-	      (const_int 24)
-	      (const_int 28)))
+	     (cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 24))))
+		      (const_int MAX_12BIT_OFFSET))
+		    (const_int 24)
+		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 24))))
+		      (const_int MAX_17BIT_OFFSET))
+		    (const_int 28)
+		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (const_int 44)
+		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (const_int 40)]
+		  (const_int 48))
+	     (cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		      (const_int MAX_12BIT_OFFSET))
+		    (const_int 24)
+		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		      (const_int MAX_17BIT_OFFSET))
+		    (const_int 28)
+		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (const_int 44)
+		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (const_int 40)]
+		  (const_int 48)))
+
 ;; Loop counter in memory case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else (lt (match_dup 3) (pc))
-	  (if_then_else
-	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
-		(const_int 8184))
-	    (const_int 12)
-	    (const_int 16))
-	  (if_then_else
-	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		(const_int 8184))
-	    (const_int 12)
-	    (const_int 16))))))])
+	     (cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
+		      (const_int MAX_12BIT_OFFSET))
+		    (const_int 12)
+		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
+		      (const_int MAX_17BIT_OFFSET))
+		    (const_int 16)
+		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (const_int 32)
+		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (const_int 28)]
+		  (const_int 36))
+	     (cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		      (const_int MAX_12BIT_OFFSET))
+		    (const_int 12)
+		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		      (const_int MAX_17BIT_OFFSET))
+		    (const_int 16)
+		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (const_int 32)
+		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (const_int 28)]
+		  (const_int 36))))))])
 
 (define_insn ""
   [(set (pc)
@@ -8852,33 +9140,59 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
       (if_then_else (eq_attr "alternative" "0")
 ;; Loop counter in register case
 ;; Short branch has length of 4
-;; Long branch has length of 8
-	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8))
+;; Long branch has length of 8, 20, 24 or 28
+        (cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28))
 
 ;; Loop counter in FP reg case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else (eq_attr "alternative" "1")
 	  (if_then_else (lt (match_dup 3) (pc))
-	    (if_then_else
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
-		  (const_int 8184))
-	      (const_int 12)
-	      (const_int 16))
-	    (if_then_else
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		  (const_int 8184))
-	      (const_int 12)
-	      (const_int 16)))
+	     (cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
+		      (const_int MAX_12BIT_OFFSET))
+		    (const_int 12)
+		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
+		      (const_int MAX_17BIT_OFFSET))
+		    (const_int 16)
+		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (const_int 32)
+		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (const_int 28)]
+		  (const_int 36))
+	     (cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		      (const_int MAX_12BIT_OFFSET))
+		    (const_int 12)
+		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		      (const_int MAX_17BIT_OFFSET))
+		    (const_int 16)
+		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (const_int 32)
+		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (const_int 28)]
+		  (const_int 36)))
+
 ;; Loop counter in memory or sar case.
 ;; Extra goo to deal with additional reload insns.
-	(if_then_else
-	  (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-	      (const_int 8184))
-	  (const_int 8)
-	  (const_int 12)))))])
+	(cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		   (const_int MAX_12BIT_OFFSET))
+		(const_int 8)
+		(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		  (const_int MAX_17BIT_OFFSET))
+		(const_int 12)
+		(ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		(const_int 28)
+		(eq (symbol_ref "flag_pic") (const_int 0))
+		(const_int 24)]
+	      (const_int 32)))))])
 
 ;; Handle negated branch.
 (define_insn ""
@@ -8899,32 +9213,58 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 ;; Loop counter in register case
 ;; Short branch has length of 4
 ;; Long branch has length of 8
-	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8))
+        (cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28))
 
 ;; Loop counter in FP reg case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else (eq_attr "alternative" "1")
 	  (if_then_else (lt (match_dup 3) (pc))
-	    (if_then_else
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
-		  (const_int 8184))
-	      (const_int 12)
-	      (const_int 16))
-	    (if_then_else
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		  (const_int 8184))
-	      (const_int 12)
-	      (const_int 16)))
+	     (cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
+		      (const_int MAX_12BIT_OFFSET))
+		    (const_int 12)
+		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
+		      (const_int MAX_17BIT_OFFSET))
+		    (const_int 16)
+		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (const_int 32)
+		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (const_int 28)]
+		  (const_int 36))
+	     (cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		      (const_int MAX_12BIT_OFFSET))
+		    (const_int 12)
+		    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		      (const_int MAX_17BIT_OFFSET))
+		    (const_int 16)
+		    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		    (const_int 32)
+		    (eq (symbol_ref "flag_pic") (const_int 0))
+		    (const_int 28)]
+		  (const_int 36)))
+
 ;; Loop counter in memory or SAR case.
 ;; Extra goo to deal with additional reload insns.
-	(if_then_else
-	  (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-	      (const_int 8184))
-	  (const_int 8)
-	  (const_int 12)))))])
+	(cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		   (const_int MAX_12BIT_OFFSET))
+		(const_int 8)
+		(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		  (const_int MAX_17BIT_OFFSET))
+		(const_int 12)
+		(ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+		(const_int 28)
+		(eq (symbol_ref "flag_pic") (const_int 0))
+		(const_int 24)]
+	      (const_int 32)))))])
 
 (define_insn ""
   [(set (pc) (label_ref (match_operand 3 "" "" )))
@@ -8934,14 +9274,21 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   "(reload_completed && operands[0] == operands[1]) || operands[0] == operands[2]"
   "*
 {
-  return output_parallel_addb (operands, get_attr_length (insn));
+  return output_parallel_addb (operands, insn);
 }"
-  [(set_attr "type" "parallel_branch")
-   (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+[(set_attr "type" "parallel_branch")
+ (set (attr "length")
+    (cond [(lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc) (label_ref (match_operand 2 "" "" )))
@@ -8950,14 +9297,21 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   "reload_completed"
   "*
 {
-  return output_parallel_movb (operands, get_attr_length (insn));
+  return output_parallel_movb (operands, insn);
 }"
-  [(set_attr "type" "parallel_branch")
-   (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+[(set_attr "type" "parallel_branch")
+ (set (attr "length")
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc) (label_ref (match_operand 2 "" "" )))
@@ -8966,14 +9320,21 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   "reload_completed"
   "*
 {
-  return output_parallel_movb (operands, get_attr_length (insn));
+  return output_parallel_movb (operands, insn);
 }"
-  [(set_attr "type" "parallel_branch")
-   (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+[(set_attr "type" "parallel_branch")
+ (set (attr "length")
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc) (label_ref (match_operand 2 "" "" )))
@@ -8982,14 +9343,21 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   "reload_completed"
   "*
 {
-  return output_parallel_movb (operands, get_attr_length (insn));
+  return output_parallel_movb (operands, insn);
 }"
-  [(set_attr "type" "parallel_branch")
-   (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+[(set_attr "type" "parallel_branch")
+ (set (attr "length")
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (pc) (label_ref (match_operand 2 "" "" )))
@@ -8998,14 +9366,21 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   "reload_completed"
   "*
 {
-  return output_parallel_movb (operands, get_attr_length (insn));
+  return output_parallel_movb (operands, insn);
 }"
-  [(set_attr "type" "parallel_branch")
-   (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+[(set_attr "type" "parallel_branch")
+ (set (attr "length")
+    (cond [(lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_12BIT_OFFSET))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+	       (const_int MAX_17BIT_OFFSET))
+	   (const_int 8)
+	   (ne (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0))
+	   (const_int 24)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 (define_insn ""
   [(set (match_operand 0 "register_operand" "=f")
@@ -9560,7 +9935,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI [(const_int 0)] UNSPEC_TP))]
   ""
-  "{mfctl|mfctl,w} %%cr27,%0"
+  "mfctl %%cr27,%0"
   [(set_attr "type" "multi")
    (set_attr "length" "4")])
 

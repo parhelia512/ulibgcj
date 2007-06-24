@@ -33,7 +33,8 @@ Boston, MA 02110-1301, USA.  */
    %{!shared:%{pg:-L/lib/pa20_64/libp -L/usr/lib/pa20_64/libp %{!static:\
      %nWarning: consider linking with `-static' as system libraries with\n\
      %n  profiling support are only provided in archive format}}}\
-   %{mhp-ld:+Accept TypeMismatch -z} -E %{mlinker-opt:-O} %{!shared:-u main}\
+   %{mhp-ld:+Accept TypeMismatch -z} -E %{mlinker-opt:-O}\
+   %{!shared:-u main %{!nostdlib:%{!nodefaultlibs:-u __cxa_finalize}}}\
    %{static:-a archive} %{shared:%{mhp-ld:-b}%{!mhp-ld:-shared}}"
 #else
 #define LINK_SPEC \
@@ -43,7 +44,8 @@ Boston, MA 02110-1301, USA.  */
    %{!shared:%{pg:-L/lib/pa20_64/libp -L/usr/lib/pa20_64/libp %{!static:\
      %nWarning: consider linking with `-static' as system libraries with\n\
      %n  profiling support are only provided in archive format}}}\
-   %{!mgnu-ld:+Accept TypeMismatch -z} -E %{mlinker-opt:-O} %{!shared:-u main}\
+   %{!mgnu-ld:+Accept TypeMismatch -z} -E %{mlinker-opt:-O}\
+   %{!shared:-u main %{!nostdlib:%{!nodefaultlibs:-u __cxa_finalize}}}\
    %{static:-a archive} %{shared:%{mgnu-ld:-shared}%{!mgnu-ld:-b}}"
 #endif
 
@@ -56,24 +58,24 @@ Boston, MA 02110-1301, USA.  */
 #if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_GNU_LD)
 #define LIB_SPEC \
   "%{!shared:\
-     %{!p:%{!pg: %{static:-lpthread} -lc\
+     %{!p:%{!pg: %{static|mt|pthread:-lpthread} -lc\
 	    %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
      %{p:%{!pg:%{static:%{!mhp-ld:-a shared}%{mhp-ld:-a archive_shared}}\
-	   -lprof %{static:-a archive -lpthread} -lc\
+	   -lprof %{static:-a archive} %{static|mt|pthread:-lpthread} -lc\
 	   %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
      %{pg:%{static:%{!mhp-ld:-a shared}%{mhp-ld:-a archive_shared}}\
-       -lgprof %{static:-a archive -lpthread} -lc\
+       -lgprof %{static:-a archive} %{static|mt|pthread:-lpthread} -lc\
        %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}"
 #else
 #define LIB_SPEC \
   "%{!shared:\
-     %{!p:%{!pg: %{static:-lpthread} -lc\
+     %{!p:%{!pg: %{static|mt|pthread:-lpthread} -lc\
 	    %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
      %{p:%{!pg:%{static:%{mgnu-ld:-a shared}%{!mgnu-ld:-a archive_shared}}\
-	   -lprof %{static:-a archive -lpthread} -lc\
+	   -lprof %{static:-a archive} %{static|mt|pthread:-lpthread} -lc\
 	   %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
      %{pg:%{static:%{mgnu-ld:-a shared}%{!mgnu-ld:-a archive_shared}}\
-       -lgprof %{static:-a archive -lpthread} -lc\
+       -lgprof %{static:-a archive} %{static|mt|pthread:-lpthread} -lc\
        %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}"
 #endif
 

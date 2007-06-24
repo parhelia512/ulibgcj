@@ -1,5 +1,5 @@
 /* Loop header copying on trees.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    
 This file is part of GCC.
    
@@ -120,7 +120,7 @@ do_while_loop_p (struct loop *loop)
    of the loop.  This is beneficial since it increases efficiency of
    code motion optimizations.  It also saves one jump on entry to the loop.  */
 
-static void
+static unsigned int
 copy_loop_headers (void)
 {
   struct loops *loops;
@@ -131,25 +131,20 @@ copy_loop_headers (void)
   basic_block *bbs, *copied_bbs;
   unsigned n_bbs;
   unsigned bbs_size;
-  bool copied_p;
 
-  loops = loop_optimizer_init (dump_file);
+  loops = loop_optimizer_init (LOOPS_HAVE_PREHEADERS
+			       | LOOPS_HAVE_SIMPLE_LATCHES);
   if (!loops)
-    return;
-  
-  /* We do not try to keep the information about irreducible regions
-     up-to-date.  */
-  loops->state &= ~LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS;
+    return 0;
 
 #ifdef ENABLE_CHECKING
   verify_loop_structure (loops);
 #endif
 
-  bbs = xmalloc (sizeof (basic_block) * n_basic_blocks);
-  copied_bbs = xmalloc (sizeof (basic_block) * n_basic_blocks);
+  bbs = XNEWVEC (basic_block, n_basic_blocks);
+  copied_bbs = XNEWVEC (basic_block, n_basic_blocks);
   bbs_size = n_basic_blocks;
 
-  copied_p = 0;
   for (i = 1; i < loops->num; i++)
     {
       /* Copy at most 20 insns.  */
@@ -203,12 +198,31 @@ copy_loop_headers (void)
 
       entry = loop_preheader_edge (loop);
 
-      if (tree_duplicate_sese_region (entry, exit, bbs, n_bbs, copied_bbs))
-	copied_p = true;
-      else
+      if (!tree_duplicate_sese_region (entry, exit, bbs, n_bbs, copied_bbs))
 	{
 	  fprintf (dump_file, "Duplication failed.\n");
 	  continue;
+	}
+
+      /* If the loop has the form "for (i = j; i < j + 10; i++)" then
+	 this copying can introduce a case where we rely on undefined
+	 signed overflow to eliminate the preheader condition, because
+	 we assume that "j < j + 10" is true.  We don't want to warn
+	 about that case for -Wstrict-overflow, because in general we
+	 don't warn about overflow involving loops.  Prevent the
+	 warning by setting TREE_NO_WARNING.  */
+      if (warn_strict_overflow > 0)
+	{
+	  unsigned int i;
+
+	  for (i = 0; i < n_bbs; ++i)
+	    {
+	      tree last;
+
+	      last = last_stmt (copied_bbs[i]);
+	      if (TREE_CODE (last) == COND_EXPR)
+		TREE_NO_WARNING (last) = 1;
+	    }
 	}
 
       /* Ensure that the latch and the preheader is simple (we know that they
@@ -217,13 +231,11 @@ copy_loop_headers (void)
       loop_split_edge_with (loop_latch_edge (loop), NULL);
     }
 
-  if (copied_p)
-    update_ssa (TODO_update_ssa);
-
   free (bbs);
   free (copied_bbs);
 
-  loop_optimizer_finalize (loops, NULL);
+  loop_optimizer_finalize (loops);
+  return 0;
 }
 
 static bool
