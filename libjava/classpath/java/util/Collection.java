@@ -83,7 +83,10 @@ package java.util;
  * @since 1.2
  * @status updated to 1.5 (minus generics)
  */
-public interface Collection extends Iterable
+public interface Collection
+/*#if not ULIBGCJ*/
+  extends Iterable
+/*#endif*/
 {
   /**
    * Add an element to this collection.

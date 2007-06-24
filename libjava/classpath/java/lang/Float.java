@@ -179,9 +179,14 @@ public final class Float extends Number implements Comparable
    */
   public static String toString(float f)
   {
+/*#if ULIBGCJ
+  return Double.toString(f);
+  #else*/
     return VMDouble.toString(f, true);
+/*#endif*/
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Convert a float value to a hexadecimal string.  This converts as
    * follows:
@@ -258,6 +263,7 @@ public final class Float extends Number implements Comparable
     result.append(Integer.toString(exponent));
     return result.toString();
   }
+/*#endif*/
 
   /**
    * Creates a new <code>Float</code> object using the <code>String</code>.
@@ -480,7 +486,11 @@ public final class Float extends Number implements Comparable
    */
   public int hashCode()
   {
+    /*#if ULIBGCJ
+      return (int) value;
+      #else*/
     return floatToIntBits(value);
+    /*#endif*/
   }
 
   /**
@@ -512,6 +522,7 @@ public final class Float extends Number implements Comparable
     return isNaN(value) && isNaN(f);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Convert the float to the IEEE 754 floating-point "single format" bit
    * layout. Bit 31 (the most significant) is the sign bit, bits 30-23
@@ -565,6 +576,7 @@ public final class Float extends Number implements Comparable
   {
     return VMFloat.intBitsToFloat(bits);
   }
+/*#endif*/
 
   /**
    * Compare two Floats numerically by comparing their <code>float</code>

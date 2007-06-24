@@ -48,7 +48,10 @@ package java.io;
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Tom Tromey (tromey@cygnus.com)
   */
-public abstract class OutputStream implements Closeable, Flushable
+public abstract class OutputStream
+/*#if not ULIBGCJ*/
+  implements Closeable, Flushable
+/*#endif*/
 {
   /**
    * This is the default no-argument constructor for this class.  This method

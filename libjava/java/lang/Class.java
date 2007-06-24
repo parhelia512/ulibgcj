@@ -89,9 +89,9 @@ import gnu.java.net.protocol.core.CoreInputStream;
  * @since 1.0
  * @see ClassLoader
  */
-public final class Class implements Type, GenericDeclaration
+public final class Class
 /*#if not ULIBGCJ*/
-   , Serializable
+   implements Type, GenericDeclaration, Serializable
 /*#endif*/
 {
   /**
@@ -130,11 +130,13 @@ public final class Class implements Type, GenericDeclaration
   private static Class forName (String className, Class caller)
     throws ClassNotFoundException
   {
+/*#if ULIBGCJ
+    return forName(className, true, null);
+  #else*/
     return forName(className, true, caller.getClassLoaderInternal());
+/*#endif*/
   }
 
-
-/*#if not ULIBGCJ*/
   /**
    * Use the specified classloader to load and link a class. If the loader
    * is null, this uses the bootstrap class loader (provide the security
@@ -163,6 +165,7 @@ public final class Class implements Type, GenericDeclaration
 				      ClassLoader loader)
     throws ClassNotFoundException;
   
+/*#if not ULIBGCJ*/
   /**
    * Get all the public member classes and interfaces declared in this
    * class or inherited from superclasses. This returns an array of length
@@ -990,6 +993,7 @@ public final class Class implements Type, GenericDeclaration
     return null;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Returns the constructor which immediately encloses this class.  If
    * this class is a top-level class, or a local or anonymous class
@@ -1043,6 +1047,7 @@ public final class Class implements Type, GenericDeclaration
     // FIXME - provide real implementation.
     return new TypeVariable[0];
   }
+/*#endif*/
 
   /**
    * Returns true if this class is an <code>Enum</code>.

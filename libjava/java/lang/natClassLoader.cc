@@ -496,11 +496,13 @@ static _Jv_IDispatchTable *array_idt = NULL;
 static jshort array_depth = 0;
 static jclass *array_ancestors = NULL;
 
+#ifndef JV_ULIBGCJ
 static jclass interfaces[] =
 {
   &java::lang::Cloneable::class$,
   &java::io::Serializable::class$
 };
+#endif//JV_ULIBGCJ
 
 // Create a class representing an array of ELEMENT and store a pointer to it
 // in element->arrayclass. LOADER is the ClassLoader which _initiated_ the 

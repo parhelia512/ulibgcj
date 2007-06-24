@@ -41,7 +41,9 @@ package java.lang;
 
 import gnu.gcj.RawData;
 import gnu.gcj.RawDataManaged;
+/*#if not ULIBGCJ*/
 import gnu.java.util.WeakIdentityHashMap;
+/*#endif*/
 import java.util.Map;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
@@ -141,6 +143,7 @@ public class Thread implements Runnable
   /** The next thread ID to use.  */
   private static long nextThreadId;
 
+/*#if not ULIBGCJ*/
   /** The default exception handler.  */
   private static UncaughtExceptionHandler defaultHandler;
 
@@ -151,6 +154,7 @@ public class Thread implements Runnable
 
   /** The uncaught exception handler.  */
   UncaughtExceptionHandler exceptionHandler;
+/*#endif*/
 
   /** The access control state for this thread.  Package accessible
     * for use by java.security.VMAccessControlState's native method.
@@ -996,6 +1000,7 @@ public class Thread implements Runnable
 
   private final native static String gen_name();
 
+/*#if not ULIBGCJ*/
   /**
    * Returns the map used by ThreadLocal to store the thread local values.
    */
@@ -1094,6 +1099,7 @@ public class Thread implements Runnable
   {
     return defaultHandler;
   }
+/*#endif*/
   
   /** 
    * Returns the unique identifier for this thread.  This ID is generated

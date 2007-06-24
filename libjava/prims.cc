@@ -1832,6 +1832,7 @@ _Jv_CheckAccess (jclass self_klass, jclass other_klass, jint flags)
 					   other_klass->name)));
 }
 
+#ifndef JV_ULIBGCJ
 // Prepend GCJ_VERSIONED_LIBDIR to a module search path stored in a C
 // char array, if the path is not already prefixed by
 // GCJ_VERSIONED_LIBDIR.  Return a newly JvMalloc'd char buffer.  The
@@ -1876,3 +1877,4 @@ _Jv_PrependVersionedLibdir (char* libpath)
 
   return retval;
 }
+#endif // not JV_ULIBGCJ

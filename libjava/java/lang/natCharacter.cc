@@ -110,6 +110,7 @@ java::lang::Character::toLowerCase(jchar ch)
   return (jchar) (ch + lower[0][readChar(ch) >> 7]);
 }
 
+#ifndef JV_ULIBGCJ
 jint
 java::lang::Character::toLowerCase(jint codePoint)
 {
@@ -118,6 +119,7 @@ java::lang::Character::toLowerCase(jint codePoint)
     return codePoint;
   return (lower[plane][readCodePoint(codePoint) >> 7]) + codePoint;
 }
+#endif//JV_ULIBGCJ
 
 jchar
 java::lang::Character::toUpperCase(jchar ch)
@@ -125,6 +127,7 @@ java::lang::Character::toUpperCase(jchar ch)
   return (jchar) (ch + upper[0][readChar(ch) >> 7]);
 }
 
+#ifndef JV_ULIBGCJ
 jint
 java::lang::Character::toUpperCase(jint codePoint)
 {
@@ -134,7 +137,6 @@ java::lang::Character::toUpperCase(jint codePoint)
   return (upper[plane][readCodePoint(codePoint) >> 7]) + codePoint;
 }
 
-#ifndef JV_ULIBGCJ
 jchar
 java::lang::Character::toTitleCase(jchar ch)
 {
@@ -174,6 +176,7 @@ java::lang::Character::digit(jchar ch, jint radix)
   return (jint) -1;
 }
 
+#ifndef JV_ULIBGCJ
 jint
 java::lang::Character::digit(jint codePoint, jint radix)
 {
@@ -200,7 +203,6 @@ java::lang::Character::digit(jint codePoint, jint radix)
 
 }
 
-#ifndef JV_ULIBGCJ
 jint
 java::lang::Character::getNumericValue(jchar ch)
 {

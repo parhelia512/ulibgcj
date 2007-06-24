@@ -38,8 +38,8 @@ exception statement from your version. */
 
 package java.lang;
 
-import gnu.classpath.SystemProperties;
 /*#if not ULIBGCJ*/
+import gnu.classpath.SystemProperties;
 import gnu.java.util.DoubleEnumeration;
 import gnu.java.util.EmptyEnumeration;
 

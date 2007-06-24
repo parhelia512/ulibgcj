@@ -301,6 +301,7 @@ headers/java/lang/Thread.h: classes/java/lang/Thread.class
 		-prepend 'void _Jv_ThreadRun (java::lang::Thread* thread);' \
 		-prepend 'jint _Jv_AttachCurrentThread(java::lang::Thread* thread);' \
 		-prepend 'java::lang::Thread* _Jv_AttachCurrentThread (jstring name, java::lang::ThreadGroup* group);' \
+	  -prepend '_Jv_Thread_t* _Jv_ThreadGetData (java::lang::Thread* thread);' \
 		-prepend 'java::lang::Thread* _Jv_AttachCurrentThreadAsDaemon (jstring name, java::lang::ThreadGroup* group);' \
 		-prepend 'jint _Jv_DetachCurrentThread ();' \
 		-friend '_Jv_JNIEnv * ::_Jv_GetCurrentJNIEnv ();' \
@@ -308,6 +309,7 @@ headers/java/lang/Thread.h: classes/java/lang/Thread.class
 		-friend 'void ::_Jv_ThreadRun (java::lang::Thread* thread);' \
 		-friend 'jint (::_Jv_AttachCurrentThread) (java::lang::Thread* thread);' \
 		-friend 'java::lang::Thread* ::_Jv_AttachCurrentThread (jstring name, java::lang::ThreadGroup* group);' \
+	  -friend '_Jv_Thread_t* ::_Jv_ThreadGetData (java::lang::Thread* thread);' \
 		-friend 'java::lang::Thread* ::_Jv_AttachCurrentThreadAsDaemon (jstring name, java::lang::ThreadGroup* group);' \
 		-friend 'jint (::_Jv_DetachCurrentThread) ();' \
 		java/lang/Thread
@@ -345,7 +347,7 @@ $(native_objects): objects/%.o: %.cc
 	$(CXXCOMPILE) -o $(@) -c $(<)
 
 libgcj-$(gcc_version).jar: $(classes)
-	cd classes; $(ZIP) -cfM ../libgcj-$(gcc_version).jar gnu java
+	cd classes; $(JAR) -cfM ../libgcj-$(gcc_version).jar gnu java
 
 clean:
 	rm -rf $(libulibgcj_a_OBJECTS) objects classes headers processed \

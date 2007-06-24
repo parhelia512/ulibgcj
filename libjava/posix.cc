@@ -22,7 +22,9 @@ details.  */
 #endif
 
 #include <jvm.h>
+#ifndef JV_ULIBGCJ
 #include <java-stack.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/Thread.h>
 #ifndef JV_ULIBGCJ
 #include <java/io/InterruptedIOException.h>

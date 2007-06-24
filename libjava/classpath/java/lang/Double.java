@@ -167,11 +167,18 @@ public final class Double extends Number implements Comparable
    * @param d the <code>double</code> to convert
    * @return the <code>String</code> representing the <code>double</code>
    */
+/*#if ULIBGCJ
+  public static String toString(double d) {
+    return "<not implemented>";
+  }  
+  #else*/
   public static String toString(double d)
   {
     return VMDouble.toString(d, false);
   }
+/*#endif*/
 
+/*#if not ULIBGCJ*/
   /**
    * Convert a double value to a hexadecimal string.  This converts as
    * follows:
@@ -246,6 +253,7 @@ public final class Double extends Number implements Comparable
     result.append(Long.toString(exponent));
     return result.toString();
   }
+/*#endif*/
 
   /**
    * Returns a <code>Double</code> object wrapping the value.
@@ -327,10 +335,17 @@ public final class Double extends Number implements Comparable
    * @see #NEGATIVE_INFINITY
    * @since 1.2
    */
+/*#if ULIBGCJ
+  public static double parseDouble(String str) {
+    return 0.0;
+  }
+#else*/
   public static double parseDouble(String str)
   {
     return VMDouble.parseDouble(str);
   }
+/*#endif*/
+
 
   /**
    * Return <code>true</code> if the <code>double</code> has the same
@@ -468,7 +483,11 @@ public final class Double extends Number implements Comparable
    */
   public int hashCode()
   {
+    /*#if ULIBGCJ
+      long v = (long) value;
+      #else*/
     long v = doubleToLongBits(value);
+    /*#endif*/
     return (int) (v ^ (v >>> 32));
   }
 
@@ -501,6 +520,7 @@ public final class Double extends Number implements Comparable
     return isNaN(value) && isNaN(d);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Convert the double to the IEEE 754 floating-point "double format" bit
    * layout. Bit 63 (the most significant) is the sign bit, bits 62-52
@@ -556,6 +576,7 @@ public final class Double extends Number implements Comparable
   {
     return VMDouble.longBitsToDouble(bits);
   }
+/*#endif*/
 
   /**
    * Compare two Doubles numerically by comparing their <code>double</code>

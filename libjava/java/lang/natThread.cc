@@ -245,8 +245,10 @@ java::lang::Thread::finish_ ()
   // If a method cache was created, free it.
   _Jv_FreeMethodCache();
 
+#ifndef JV_ULIBGCJ
   // Clear out thread locals.
   locals = NULL;
+#endif//JV_ULIBGCJ
 
   // Signal any threads that are waiting to join() us.
   _Jv_MutexLock (&nt->join_mutex);
