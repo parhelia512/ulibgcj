@@ -18,10 +18,12 @@ details.  */
 #include <java-stack.h>
 
 #include <java/lang/ArithmeticException.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/UnsupportedOperationException.h>
 #include <java/io/IOException.h>
 #include <java/net/SocketException.h>
 #include <java/util/Properties.h>
+#endif//JV_ULIBGCJ
 
 static LONG CALLBACK
 win32_exception_handler (LPEXCEPTION_POINTERS e)
@@ -145,6 +147,7 @@ _Jv_Win32TempString::~_Jv_Win32TempString()
     _Jv_Free (buf_);
 }
 
+#ifndef JV_ULIBGCJ
 // class WSAEventWrapper
 WSAEventWrapper::WSAEventWrapper ():
   m_hEvent(0),
@@ -185,6 +188,7 @@ WSAEventWrapper::~WSAEventWrapper ()
   }
   WSACloseEvent (m_hEvent);
 }
+#endif//JV_ULIBGCJ
 
 // Error string text.
 jstring
@@ -231,6 +235,7 @@ _Jv_WinStrError (int nErrorCode)
   return _Jv_WinStrError (0, nErrorCode);
 }
 
+#ifndef JV_ULIBGCJ
 void _Jv_ThrowIOException (DWORD dwErrorCode)
 {
   throw new java::io::IOException (_Jv_WinStrError (dwErrorCode));
@@ -252,16 +257,19 @@ void _Jv_ThrowSocketException()
   DWORD dwErrorCode = WSAGetLastError ();
   _Jv_ThrowSocketException (dwErrorCode);
 }
+#endif//JV_ULIBGCJ
 
 // Platform-specific VM initialization.
 void
 _Jv_platform_initialize (void)
 {
+#ifndef JV_ULIBGCJ
   // Initialise winsock for networking
   WSADATA data;
   if (WSAStartup (MAKEWORD (2, 2), &data))
     MessageBox (NULL, _T("Error initialising winsock library."), _T("Error"),
     MB_OK | MB_ICONEXCLAMATION);
+#endif//JV_ULIBGCJ
 
   // Install exception handler
   SetUnhandledExceptionFilter (win32_exception_handler);
@@ -295,6 +303,7 @@ static bool dirExists (LPCTSTR dir)
     (dwAttrs & FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
 
+#ifndef JV_ULIBGCJ
 static void getUserHome(LPTSTR userHome, LPCTSTR userId)
 {
   LPTSTR uh = _tgetenv (_T("USERPROFILE"));
@@ -435,6 +444,7 @@ _Jv_pipe (int filedes[2])
 {
   return _pipe (filedes, 4096, _O_BINARY);
 }
+#endif//JV_ULIBGCJ
 
 void
 _Jv_platform_close_on_exec (HANDLE h)

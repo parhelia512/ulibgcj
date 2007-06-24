@@ -221,6 +221,7 @@ extern "Java"
       class StringBuilder;
       class StringIndexOutOfBoundsException;
       class System;
+      class System$Output;
       class Thread;
       class Thread$UncaughtExceptionHandler;
       class ThreadDeath;

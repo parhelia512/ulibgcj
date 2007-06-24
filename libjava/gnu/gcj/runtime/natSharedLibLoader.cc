@@ -29,6 +29,7 @@ details.  */
 # define GC_DEBUG
 #endif
 #include <gc.h>
+#undef STRICT
 #endif /* HAVE_BOEHM_GC */
 
 #ifdef HAVE_DLOPEN

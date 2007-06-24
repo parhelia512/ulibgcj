@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.lang;
 
 import java.io.InputStream;
+/*#if not ULIBGCJ*/
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -52,6 +53,12 @@ import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+/*#endif*/
+
+/*#if ULIBGCJ
+import gnu.gcj.Core;
+import gnu.java.net.protocol.core.CoreInputStream;
+  #endif*/
 
 /**
  * A Class represents a Java type.  There will never be multiple Class
@@ -82,7 +89,10 @@ import java.util.HashSet;
  * @since 1.0
  * @see ClassLoader
  */
-public final class Class implements Type, GenericDeclaration, Serializable
+public final class Class implements Type, GenericDeclaration
+/*#if not ULIBGCJ*/
+   , Serializable
+/*#endif*/
 {
   /**
    * Class is non-instantiable from Java code; only the VM can create
@@ -95,8 +105,10 @@ public final class Class implements Type, GenericDeclaration, Serializable
   // Initialize the class.
   private native void initializeClass ();
 
+/*#if not ULIBGCJ*/
   // finalization
   protected native void finalize () throws Throwable;
+/*#endif*/
 
   /**
    * Use the classloader of the current class to load, link, and initialize
@@ -122,6 +134,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
   }
 
 
+/*#if not ULIBGCJ*/
   /**
    * Use the specified classloader to load and link a class. If the loader
    * is null, this uses the bootstrap class loader (provide the security
@@ -574,6 +587,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @since 1.1
    */
   public native int getModifiers ();
+/*#endif*/
   
   /**
    * Get the name of this class, separated by dots for package separators.
@@ -604,6 +618,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    */
   public native String getName ();
 
+/*#if not ULIBGCJ*/
   /**
    * Get a resource URL using this class's package using the
    * getClassLoader().getResource() method.  If this class was loaded using
@@ -630,6 +645,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
       return ClassLoader.getSystemResource(name);
     return loader.getResource(name);
   }
+/*#endif*/
 
   /**
    * Get a resource using this class's package using the
@@ -652,11 +668,16 @@ public final class Class implements Type, GenericDeclaration, Serializable
    */
   public InputStream getResourceAsStream(String resourceName)
   {
+/*#if ULIBGCJ   
+    Core core = Core.find(resourcePath(resourceName));
+    return (core == null ? null : new CoreInputStream(core));
+  #else*/
     String name = resourcePath(resourceName);
     ClassLoader loader = getClassLoaderInternal();
     if (loader == null)
       return ClassLoader.getSystemResourceAsStream(name);
     return loader.getResourceAsStream(name);
+//#endif
   }
 
   private String resourcePath(String resourceName)
@@ -677,6 +698,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
     return resourceName;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Get the signers of this class. This returns null if there are no signers,
    * such as for primitive types or void.
@@ -764,6 +786,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @since 1.1
    */
   public native boolean isPrimitive ();
+/*#endif*/
   
   /**
    * Get a new instance of this class by calling the no-argument constructor.
@@ -785,6 +808,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
   public native Object newInstance ()
     throws InstantiationException, IllegalAccessException;
 
+/*#if not ULIBGCJ*/
   // We need a native method to retrieve the protection domain, because we
   // can't add fields to java.lang.Class that are accessible from Java.
   private native ProtectionDomain getProtectionDomain0();
@@ -898,6 +922,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
       }
     return c.defaultAssertionStatus;
   }
+/*#endif*/
 
   /**
    * Strip the last portion of the name (after the last dot).
@@ -913,6 +938,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
     return name.substring(0, lastInd);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Perform security checks common to all of the methods that
    * get members of this Class.
@@ -928,6 +954,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
 	  sm.checkPackageAccess(pkg.getName());
       }
   }
+/*#endif*/
 
   /**
    * Returns the simple name for this class, as used in the source

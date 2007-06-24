@@ -68,6 +68,7 @@ package java.util;
  */
 public interface Set extends Collection
 {
+/*if not ULIBGCJ*/
   /**
    * Adds the specified element to the set if it is not already present
    * (optional operation). In particular, the comparison algorithm is
@@ -261,4 +262,5 @@ public interface Set extends Collection
    * @see #toArray()
    */
   Object[] toArray(Object[] a);
+/*endif*/
 }

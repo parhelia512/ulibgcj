@@ -42,6 +42,11 @@ package java.util;
 import java.io.IOException;
 import java.io.InputStream;
 
+/*#if ULIBGCJ
+import gnu.gcj.Core;
+import gnu.java.net.protocol.core.CoreInputStream;
+  #endif*/
+
 /**
  * A resource bundle contains locale-specific data. If you need localized
  * data, you can load a resource bundle that matches the locale with
@@ -101,7 +106,9 @@ public abstract class ResourceBundle
    */
   private Locale locale;
 
+/*#if not ULIBGCJ*/
   private static native ClassLoader getCallingClassLoader();
+/*#endif*/
 
   /**
    * The resource bundle cache.
@@ -216,9 +223,13 @@ public abstract class ResourceBundle
    */
   public static ResourceBundle getBundle(String baseName)
   {
+/*#if ULIBGCJ
+  ClassLoader cl = null;
+  #else*/
     ClassLoader cl = getCallingClassLoader();
     if (cl == null)
       cl = ClassLoader.getSystemClassLoader();
+/*#endif*/
     return getBundle(baseName, Locale.getDefault(), cl);
   }
 
@@ -236,9 +247,13 @@ public abstract class ResourceBundle
    */
   public static ResourceBundle getBundle(String baseName, Locale locale)
   {
+/*#if ULIBGCJ
+  ClassLoader cl = null;
+  #else*/
     ClassLoader cl = getCallingClassLoader();
     if (cl == null)
       cl = ClassLoader.getSystemClassLoader();
+/*#endif*/
     return getBundle(baseName, locale, cl);
   }
 
@@ -263,8 +278,12 @@ public abstract class ResourceBundle
       baseName = s;
       locale = l;
       classLoader = cl;
+/*#if ULIBGCJ
+      hashcode = baseName.hashCode() ^ locale.hashCode();
+  #else*/
       hashcode = baseName.hashCode() ^ locale.hashCode() ^
         classLoader.hashCode();
+/*#endif*/
     }
     
     public int hashCode()
@@ -455,6 +474,19 @@ public abstract class ResourceBundle
   private static ResourceBundle tryBundle(String localizedName,
                                           ClassLoader classloader)
   {
+    /*#if ULIBGCJ
+      try {
+	String resourceName = localizedName.replace('.', '/') + ".properties";
+        Core core = Core.find(resourceName);
+        if (core == null) return null;
+        return new PropertyResourceBundle(new CoreInputStream(core));
+      } catch (IOException e) {
+        MissingResourceException mre = new MissingResourceException
+          ("Failed to load bundle: " + localizedName, localizedName, "");
+        mre.initCause(e);
+        throw mre;
+      }
+      #else*/
     ResourceBundle bundle = null;
     try
       {
@@ -500,6 +532,7 @@ public abstract class ResourceBundle
       }
 
     return bundle;
+    /*#endif*/
   }
 
   /**

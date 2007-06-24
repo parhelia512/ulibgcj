@@ -39,13 +39,19 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+/*#endif*/
 import java.lang.Comparable;
+/*#if not ULIBGCJ*/
 import java.util.Comparator;
+/*#endif*/
 import java.util.Locale;
+/*#if not ULIBGCJ*/
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+/*#endif*/
 
 /**
  * Strings represent an immutable set of characters.  All String literals
@@ -73,16 +79,23 @@ import java.util.regex.PatternSyntaxException;
  * @since 1.0
  * @status updated to 1.4
  */
-public final class String implements Serializable, Comparable, CharSequence
+public final class String
+/*#if ULIBGCJ
+  implements Comparable
+#else*/
+  implements Serializable, Comparable, CharSequence
+/*#endif*/
 {
   // WARNING: String is a CORE class in the bootstrap cycle. See the comments
   // in vm/reference/java/lang/Runtime for implications of this fact.
 
+/*#if not ULIBGCJ*/
   /**
    * This is probably not necessary because this class is special cased already
    * but it will avoid showing up as a discrepancy when comparing SUIDs.
    */
   private static final long serialVersionUID = -6849794470754667710L;
+/*#endif*/
 
   /**
    * This is the object that holds the characters that make up the
@@ -112,6 +125,7 @@ public final class String implements Serializable, Comparable, CharSequence
    */
   private int cachedHashCode;
 
+/*#if not ULIBGCJ*/
   /**
    * An implementation for {@link CASE_INSENSITIVE_ORDER}.
    * This must be {@link Serializable}. The class name is dictated by
@@ -158,6 +172,7 @@ public final class String implements Serializable, Comparable, CharSequence
    */
   public static final Comparator CASE_INSENSITIVE_ORDER
     = new CaseInsensitiveComparator();
+/*#endif*/
 
   /**
    * Creates an empty String (length 0). Unless you really need a new object,
@@ -269,6 +284,7 @@ public final class String implements Serializable, Comparable, CharSequence
     init(ascii, hibyte, 0, ascii.length);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Creates a new String using the portion of the byte array starting at the
    * offset and ending at offset + count. Uses the specified encoding type
@@ -318,6 +334,7 @@ public final class String implements Serializable, Comparable, CharSequence
   {
     this(data, 0, data.length, encoding);
   }
+/*#endif*/
 
   /**
    * Creates a new String using the portion of the byte array starting at the
@@ -339,6 +356,9 @@ public final class String implements Serializable, Comparable, CharSequence
    */
   public String(byte[] data, int offset, int count)
   {
+/*#if ULIBGCJ
+    init (data, offset, count, null);
+  #else*/
     try
       {
 	init (data, offset, count,
@@ -356,6 +376,7 @@ public final class String implements Serializable, Comparable, CharSequence
 	    // We know this can't happen.
 	  }
       }
+/*#endif*/
   }
 
   /**
@@ -454,6 +475,7 @@ public final class String implements Serializable, Comparable, CharSequence
    */
   public native char charAt(int index);
 
+/*#if not ULIBGCJ*/
   /**
    * Get the code point at the specified index.  This is like #charAt(int),
    * but if the character is the start of a surrogate pair, and the
@@ -487,6 +509,7 @@ public final class String implements Serializable, Comparable, CharSequence
     // this way.
     return Character.codePointBefore(this, index);
   }
+/*#endif*/
 
   /**
    * Copies characters from this String starting at a specified start index,
@@ -506,6 +529,7 @@ public final class String implements Serializable, Comparable, CharSequence
   public native void getChars(int srcBegin, int srcEnd,
 			      char[] dst, int dstBegin);
 
+/*#if not ULIBGCJ*/
   /**
    * Copies the low byte of each character from this String starting at a
    * specified start index, ending at a specified stop index, to a byte array
@@ -543,6 +567,7 @@ public final class String implements Serializable, Comparable, CharSequence
    */
   public native byte[] getBytes(String enc)
     throws UnsupportedEncodingException;
+/*#endif*/
 
   /**
    * Converts the Unicode characters in this String to a byte array. Uses the
@@ -554,6 +579,9 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return the resulting byte array, or null on a problem
    * @since 1.1
    */
+/*#if ULIBGCJ
+  public native byte[] getBytes();
+  #else*/
   public byte[] getBytes()
   {
     try
@@ -576,6 +604,7 @@ public final class String implements Serializable, Comparable, CharSequence
 	  }
       }
   }
+/*#endif*/
 
   /**
    * Predicate which compares anObject to this. This is true only for Strings
@@ -588,6 +617,7 @@ public final class String implements Serializable, Comparable, CharSequence
    */
   public native boolean equals(Object anObject);
 
+/*#if not ULIBGCJ*/
   /**
    * Compares the given StringBuffer to this String. This is true if the
    * StringBuffer has the same content as this String at this moment.
@@ -610,6 +640,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @since 1.5
    */
   public native boolean contentEquals(CharSequence seq);
+/*#endif*/
 
   /**
    * Compares a String to this String, ignoring case. This does not handle
@@ -662,6 +693,7 @@ public final class String implements Serializable, Comparable, CharSequence
     return compareTo((String) o);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Compares this String and another String (case insensitive). This
    * comparison is <em>similar</em> to equalsIgnoreCase, in that it ignores
@@ -681,6 +713,7 @@ public final class String implements Serializable, Comparable, CharSequence
     return this.toUpperCase().toLowerCase().compareTo(
      str.toUpperCase().toLowerCase());
   }  
+/*#endif*/
 
   /**
    * Predicate which determines if this String matches another String
@@ -903,6 +936,7 @@ public final class String implements Serializable, Comparable, CharSequence
    */
   public native String substring(int begin, int end);
 
+/*#if not ULIBGCJ*/
   /**
    * Creates a substring of this String, starting at a specified index
    * and ending at one character before a specified index. This behaves like
@@ -929,6 +963,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @throws NullPointerException if str is null
    */
   public native String concat(String str);
+/*#endif*/
 
   /**
    * Replaces every instance of a character in this String with a new
@@ -940,6 +975,7 @@ public final class String implements Serializable, Comparable, CharSequence
    */
   public native String replace(char oldChar, char newChar);
 
+/*#if not ULIBGCJ*/
   /**
    * Test if this String matches a regular expression. This is shorthand for
    * <code>{@link Pattern}.matches(regex, this)</code>.
@@ -1057,6 +1093,7 @@ public final class String implements Serializable, Comparable, CharSequence
   {
     return Pattern.compile(regex).split(this, 0);
   }
+/*#endif*/
 
   /**
    * Lowercases this String according to a particular locale. This uses
@@ -1161,6 +1198,7 @@ public final class String implements Serializable, Comparable, CharSequence
     return obj == null ? "null" : obj.toString();
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Returns a String representation of a character array. Subsequent
    * changes to the array do not affect the String.
@@ -1229,6 +1267,7 @@ public final class String implements Serializable, Comparable, CharSequence
   {
     return copyValueOf (data, 0, data.length);
   }
+/*#endif*/
 
   /**
    * Returns a String representing a boolean.
@@ -1294,6 +1333,7 @@ public final class String implements Serializable, Comparable, CharSequence
     return Double.toString(d);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Fetches this String from the intern hashtable. If two Strings are
    * considered equal, by the equals() method, then intern() will return the
@@ -1386,12 +1426,16 @@ public final class String implements Serializable, Comparable, CharSequence
       }
     return result.toString();
   }
+/*#endif*/
 
 
   private native void init(char[] chars, int offset, int count,
 			   boolean dont_copy);
   private native void init(byte[] chars, int hibyte, int offset, int count);
   private native void init(byte[] chars, int offset, int count, String enc)
-    throws UnsupportedEncodingException;
+/*#if not ULIBGCJ*/
+    throws UnsupportedEncodingException
+/*#endif*/
+           ;
   private native void init(gnu.gcj.runtime.StringBuffer buffer);
 }

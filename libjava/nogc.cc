@@ -154,7 +154,7 @@ _Jv_AllocTraceOne (jsize size /* includes vtable slot */)
 {
   void *obj = calloc(size, 1);
   if (!obj) _Jv_ThrowNoMemory();
-  return result;
+  return obj;
 }
 
 void *
@@ -162,7 +162,7 @@ _Jv_AllocTraceTwo (jsize size /* includes vtable slot */)
 {
   void *obj = calloc(size, 1);
   if (!obj) _Jv_ThrowNoMemory();
-  return result;
+  return obj;
 }
 #endif /* JV_HASH_SYNCHRONIZATION */
 

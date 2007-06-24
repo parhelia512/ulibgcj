@@ -38,12 +38,14 @@ exception statement from your version. */
 
 package java.util;
 
+/*#if not ULIBGCJ*/
 import gnu.classpath.SystemProperties;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+/*#endif*/
 
 /**
  * Locales represent a specific country and culture. Classes which can be
@@ -82,8 +84,12 @@ import java.io.Serializable;
  * @since 1.1
  * @status updated to 1.4
  */
-public final class Locale implements Serializable, Cloneable
+public final class Locale
+/*#if not ULIBGCJ*/
+  implements Serializable, Cloneable
+/*#endif*/
 {
+/*#if not ULIBGCJ*/
   /** Locale which represents the English language. */
   public static final Locale ENGLISH = getLocale("en");
 
@@ -163,6 +169,7 @@ public final class Locale implements Serializable, Cloneable
    * Compatible with JDK 1.1+.
    */
   private static final long serialVersionUID = 9149081749638150636L;
+/*#endif*/
 
   /**
    * The language code, as returned by getLanguage().
@@ -197,10 +204,14 @@ public final class Locale implements Serializable, Cloneable
    * null. Note the logic in the main constructor, to detect when
    * bootstrapping has completed.
    */
+/*#if ULIBGCJ
+  private static Locale defaultLocale = getLocale("en", "", "");
+  #else*/
   private static Locale defaultLocale =
     getLocale(SystemProperties.getProperty("user.language", "en"),
               SystemProperties.getProperty("user.region", ""),
               SystemProperties.getProperty("user.variant", ""));
+/*#endif*/
 
   /**
    * Retrieves the locale with the specified language from the cache.
@@ -240,6 +251,7 @@ public final class Locale implements Serializable, Cloneable
     return new Locale(language, region, variant);
   }
   
+  /*#if not ULIBGCJ*/
   /**
    * Convert new iso639 codes to the old ones.
    *
@@ -256,6 +268,7 @@ public final class Locale implements Serializable, Cloneable
       return "iw,in,ji".substring(index, index + 2);
     return language;
   }
+  /*#endif*/
 
   /**
    * Creates a new locale for the given language and country.
@@ -271,12 +284,14 @@ public final class Locale implements Serializable, Cloneable
     // the correct capitalization, and not null. We can't call
     // String.toUpperCase during this time, since that depends on the
     // default locale.
+    /*#if not ULIBGCJ*/
     if (defaultLocale != null)
       {
         language = convertLanguage(language).intern();
         country = country.toUpperCase().intern();
         variant = variant.intern();
       }
+    /*#endif*/
     this.language = language;
     this.country = country;
     this.variant = variant;
@@ -320,6 +335,7 @@ public final class Locale implements Serializable, Cloneable
     return defaultLocale;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Changes the default locale. Normally only called on program start up.
    * Note that this doesn't change the locale for other programs. This has
@@ -416,6 +432,7 @@ public final class Locale implements Serializable, Cloneable
       "uz", "vi", "vo", "wo", "xh", "yi", "yo", "za", "zh", "zu"
     };
   }
+/*#endif*/
 
   /**
    * Returns the language code of this locale. Some language codes have changed
@@ -471,6 +488,7 @@ public final class Locale implements Serializable, Cloneable
     return result.toString();
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Returns the three-letter ISO language abbrevation of this locale.
    *
@@ -792,6 +810,7 @@ public final class Locale implements Serializable, Cloneable
     // This class is final, so no need to use native super.clone().
     return new Locale(language, country, variant);
   }
+/*#endif*/
 
   /**
    * Return the hash code for this locale. The hashcode is the logical
@@ -826,6 +845,7 @@ public final class Locale implements Serializable, Cloneable
             && variant == l.variant);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Write the locale to an object stream.
    *
@@ -861,4 +881,5 @@ public final class Locale implements Serializable, Cloneable
     variant = variant.intern();
     hashcode = language.hashCode() ^ country.hashCode() ^ variant.hashCode();
   }
+/*#endif*/
 } // class Locale

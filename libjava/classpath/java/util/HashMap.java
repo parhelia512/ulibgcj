@@ -39,10 +39,12 @@ exception statement from your version. */
 
 package java.util;
 
+/*#if not ULIBGCJ*/
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+/*#endif*/
 
 // NOTE: This implementation is very similar to that of Hashtable. If you fix
 // a bug in here, chances are you should make a similar change to the Hashtable
@@ -97,7 +99,11 @@ import java.io.Serializable;
  * @status updated to 1.4
  */
 public class HashMap extends AbstractMap
+/*#if ULIBGCJ
+  implements Map
+  #else*/
   implements Map, Cloneable, Serializable
+/*#endif*/
 {
   /**
    * Default number of buckets. This is the value the JDK 1.3 uses. Some
@@ -751,6 +757,7 @@ public class HashMap extends AbstractMap
       }
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Serializes this object to the given stream.
    *
@@ -805,6 +812,7 @@ public class HashMap extends AbstractMap
         addEntry(key, s.readObject(), hash(key), false);
       }
   }
+/*#endif*/
 
   /**
    * Iterate over HashMap's entries.

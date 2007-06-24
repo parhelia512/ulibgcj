@@ -38,10 +38,12 @@ exception statement from your version. */
 
 package java.util;
 
+/*#if not ULIBGCJ*/
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+/*#endif*/
 
 /**
  * This class provides a HashMap-backed implementation of the Set interface.
@@ -77,7 +79,11 @@ import java.io.Serializable;
  * @status updated to 1.4
  */
 public class HashSet extends AbstractSet
+/*#if ULIBGCJ
+  implements Set
+  #else*/
   implements Set, Cloneable, Serializable
+/*#endif*/
 {
   /**
    * Compatible with JDK 1.2.
@@ -159,6 +165,7 @@ public class HashSet extends AbstractSet
     map.clear();
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Returns a shallow copy of this Set. The Set itself is cloned; its
    * elements are not.
@@ -179,6 +186,7 @@ public class HashSet extends AbstractSet
     copy.map = (HashMap) map.clone();
     return copy;
   }
+/*#endif*/
 
   /**
    * Returns true if the supplied element is in this Set.
@@ -250,6 +258,7 @@ public class HashSet extends AbstractSet
     return new HashMap(capacity, load);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Serializes this object to the given stream.
    *
@@ -290,4 +299,5 @@ public class HashSet extends AbstractSet
     for (int size = s.readInt(); size > 0; size--)
       map.put(s.readObject(), "");
   }
+/*#endif*/
 }

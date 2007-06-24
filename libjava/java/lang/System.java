@@ -39,6 +39,7 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import gnu.classpath.SystemProperties;
 
 import java.io.BufferedInputStream;
@@ -47,9 +48,16 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+/*#endif*/
 import java.io.PrintStream;
+/*#if not ULIBGCJ*/
 import java.util.Properties;
 import java.util.PropertyPermission;
+/*#endif*/
+
+/*#if ULIBGCJ
+import java.io.OutputStream;
+  #endif*/
 
 /**
  * System represents system-wide resources; things that represent the
@@ -65,6 +73,7 @@ public final class System
   // WARNING: System is a CORE class in the bootstrap cycle. See the comments
   // in vm/reference/java/lang/Runtime for implications of this fact.
 
+/*#if not ULIBGCJ*/
   /**
    * The standard InputStream. This is assigned at startup and starts its
    * life perfectly valid. Although it is marked final, you can change it
@@ -101,6 +110,7 @@ public final class System
    */
   public static final PrintStream err
     = new PrintStream(new BufferedOutputStream(new FileOutputStream(FileDescriptor.err)), true);
+/*#endif*/
 
   /**
    * This class is uninstantiable.
@@ -109,6 +119,7 @@ public final class System
   {
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Set {@link #in} to a new InputStream. This uses some VM magic to change
    * a "final" variable, so naturally there is a security check,
@@ -191,6 +202,7 @@ public final class System
   {
     return SecurityManager.current;
   }
+/*#endif*/
 
   /**
    * Get the current time, measured in the number of milliseconds from the
@@ -250,6 +262,7 @@ public final class System
    */
   public static native int identityHashCode(Object o);
 
+/*#if not ULIBGCJ*/
   /**
    * Get all the system properties at once. A security check may be performed,
    * <code>checkPropertiesAccess</code>. Note that a security manager may
@@ -333,6 +346,7 @@ public final class System
       sm.checkPropertiesAccess();
     SystemProperties.setProperties(properties);
   }
+/*#endif*/
 
   /**
    * Get a single system property by name. A security check may be performed,
@@ -344,6 +358,11 @@ public final class System
    * @throws NullPointerException if key is null
    * @throws IllegalArgumentException if key is ""
    */
+/*#if ULIBGCJ
+  public static String getProperty(String key) {
+    return getProperty(key, null);
+  }  
+  #else*/
   public static String getProperty(String key)
   {
     SecurityManager sm = SecurityManager.current; // Be thread-safe.
@@ -353,6 +372,7 @@ public final class System
       throw new IllegalArgumentException("key can't be empty");
     return SystemProperties.getProperty(key);
   }
+/*#endif*/
 
   /**
    * Get a single system property by name. A security check may be performed,
@@ -365,6 +385,14 @@ public final class System
    * @throws NullPointerException if key is null
    * @throws IllegalArgumentException if key is ""
    */
+/*#if ULIBGCJ
+  public static String getProperty(String key, String def) {
+    if ("file.separator".equals(key)) return "/";
+    if ("line.separator".equals(key)) return "\n";
+    if ("ulibgcj.version".equals(key)) return "0.1";
+    return def;
+  }  
+  #else*/
   public static String getProperty(String key, String def)
   {
     SecurityManager sm = SecurityManager.current; // Be thread-safe.
@@ -372,7 +400,9 @@ public final class System
       sm.checkPropertyAccess(key);
     return SystemProperties.getProperty(key, def);
   }
+/*#endif*/
 
+/*#if not ULIBGCJ*/
   /**
    * Set a single system property by name. A security check may be performed,
    * <code>checkPropertyAccess(key, "write")</code>.
@@ -414,6 +444,7 @@ public final class System
       sm.checkPermission(new RuntimePermission("getenv." + name));
     return getenv0(name);
   }
+/*#endif*/
 
   /**
    * Terminate the Virtual Machine. This just calls
@@ -424,11 +455,16 @@ public final class System
    * @throws SecurityException if permission is denied
    * @see Runtime#exit(int)
    */
+/*#if ULIBGCJ
+  public static native void exit(int status);
+  #else*/
   public static void exit(int status)
   {
     Runtime.getRuntime().exit(status);
   }
+//#endif
 
+/*#if not ULIBGCJ*/
   /**
    * Calls the garbage collector. This is only a hint, and it is up to the
    * implementation what this hint suggests, but it usually causes a
@@ -557,4 +593,19 @@ public final class System
    * @see #getenv(String)
    */
   static native String getenv0(String name);
+/*#endif*/
+
+/*#if ULIBGCJ
+  private static final class Output extends OutputStream {
+    public native void write(byte[] b, int off, int len);
+
+    public native void write(int v);
+
+    public native void flush();
+  }
+
+  public static final PrintStream out = new PrintStream(new Output());
+  public static final PrintStream err = out;
+#endif*/
+
 } // class System

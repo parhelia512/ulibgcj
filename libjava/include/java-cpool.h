@@ -12,6 +12,7 @@ details.  */
 #define __JAVA_CPOOL_H__
 
 #include <gcj/javaprims.h>
+#include <include/jvm.h>
 
 // we rename these, to avoid polluting the name space
 #define JV_CONSTANT_Undefined (0L)

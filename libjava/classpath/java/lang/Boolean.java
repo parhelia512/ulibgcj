@@ -38,7 +38,9 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import java.io.Serializable;
+/*#endif*/
 
 /**
  * Instances of class <code>Boolean</code> represent primitive
@@ -49,7 +51,10 @@ import java.io.Serializable;
  * @since 1.0
  * @status updated to 1.5
  */
-public final class Boolean implements Serializable, Comparable
+public final class Boolean
+/*#if not ULIBGCJ*/
+    implements Comparable, Serializable
+/*#endif*/
 {
   /**
    * Compatible with JDK 1.0.2+.
@@ -206,6 +211,7 @@ public final class Boolean implements Serializable, Comparable
     return obj instanceof Boolean && value == ((Boolean) obj).value;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * If the value of the system property <code>name</code> matches
    * "true" ignoring case then the function returns <code>true</code>.
@@ -255,5 +261,5 @@ public final class Boolean implements Serializable, Comparable
   {
     return "true".equalsIgnoreCase(b) ? true : false;
   }
-
+/*#endif*/
 }

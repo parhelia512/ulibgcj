@@ -24,8 +24,10 @@ details.  */
 #include <jvm.h>
 #include <java-stack.h>
 #include <java/lang/Thread.h>
+#ifndef JV_ULIBGCJ
 #include <java/io/InterruptedIOException.h>
 #include <java/util/Properties.h>
+#endif//JV_ULIBGCJ
 
 #if defined (ECOS)
 extern "C" unsigned long long _clock (void);
@@ -124,6 +126,7 @@ _Jv_platform_initialize (void)
 #endif
 }
 
+#ifndef JV_ULIBGCJ
 // Set platform-specific System properties.
 void
 _Jv_platform_initProperties (java::util::Properties* newprops)
@@ -140,6 +143,7 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
     tmpdir = "/tmp";
   SET ("java.io.tmpdir", tmpdir);
 }
+#endif//JV_ULIBGCJ
 
 static inline void
 internal_gettimeofday (struct timeval *result)
@@ -153,6 +157,7 @@ internal_gettimeofday (struct timeval *result)
 #endif /* HAVE_GETTIMEOFDAY */
 }
 
+#ifndef JV_ULIBGCJ
 // A wrapper for select() which ignores EINTR.
 int
 _Jv_select (int n, fd_set *readfds, fd_set  *writefds,
@@ -244,3 +249,4 @@ _Jv_platform_dladdr (void *addr, _Jv_AddrInfo *info)
 
   return ret_val;
 }
+#endif//JV_ULIBGCJ

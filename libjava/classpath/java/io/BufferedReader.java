@@ -444,7 +444,11 @@ public class BufferedReader extends Reader
     int i = lineEnd(limit);
     if (i < limit)
       {
+/*#if ULIBGCJ
+        String str = new String(buffer, pos, i - pos);
+  #else*/
 	String str = String.valueOf(buffer, pos, i - pos);
+/*#endif*/
 	pos = i + 1;
 	// If the last char in the buffer is a '\r', we must remember
 	// to check if the next char to be read after the buffer is refilled

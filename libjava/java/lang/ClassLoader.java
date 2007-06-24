@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.lang;
 
 import gnu.classpath.SystemProperties;
+/*#if not ULIBGCJ*/
 import gnu.java.util.DoubleEnumeration;
 import gnu.java.util.EmptyEnumeration;
 
@@ -52,6 +53,7 @@ import java.security.ProtectionDomain;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+/*#endif*/
 
 /**
  * The ClassLoader is a way of customizing the way Java gets its classes
@@ -117,6 +119,7 @@ import java.util.Map;
  */
 public abstract class ClassLoader
 {
+/*#if not ULIBGCJ*/
   /**
    * All classes loaded by this classloader. VM's may choose to implement
    * this cache natively; but it is here available for use if necessary. It
@@ -253,6 +256,7 @@ public abstract class ClassLoader
   {
     this(systemClassLoader);
   }
+/*#endif*/
 
   /**
    * Create a new ClassLoader with the specified parent. The parent will
@@ -270,14 +274,17 @@ public abstract class ClassLoader
    */
   protected ClassLoader(ClassLoader parent)
   {
+/*#if not ULIBGCJ*/
     // May we create a new classloader?
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       sm.checkCreateClassLoader();
     this.parent = parent;
     this.initialized = true;
+/*#endif*/
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Load a class using this ClassLoader or its parent, without resolving
    * it. Calls <code>loadClass(name, false)</code>.
@@ -995,4 +1002,5 @@ public abstract class ClassLoader
       }
     return false;
   }
+/*#endif*/
 }

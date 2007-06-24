@@ -40,11 +40,13 @@ struct starter
   _Jv_Thread_t *data;
 };
 
+#ifndef JV_ULIBGCJ
 // Controls access to the variable below
 static HANDLE daemon_mutex;
 static HANDLE daemon_cond;
 // Number of non-daemon threads - _Jv_ThreadWait returns when this is 0
 static int non_daemon_count;
+#endif//JV_ULIBGCJ
 
 // TLS key get Java object representing the thread
 DWORD _Jv_ThreadKey;
@@ -57,8 +59,10 @@ DWORD _Jv_ThreadDataKey;
 
 // Thread started.
 #define FLAG_START   0x01
+#ifndef JV_ULIBGCJ
 // Thread is daemon.
 #define FLAG_DAEMON  0x02
+#endif//JV_ULIBGCJ
 
 //
 // Condition variables.
@@ -104,6 +108,7 @@ _Jv_CondWait(_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu, jlong millis, jint na
   _Jv_Thread_t *current = _Jv_ThreadCurrentData ();
   java::lang::Thread *current_obj = _Jv_ThreadCurrent ();
 
+#ifndef JV_ULIBGCJ
   // Now that we hold the interrupt mutex, check if this thread has been 
   // interrupted already.
   EnterCriticalSection (&current->interrupt_mutex);
@@ -115,6 +120,7 @@ _Jv_CondWait(_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu, jlong millis, jint na
     {
       return _JV_INTERRUPTED;
     }
+#endif//JV_ULIBGCJ
 
   EnterCriticalSection (&cv->count_mutex);
   ensure_condvar_initialized (cv);
@@ -144,6 +150,12 @@ _Jv_CondWait(_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu, jlong millis, jint na
   // - the manual-reset event (for notifyAll())
   // - the interrupt event (for interrupt())
   // We wait for any one of these to be signaled.
+#ifdef JV_ULIBGCJ
+  HANDLE arh[2];
+  arh[0] = cv->ev[0];
+  arh[1] = cv->ev[1];
+  DWORD rval = WaitForMultipleObjects (2, arh, 0, time);
+#else
   HANDLE arh[3];
   arh[0] = cv->ev[0];
   arh[1] = cv->ev[1];
@@ -164,6 +176,7 @@ _Jv_CondWait(_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu, jlong millis, jint na
     
   interrupted = current_obj->interrupt_flag;
   LeaveCriticalSection (&current->interrupt_mutex);
+#endif//JV_ULIBGCJ
 
   EnterCriticalSection(&cv->count_mutex);
   cv->blocked_count--;
@@ -183,7 +196,11 @@ _Jv_CondWait(_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu, jlong millis, jint na
       ++curcount;
     }
   
+#ifdef JV_ULIBGCJ
+  return 0;
+#else
   return interrupted ? _JV_INTERRUPTED : 0;
+#endif//JV_ULIBGCJ
 }
 
 void
@@ -252,9 +269,11 @@ _Jv_InitThreads (void)
 {
   _Jv_ThreadKey = TlsAlloc();
   _Jv_ThreadDataKey = TlsAlloc();
+#ifndef JV_ULIBGCJ
   daemon_mutex = CreateMutex (NULL, 0, NULL);
   daemon_cond = CreateEvent (NULL, 1, 0, NULL);
   non_daemon_count = 0;
+#endif//JV_ULIBGCJ
 }
 
 _Jv_Thread_t *
@@ -273,9 +292,11 @@ _Jv_ThreadInitData (java::lang::Thread* obj)
 void
 _Jv_ThreadDestroyData (_Jv_Thread_t *data)
 {
+#ifndef JV_ULIBGCJ
   DeleteCriticalSection (&data->interrupt_mutex);
   if (data->interrupt_event)
     CloseHandle(data->interrupt_event);
+#endif//JV_ULIBGCJ
   CloseHandle(data->handle);
   _Jv_Free(data);
 }
@@ -344,6 +365,7 @@ really_start (void* x)
 
   info->method (info->data->thread_obj);
 
+#ifndef JV_ULIBGCJ
   if (! (info->data->flags & FLAG_DAEMON))
     {
       WaitForSingleObject (daemon_mutex, INFINITE);
@@ -352,6 +374,7 @@ really_start (void* x)
         SetEvent (daemon_cond);
       ReleaseMutex (daemon_mutex);
     }
+#endif//JV_ULIBGCJ
 
   return 0;
 }
@@ -371,6 +394,7 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data, _Jv_ThreadStart
   info->method = meth;
   info->data = data;
 
+#ifndef JV_ULIBGCJ
   if (! thread->isDaemon ())
     {
       WaitForSingleObject (daemon_mutex, INFINITE);
@@ -379,11 +403,13 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data, _Jv_ThreadStart
     }
   else
     data->flags |= FLAG_DAEMON;
+#endif//JV_ULIBGCJ
 
   data->handle = GC_CreateThread(NULL, 0, really_start, info, 0, &id);
   _Jv_ThreadSetPriority(data, thread->getPriority());
 }
 
+#ifndef JV_ULIBGCJ
 void
 _Jv_ThreadWait (void)
 {
@@ -419,4 +445,4 @@ _Jv_ThreadInterrupt (_Jv_Thread_t *data)
   SetEvent (data->interrupt_event);
   LeaveCriticalSection (&data->interrupt_mutex);
 }
-
+#endif//JV_ULIBGCJ

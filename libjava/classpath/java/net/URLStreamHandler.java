@@ -37,7 +37,9 @@ exception statement from your version. */
 
 package java.net;
 
+/*#if not ULIBGCJ*/
 import java.io.File;
+/*#endif*/
 import java.io.IOException;
 
 

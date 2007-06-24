@@ -19,23 +19,32 @@ details.  */
 #include <jvm.h>
 
 #include <java-threads.h>
+#ifndef JV_ULIBGCJ
 #include <java-interp.h>
+#endif//JV_ULIBGCJ
 
 #include <java/lang/VMClassLoader.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/VMCompiler.h>
 #include <gnu/gcj/runtime/ExtensionClassLoader.h>
 #include <gnu/gcj/runtime/SystemClassLoader.h>
 #include <gnu/gcj/runtime/BootClassLoader.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/ClassLoader.h>
 #include <java/lang/Class.h>
 #include <java/lang/Throwable.h>
+#ifndef JV_ULIBGCJ
 #include <java/security/ProtectionDomain.h>
 #include <java/lang/ClassFormatError.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/StringBuffer.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/Runtime.h>
 #include <java/util/HashSet.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/VirtualMachineError.h>
 
+#ifndef JV_ULIBGCJ
 java::lang::Class *
 java::lang::VMClassLoader::defineClass (java::lang::ClassLoader *loader,
 					jstring name,
@@ -119,6 +128,7 @@ java::lang::VMClassLoader::getSystemClassLoaderInternal()
   _Jv_CopyClassesToSystemLoader (gnu::gcj::runtime::ExtensionClassLoader::system_instance);
   return gnu::gcj::runtime::ExtensionClassLoader::system_instance;
 }
+#endif//JV_ULIBGCJ
 
 jclass
 java::lang::VMClassLoader::getPrimitiveClass (jchar type)
@@ -130,6 +140,7 @@ java::lang::VMClassLoader::getPrimitiveClass (jchar type)
   return _Jv_FindClassFromSignature (sig, NULL);
 }
 
+#ifndef JV_ULIBGCJ
 void
 java::lang::VMClassLoader::initBootLoader(jstring libdir)
 {
@@ -228,3 +239,4 @@ java::lang::VMClassLoader::loadClass(jstring name, jboolean resolve)
 
   return klass;
 }
+#endif//JV_ULIBGCJ

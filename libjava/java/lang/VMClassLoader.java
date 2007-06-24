@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import gnu.java.util.EmptyEnumeration;
 import java.lang.reflect.Constructor;
 import java.io.File;
@@ -55,6 +56,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.StringTokenizer;
 import gnu.gcj.runtime.BootClassLoader;
+/*#endif*/
 
 /**
  * java.lang.VMClassLoader is a package-private helper for VMs to implement
@@ -69,6 +71,7 @@ final class VMClassLoader
   // Protection Domain definitions 
   // FIXME: should there be a special protection domain used for native code?
   
+/*#if not ULIBGCJ*/
   // The permission required to check what a classes protection domain is.
   static final Permission protectionDomainPermission
     = new RuntimePermission("getProtectionDomain");
@@ -225,6 +228,7 @@ final class VMClassLoader
 	  }
       }
   }
+/*#endif*/
 
   /**
    * Helper for java.lang.Integer, Byte, etc to get the TYPE class
@@ -248,6 +252,7 @@ final class VMClassLoader
    */
   static final native Class getPrimitiveClass(char type);
 
+/*#if not ULIBGCJ*/
   /**
    * The system default for assertion status. This is used for all system
    * classes (those with a null ClassLoader), as well as the initial value for
@@ -345,4 +350,5 @@ final class VMClassLoader
 
     return default_sys;
   }
+/*#endif*/
 }

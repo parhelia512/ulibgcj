@@ -37,11 +37,15 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import gnu.classpath.SystemProperties;
+/*#endif*/
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+/*#if not ULIBGCJ*/
 import java.io.Serializable;
+/*#endif*/
 
 /**
  * Throwable is the superclass of all exceptions that can be raised.
@@ -104,7 +108,10 @@ import java.io.Serializable;
  * @since 1.0
  * @status updated to 1.4
  */
-public class Throwable implements Serializable
+public class Throwable
+/*#if not ULIBGCJ*/
+  implements Serializable
+/*#endif*/
 {
   /**
    * Compatible with JDK 1.0+.
@@ -128,6 +135,7 @@ public class Throwable implements Serializable
    */
   private Throwable cause = this;
 
+/*#if not ULIBGCJ*/
   /**
    * The stack trace, in a serialized form.
    *
@@ -136,6 +144,7 @@ public class Throwable implements Serializable
    * @since 1.4
    */
   private StackTraceElement[] stackTrace;
+/*#endif*/
 
   /**
    * Instantiate this Throwable with an empty message. The cause remains
@@ -156,7 +165,9 @@ public class Throwable implements Serializable
    */
   public Throwable(String message)
   {
+/*#if not ULIBGCJ*/
     fillInStackTrace();
+/*#endif*/
     detailMessage = message;
   }
 
@@ -398,6 +409,7 @@ public class Throwable implements Serializable
     pw.print(stackTraceString());
   }
 
+/*#if not ULIBGCJ*/
   /*
    * We use inner class to avoid a static initializer in this basic class.
    */
@@ -405,12 +417,16 @@ public class Throwable implements Serializable
   {
     static final String nl = SystemProperties.getProperty("line.separator");
   }
+/*#endif*/
 
   // Create whole stack trace in a stringbuffer so we don't have to print
   // it line by line. This prevents printing multiple stack traces from
   // different threads to get mixed up when written to the same PrintWriter.
   private String stackTraceString()
   {
+/*#if ULIBGCJ
+    return "<stack trace not available>";
+  #else*/
     StringBuffer sb = new StringBuffer();
 
     // Main stacktrace
@@ -451,8 +467,10 @@ public class Throwable implements Serializable
       }
 
     return sb.toString();
+/*#endif*/
   }
 
+/*#if not ULIBGCJ*/
   // Adds to the given StringBuffer a line containing the name and
   // all stacktrace elements minus the last equal ones.
   private static void stackTraceStringBuffer(StringBuffer sb, String name,
@@ -560,4 +578,5 @@ public class Throwable implements Serializable
    * Cleared when no longer needed.
    */
   private transient VMThrowable vmState;
+/*#endif*/
 }

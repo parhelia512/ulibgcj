@@ -15,13 +15,16 @@ details.  */
 
 #include <gcj/cni.h>
 #include <java/lang/Character.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/CharSequence.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/String.h>
 #include <java/lang/IndexOutOfBoundsException.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/StringIndexOutOfBoundsException.h>
 #include <java/lang/NullPointerException.h>
 #include <java/lang/StringBuffer.h>
+#ifndef JV_ULIBGCJ
 #include <java/io/ByteArrayOutputStream.h>
 #include <java/io/OutputStreamWriter.h>
 #include <java/io/ByteArrayInputStream.h>
@@ -29,13 +32,16 @@ details.  */
 #include <java/util/Locale.h>
 #include <gnu/gcj/convert/UnicodeToBytes.h>
 #include <gnu/gcj/convert/BytesToUnicode.h>
+#endif//JV_ULIBGCJ
 #include <gnu/gcj/runtime/StringBuffer.h>
 #include <jvm.h>
 
+#ifndef JV_ULIBGCJ
 static jstring* strhash = NULL;
 static int strhash_count = 0;  /* Number of slots used in strhash. */
 static int strhash_size = 0;  /* Number of slots available in strhash.
                                * Assumed be power of 2! */
+#endif//JV_ULIBGCJ
 
 // Some defines used by toUpperCase / toLowerCase.
 #define ESSET     0x00df
@@ -52,6 +58,7 @@ static int strhash_size = 0;  /* Number of slots available in strhash.
 #define MASK_PTR(Ptr) (((unsigned long) (Ptr)) | 0x01)
 #define PTR_MASKED(Ptr) (((unsigned long) (Ptr)) & 0x01)
 
+#ifndef JV_ULIBGCJ
 /* Find a slot where the string with elements DATA, length LEN,
    and hash HASH should go in the strhash table of interned strings. */
 jstring*
@@ -89,6 +96,7 @@ _Jv_StringFindSlot (jchar* data, jint len, jint hash)
   JvAssert (deleted_index >= 0);
   return &strhash[deleted_index];
 }
+#endif//JV_ULIBGCJ
 
 /* Calculate a hash code for the string starting at PTR at given LENGTH.
    This uses the same formula as specified for java.lang.String.hash. */
@@ -113,6 +121,7 @@ java::lang::String::hashCode()
   return cachedHashCode;
 }
 
+#ifndef JV_ULIBGCJ
 jstring*
 _Jv_StringGetSlot (jstring str)
 {
@@ -236,6 +245,7 @@ _Jv_FinalizeString (jobject obj)
       strhash_count--;
     }
 }
+#endif//JV_ULIBGCJ
 
 jstring
 _Jv_NewStringUTF (const char *bytes)
@@ -261,6 +271,26 @@ _Jv_NewStringUTF (const char *bytes)
 jstring
 _Jv_NewStringUtf8Const (Utf8Const* str)
 {
+#ifdef JV_ULIBGCJ
+  unsigned char* data = (unsigned char*) str->data;
+  unsigned char* limit = data + str->length;
+  int length = _Jv_strLengthUtf8(str->data, str->length);
+
+  jstring jstr = _Jv_AllocString(length);
+  jchar* chrs = JvGetStringChars(jstr);
+
+  jint hash = 0;
+  while (data < limit)
+    {
+      jchar ch = UTF8_GET(data, limit);
+      hash = (31 * hash) + ch;
+      *chrs++ = ch;
+    }
+
+  jstr->cachedHashCode = hash;
+
+  return jstr;
+#else
   jchar *chrs;
   jchar buffer[100];
   jstring jstr;
@@ -309,6 +339,7 @@ _Jv_NewStringUtf8Const (Utf8Const* str)
   // know the new object cannot be referred to by a Reference.
   _Jv_RegisterFinalizer ((void *) jstr, _Jv_FinalizeString);
   return jstr;
+#endif//JV_ULIBGCJ
 }
 
 jsize
@@ -481,6 +512,9 @@ java::lang::String::init (jbyteArray bytes, jint offset, jint count,
 {
   if (! bytes)
     throw new NullPointerException;
+#ifdef JV_ULIBGCJ
+  init(bytes, 0, offset, count);
+#else//JV_ULIBGCJ
   jsize data_size = JvGetArrayLength (bytes);
   if (offset < 0 || count < 0 || offset + count < 0
       || offset + count > data_size)
@@ -513,6 +547,7 @@ java::lang::String::init (jbyteArray bytes, jint offset, jint count,
   this->data = array;
   this->boffset = (char *) elements (array) - (char *) array;
   this->count = outpos;
+#endif//JV_ULIBGCJ
 }
 
 void
@@ -549,6 +584,7 @@ java::lang::String::equals(jobject anObject)
   return ! memcmp (xptr, yptr, count * sizeof (jchar));
 }
 
+#ifndef JV_ULIBGCJ
 jboolean
 java::lang::String::contentEquals(java::lang::StringBuffer* buffer)
 {
@@ -575,6 +611,7 @@ java::lang::String::contentEquals(java::lang::CharSequence *seq)
       return false;
   return true;
 }
+#endif//JV_ULIBGCJ
 
 jchar
 java::lang::String::charAt(jint i)
@@ -602,6 +639,18 @@ java::lang::String::getChars(jint srcBegin, jint srcEnd,
   memcpy (dPtr, sPtr, i * sizeof (jchar));
 }
 
+#ifdef JV_ULIBGCJ
+jbyteArray
+java::lang::String::getBytes ()
+{
+  jbyteArray b = JvNewByteArray(count);
+  jchar* p = JvGetStringChars (this);
+  for (jint i = 0; i < count; ++i) {
+    elements(b)[i] = (jbyte) p[i];
+  }
+  return b;
+}
+#else
 jbyteArray
 java::lang::String::getBytes (jstring enc)
 {
@@ -658,6 +707,7 @@ java::lang::String::getBytes(jint srcBegin, jint srcEnd,
   while (--i >= 0)
     *dPtr++ = (jbyte) *sPtr++;
 }
+#endif//JV_ULIBGCJ
 
 jcharArray
 java::lang::String::toCharArray()
@@ -842,6 +892,7 @@ java::lang::String::substring (jint beginIndex, jint endIndex)
   return s;
 }
 
+#ifndef JV_ULIBGCJ
 jstring
 java::lang::String::concat(jstring str)
 {
@@ -859,6 +910,7 @@ java::lang::String::concat(jstring str)
   memcpy (dstPtr, srcPtr, i * sizeof (jchar));
   return result;
 }
+#endif//JV_ULIBGCJ
 
 jstring
 java::lang::String::replace (jchar oldChar, jchar newChar)
@@ -889,6 +941,23 @@ java::lang::String::replace (jchar oldChar, jchar newChar)
 jstring
 java::lang::String::toLowerCase (java::util::Locale *locale)
 {
+#ifdef JV_ULIBGCJ
+  jchar* chrs = JvGetStringChars (this);
+  for (jint i = 0; ; ++i) {
+    if (i == count)
+      return this;
+    if (Character::isUpperCase(chrs[i]))
+      break;
+  }
+
+  jstring result = JvAllocString (count);
+  jchar* p = JvGetStringChars (result);
+  for (jint i = 0; i < count; ++i) {
+    *(p++) = Character::toLowerCase(chrs[i]);
+  }
+
+  return result;
+#else
   jint i;
   jchar* chrs = JvGetStringChars(this);
   jchar ch = 0;
@@ -932,11 +1001,29 @@ java::lang::String::toLowerCase (java::util::Locale *locale)
 	*dPtr++ = java::lang::Character::toLowerCase(chrs[i]);
     }
   return result;
+#endif
 }
 
 jstring
 java::lang::String::toUpperCase (java::util::Locale *locale)
 {
+#ifdef JV_ULIBGCJ
+  jchar* chrs = JvGetStringChars (this);
+  for (jint i = 0; ; ++i) {
+    if (i == count)
+      return this;
+    if (Character::isLowerCase(chrs[i]))
+      break;
+  }
+
+  jstring result = JvAllocString (count);
+  jchar* p = JvGetStringChars (result);
+  for (jint i = 0; i < count; ++i) {
+    *(p++) = Character::toUpperCase(chrs[i]);
+  }
+
+  return result;
+#else
   jint i;
   jchar* chrs = JvGetStringChars(this);
   jchar ch;
@@ -1000,6 +1087,7 @@ java::lang::String::toUpperCase (java::util::Locale *locale)
 	*dPtr++ = java::lang::Character::toUpperCase(chrs[i]);
     }
   return result;
+#endif
 }
 
 jstring
@@ -1022,6 +1110,7 @@ java::lang::String::trim ()
   return substring(preTrim, endTrim);
 }
 
+#ifndef JV_ULIBGCJ
 jstring
 java::lang::String::valueOf(jcharArray data, jint offset, jint count)
 {
@@ -1034,6 +1123,7 @@ java::lang::String::valueOf(jcharArray data, jint offset, jint count)
   memcpy (dPtr, sPtr, count * sizeof (jchar));
   return result;
 }
+#endif//JV_ULIBGCJ
 
 jstring
 java::lang::String::valueOf(jchar c)

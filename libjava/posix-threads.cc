@@ -54,11 +54,13 @@ pthread_key_t _Jv_ThreadKey;
 // _Jv_Thread_t* representing the thread.
 pthread_key_t _Jv_ThreadDataKey;
 
+#ifndef JV_ULIBGCJ
 // We keep a count of all non-daemon threads which are running.  When
 // this reaches zero, _Jv_ThreadWait returns.
 static pthread_mutex_t daemon_mutex;
 static pthread_cond_t daemon_cond;
 static int non_daemon_count;
+#endif//JV_ULIBGCJ
 
 // The signal to use when interrupting a thread.
 #if defined(LINUX_THREADS) || defined(FREEBSD_THREADS)
@@ -75,8 +77,10 @@ static int non_daemon_count;
 
 // Thread started.
 #define FLAG_START   0x01
+#ifndef JV_ULIBGCJ
 // Thread is daemon.
 #define FLAG_DAEMON  0x02
+#endif//JV_ULIBGCJ
 
 
 
@@ -139,6 +143,7 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
 
   pthread_mutex_lock (&current->wait_mutex);
 
+#ifndef JV_ULIBGCJ
   // Now that we hold the wait mutex, check if this thread has been 
   // interrupted already.
   if (current_obj->interrupt_flag)
@@ -146,6 +151,7 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
       pthread_mutex_unlock (&current->wait_mutex);
       return _JV_INTERRUPTED;
     }
+#endif//JV_ULIBGCJ
 
   // Add this thread to the cv's wait set.
   current->next = NULL;
@@ -187,8 +193,10 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
         done_sleeping = true;
     }
   
+#ifndef JV_ULIBGCJ
   // Check for an interrupt *before* releasing the wait mutex.
   jboolean interrupted = current_obj->interrupt_flag;
+#endif//JV_ULIBGCJ
   
   pthread_mutex_unlock (&current->wait_mutex);
 
@@ -200,7 +208,11 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
   // If we were interrupted, or if a timeout occurred, remove ourself from
   // the cv wait list now. (If we were notified normally, notify() will have
   // already taken care of this)
+#ifdef JV_ULIBGCJ
+  if (r == ETIMEDOUT)
+#else
   if (r == ETIMEDOUT || interrupted)
+#endif//JV_ULIBGCJ
     {
       _Jv_Thread_t *prev = NULL;
       for (_Jv_Thread_t *t = cv->first; t != NULL; t = t->next)
@@ -216,8 +228,10 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
 	    }
 	  prev = t;
 	}
+#ifndef JV_ULIBGCJ
       if (interrupted)
 	return _JV_INTERRUPTED;
+#endif//JV_ULIBGCJ
     }
   
   return 0;
@@ -236,6 +250,7 @@ _Jv_CondNotify (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu)
     {
       pthread_mutex_lock (&target->wait_mutex);
 
+#ifndef JV_ULIBGCJ
       if (target->thread_obj->interrupt_flag)
         {
 	  // Don't notify a thread that has already been interrupted.
@@ -243,6 +258,7 @@ _Jv_CondNotify (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu)
           prev = target;
 	  continue;
 	}
+#endif//JV_ULIBGCJ
 
       pthread_cond_signal (&target->wait_cond);
       pthread_mutex_unlock (&target->wait_mutex);
@@ -289,6 +305,7 @@ _Jv_CondNotifyAll (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu)
   return 0;
 }
 
+#ifndef JV_ULIBGCJ
 void
 _Jv_ThreadInterrupt (_Jv_Thread_t *data)
 {
@@ -306,6 +323,7 @@ _Jv_ThreadInterrupt (_Jv_Thread_t *data)
   
   pthread_mutex_unlock (&data->wait_mutex);
 }
+#endif//JV_ULIBGCJ
 
 static void
 handle_intr (int)
@@ -329,9 +347,11 @@ _Jv_InitThreads (void)
 {
   pthread_key_create (&_Jv_ThreadKey, NULL);
   pthread_key_create (&_Jv_ThreadDataKey, NULL);
+#ifndef JV_ULIBGCJ
   pthread_mutex_init (&daemon_mutex, NULL);
   pthread_cond_init (&daemon_cond, 0);
   non_daemon_count = 0;
+#endif//JV_ULIBGCJ
 
   // Arrange for the interrupt signal to interrupt system calls.
   struct sigaction act;
@@ -444,6 +464,7 @@ really_start (void *x)
 
   info->method (info->data->thread_obj);
 
+#ifndef JV_ULIBGCJ
   if (! (info->data->flags & FLAG_DAEMON))
     {
       pthread_mutex_lock (&daemon_mutex);
@@ -452,6 +473,7 @@ really_start (void *x)
 	pthread_cond_signal (&daemon_cond);
       pthread_mutex_unlock (&daemon_mutex);
     }
+#endif//JV_ULIBGCJ
 
   return NULL;
 }
@@ -490,6 +512,7 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,
   info->method = meth;
   info->data = data;
 
+#ifndef JV_ULIBGCJ
   if (! thread->isDaemon())
     {
       pthread_mutex_lock (&daemon_mutex);
@@ -498,6 +521,7 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,
     }
   else
     data->flags |= FLAG_DAEMON;
+#endif//JV_ULIBGCJ
   int r = pthread_create (&data->thread, &attr, really_start, (void *) info);
   
   pthread_attr_destroy (&attr);
@@ -509,6 +533,7 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,
     }
 }
 
+#ifndef JV_ULIBGCJ
 void
 _Jv_ThreadWait (void)
 {
@@ -517,6 +542,7 @@ _Jv_ThreadWait (void)
     pthread_cond_wait (&daemon_cond, &daemon_mutex);
   pthread_mutex_unlock (&daemon_mutex);
 }
+#endif//JV_ULIBGCJ
 
 #if defined(SLOW_PTHREAD_SELF)
 

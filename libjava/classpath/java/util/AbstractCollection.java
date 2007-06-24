@@ -38,7 +38,9 @@ exception statement from your version. */
 
 package java.util;
 
+/*#if not ULIBGCJ*/
 import java.lang.reflect.Array;
+/*#endif*/
 
 /**
  * A basic implementation of most of the methods in the Collection interface to
@@ -406,8 +408,12 @@ public abstract class AbstractCollection implements Collection
   {
     int size = size();
     if (a.length < size)
+/*#if ULIBGCJ
+      throw new RuntimeException("reflective array creation not supported");
+  #else*/
       a = (Object[]) Array.newInstance(a.getClass().getComponentType(),
                                        size);
+/*#endif*/
     else if (a.length > size)
       a[size] = null;
 

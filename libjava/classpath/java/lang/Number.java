@@ -38,7 +38,9 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if not ULIBGCJ*/
 import java.io.Serializable;
+/*#endif*/
 
 /**
  * Number is a generic superclass of all the numeric classes, including
@@ -55,7 +57,10 @@ import java.io.Serializable;
  * @since 1.0
  * @status updated to 1.4
  */
-public abstract class Number implements Serializable
+public abstract class Number
+/*#if not ULIBGCJ*/
+  implements Serializable
+/*#endif*/
 {
   /**
    * Compatible with JDK 1.1+.

@@ -47,6 +47,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
++ /*#if not ULIBGCJ*/
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -60,6 +61,7 @@ import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
+/*#endif*/
 
 /**
  * A set of persistent properties, which can be saved or loaded from a stream.
@@ -194,8 +196,13 @@ label   = Name:\\u0020</pre>
   public void load(InputStream inStream) throws IOException
   {
     // The spec says that the file must be encoded using ISO-8859-1.
+/*#if ULIBGCJ
+    BufferedReader reader =
+      new BufferedReader(new InputStreamReader(inStream));
+  #else*/
     BufferedReader reader =
       new BufferedReader(new InputStreamReader(inStream, "ISO-8859-1"));
+/*#endif*/
     String line;
 
     while ((line = reader.readLine()) != null)
@@ -411,12 +418,18 @@ label   = Name:\\u0020</pre>
    */
   public void store(OutputStream out, String header) throws IOException
   {
+/*#if ULIBGCJ
+    PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+  #else*/
     // The spec says that the file must be encoded using ISO-8859-1.
     PrintWriter writer
       = new PrintWriter(new OutputStreamWriter(out, "ISO-8859-1"));
+/*#endif*/
     if (header != null)
       writer.println("#" + header);
+/*#if not ULIBGCJ*/
     writer.println ("#" + Calendar.getInstance ().getTime ());
+/*#endif*/
     
     Iterator iter = entrySet ().iterator ();
     int i = size ();
@@ -461,6 +474,7 @@ label   = Name:\\u0020</pre>
     return null;
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Gets the property with the specified key in this property list.  If
    * the key is not found, the default property list is searched.  If the
@@ -482,6 +496,7 @@ label   = Name:\\u0020</pre>
       prop = defaultValue;
     return prop;
   }
+/*#endif*/
 
   /**
    * Returns an enumeration of all keys in this property list, including
@@ -506,6 +521,7 @@ label   = Name:\\u0020</pre>
     return Collections.enumeration(s);
   }
 
+/*#if not ULIBGCJ*/
   /**
    * Prints the key/value pairs to the given print stream.  This is 
    * mainly useful for debugging purposes.
@@ -552,6 +568,7 @@ label   = Name:\\u0020</pre>
       }
     out.flush ();
   }
+/*#endif*/
 
   /**
    * Formats a key or value for output in a properties file.
@@ -613,6 +630,7 @@ label   = Name:\\u0020</pre>
       }
   }
 
+/*#if not ULIBGCJ*/
   /**
    * <p>
    * Encodes the properties as an XML file using the UTF-8 encoding.
@@ -797,5 +815,5 @@ label   = Name:\\u0020</pre>
 	  initCause(e);
       }
   }
-
+/*#endif*/
 } // class Properties

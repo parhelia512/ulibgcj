@@ -25,12 +25,18 @@ details.  */
 #include <jvm.h>
 #include <java-signal.h>
 #include <java-threads.h>
+#ifndef JV_ULIBGCJ
 #include <java-interp.h>
+#endif//JV_ULIBGCJ
+#include <java-cpool.h>
+#include <gcj/field.h>
 
+#ifndef JV_ULIBGCJ
 #ifdef ENABLE_JVMPI
 #include <jvmpi.h>
 #include <java/lang/ThreadGroup.h>
 #endif
+#endif//JV_ULIBGCJ
 
 #ifndef DISABLE_GETENV_PROPERTIES
 #include <ctype.h>
@@ -42,13 +48,19 @@ details.  */
 
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/Runtime.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/String.h>
 #include <java/lang/Thread.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/ThreadGroup.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/ArithmeticException.h>
+#ifndef JV_ULIBGCJ
 #include <java/lang/ClassFormatError.h>
+#endif//JV_ULIBGCJ
 #include <java/lang/ClassNotFoundException.h>
 #include <java/lang/InternalError.h>
 #include <java/lang/NegativeArraySizeException.h>
@@ -61,14 +73,18 @@ details.  */
 #include <java/io/PrintStream.h>
 #include <java/lang/UnsatisfiedLinkError.h>
 #include <java/lang/VirtualMachineError.h>
+#ifndef JV_ULIBGCJ
 #include <gnu/gcj/runtime/ExtensionClassLoader.h>
 #include <gnu/gcj/runtime/FinalizerThread.h>
+#endif//JV_ULIBGCJ
 #include <execution.h>
+#ifndef JV_ULIBGCJ
 #include <gnu/classpath/jdwp/Jdwp.h>
 #include <gnu/classpath/jdwp/VMVirtualMachine.h>
 #include <gnu/classpath/jdwp/event/VmDeathEvent.h>
 #include <gnu/classpath/jdwp/event/VmInitEvent.h>
 #include <gnu/java/lang/MainThread.h>
+#endif//JV_ULIBGCJ
 
 #ifdef USE_LTDL
 #include <ltdl.h>
@@ -484,6 +500,7 @@ _Jv_ThrowNullPointerException ()
   throw new java::lang::NullPointerException;
 }
 
+#ifndef JV_ULIBGCJ
 // Resolve an entry in the constant pool and return the target
 // address.
 void *
@@ -498,6 +515,7 @@ _Jv_ResolvePoolEntry (jclass this_class, jint index)
   return (_Jv_Linker::resolve_pool_entry (this_class, index))
     .field->u.addr;
 }
+#endif//JV_ULIBGCJ
 
 
 // Explicitly throw a no memory exception.
@@ -574,7 +592,8 @@ jobject
 _Jv_AllocObject (jclass klass)
 {
   jobject obj = _Jv_AllocObjectNoFinalizer (klass);
-  
+
+#ifndef JV_ULIBGCJ
   // We assume that the compiler only generates calls to this routine
   // if there really is an interesting finalizer.
   // Unfortunately, we still have to the dynamic test, since there may
@@ -584,6 +603,7 @@ _Jv_AllocObject (jclass klass)
   if (klass->vtable->get_finalizer ()
       != java::lang::Object::class$.vtable->get_finalizer ())
     _Jv_RegisterFinalizer (obj, _Jv_FinalizeObject);
+#endif//JV_ULIBGCJ
   return obj;
 }
 
@@ -1414,6 +1434,10 @@ parse_init_args (JvVMInitArgs* vm_args)
   return 0;
 }
 
+#ifdef JV_ULIBGCJ_DARWIN
+extern void _Jv_DarwinStaticLinkDummyFunction(void); 
+#endif//JV_ULIBGCJ_DARWIN
+
 jint
 _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
 {
@@ -1428,15 +1452,22 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
 
   PROCESS_GCJ_PROPERTIES;
 
+#ifdef JV_ULIBGCJ_DARWIN
+  // this is here to force the linker to include darwin.o.
+  _Jv_DarwinStaticLinkDummyFunction();  
+#endif//JV_ULIBGCJ_DARWIN
+
   /* Threads must be initialized before the GC, so that it inherits the
      signal mask.  */
   _Jv_InitThreads ();
   _Jv_InitGC ();
   _Jv_InitializeSyncMutex ();
   
+#ifndef JV_ULIBGCJ
 #ifdef INTERPRETER
   _Jv_InitInterpreter ();
-#endif  
+#endif 
+#endif//JV_ULIBGCJ 
 
 #ifdef HANDLE_SEGV
   INIT_SEGV;
@@ -1469,11 +1500,13 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
   // of VMClassLoader.
   _Jv_InitClass (&java::lang::ClassLoader::class$);
 
+#ifndef JV_ULIBGCJ
   // Set up the system class loader and the bootstrap class loader.
   gnu::gcj::runtime::ExtensionClassLoader::initialize();
   java::lang::VMClassLoader::initialize(JvNewStringLatin1(TOOLEXECLIBDIR));
 
   _Jv_RegisterBootstrapPackages();
+#endif//JV_ULIBGCJ
 
   no_memory = new java::lang::OutOfMemoryError;
 
@@ -1483,6 +1516,7 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
 
   _Jv_platform_initialize ();
 
+#ifndef JV_ULIBGCJ
   _Jv_JNI_Init ();
   _Jv_JVMTI_Init ();
 
@@ -1499,6 +1533,11 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
   catch (java::lang::VirtualMachineError *ignore)
     {
     }
+#endif//JV_ULIBGCJ
+
+#ifdef JV_ULIBGCJ
+   _Jv_InitClass (&java::lang::System::class$);
+#endif//JV_ULIBGCJ
 
   runtimeInitialized = true;
 
@@ -1513,7 +1552,9 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
   _Jv_SetArgs (argc, argv);
 #endif
 
+#ifndef JV_ULIBGCJ
   java::lang::Runtime *runtime = NULL;
+#endif//JV_ULIBGCJ
 
   try
     {
@@ -1523,9 +1564,11 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
 	  exit (1);
 	}
 
+#ifndef JV_ULIBGCJ
       // Get the Runtime here.  We want to initialize it before searching
       // for `main'; that way it will be set up if `main' is a JNI method.
       runtime = java::lang::Runtime::getRuntime ();
+#endif//JV_ULIBGCJ
 
 #ifdef DISABLE_MAIN_ARGS
       arg_vec = JvConvertArgv (0, 0);
@@ -1533,6 +1576,7 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
       arg_vec = JvConvertArgv (argc - 1, argv + 1);
 #endif
 
+#ifndef JV_ULIBGCJ
       using namespace gnu::java::lang;
       if (klass)
 	main_thread = new MainThread (klass, arg_vec);
@@ -1559,18 +1603,41 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
       gnu::classpath::jdwp::event::VmInitEvent *event;
       event = new gnu::classpath::jdwp::event::VmInitEvent (main_thread);
       gnu::classpath::jdwp::Jdwp::notify (event);
+#endif//JV_ULIBGCJ
     }
   catch (java::lang::Throwable *t)
     {
       java::lang::System::err->println (JvNewStringLatin1 
         ("Exception during runtime initialization"));
+#ifndef JV_ULIBGCJ
       t->printStackTrace();
       if (runtime)
 	java::lang::Runtime::exitNoChecksAccessor (1);
+#endif//JV_ULIBGCJ
       // In case the runtime creation failed.
       ::exit (1);
     }
-
+#ifdef JV_ULIBGCJ
+   JvAttachCurrentThread(NULL, NULL);
+ 
+   Utf8Const* msig = _Jv_makeUtf8Const ("([Ljava.lang.String;)V", 22);
+   Utf8Const* mname = _Jv_makeUtf8Const ("main", 4);
+ 
+   _Jv_Method* method = _Jv_LookupDeclaredMethod (klass, mname, msig);
+   JvAssert(method);
+   
+   typedef void (*Procedure)(jobject);
+   Procedure real = (Procedure) method->ncode;
+   try {
+     real(arg_vec);
+   } catch (java::lang::Throwable* t) {
+     for (; t; t = t->getCause()) {
+       java::lang::System::err->println (t->toString());
+     }
+   }
+ 
+   JvDetachCurrentThread();
+#else
   _Jv_ThreadRun (main_thread);
 
   // Notify debugger of VM's death
@@ -1584,6 +1651,7 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
   // If we got here then something went wrong, as MainThread is not
   // supposed to terminate.
   ::exit (1);
+#endif//JV_ULIBGCJ
 }
 
 void
