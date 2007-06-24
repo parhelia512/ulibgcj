@@ -1364,8 +1364,12 @@ case ,${enable_languages},:${enable_objc_gc} in
     # Keep target-boehm-gc if requested for Objective-C.
     ;;
   *)
-    # Otherwise remove target-boehm-gc depending on target-libjava.
-    if echo " ${noconfigdirs} " | grep "target-libjava" >/dev/null 2>&1; then
+    # Otherwise remove target-boehm-gc depending on target-libjava and
+    # target-ulibgcj.
+    if echo " ${noconfigdirs} " | grep "target-libjava" >/dev/null 2>&1 && \
+       echo " ${noconfigdirs} " | grep "target-ulibgcj" >/dev/null 2>&1;
+    then
+      echo 'bye, bye boehm'
       noconfigdirs="$noconfigdirs target-boehm-gc"
     fi
     ;;
