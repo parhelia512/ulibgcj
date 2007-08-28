@@ -38,12 +38,14 @@ exception statement from your version. */
 
 package java.util;
 
+/*#if not ULIBGCJ*/
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+/*#endif*/
 
 /**
  * This class is an abstract base class for Calendars, which can be
@@ -103,7 +105,10 @@ day_of_week + week_of_year</pre>
  * @see TimeZone
  * @see java.text.DateFormat
  */
-public abstract class Calendar implements Serializable, Cloneable
+public abstract class Calendar
+  /*#if not ULIBGCJ*/
+implements Serializable, Cloneable
+  /*#endif*/
 {
   /**
    * Constant representing the era time field.
@@ -413,6 +418,7 @@ public abstract class Calendar implements Serializable, Cloneable
    */
   static final long serialVersionUID = -1807547505821590642L;
 
+  /*#if not ULIBGCJ*/
   /**
    * The name of the resource bundle. Used only by getBundle()
    */
@@ -428,6 +434,7 @@ public abstract class Calendar implements Serializable, Cloneable
     return ResourceBundle.getBundle(bundleName, locale,
                                     ClassLoader.getSystemClassLoader());
   }
+  /*#endif*/
 
   /**
    * Constructs a new Calendar with the default time zone and the default
@@ -449,11 +456,16 @@ public abstract class Calendar implements Serializable, Cloneable
     this.zone = zone;
     lenient = true;
 
+    /*#if ULIBGCJ
+    firstDayOfWeek = SUNDAY;
+    minimalDaysInFirstWeek = 1;
+    #else*/
     ResourceBundle rb = getBundle(locale);
 
     firstDayOfWeek = ((Integer) rb.getObject("firstDayOfWeek")).intValue();
     minimalDaysInFirstWeek = ((Integer) rb.getObject("minimalDaysInFirstWeek"))
                              .intValue();
+    /*#endif*/
     clear();
   }
 
@@ -506,6 +518,9 @@ public abstract class Calendar implements Serializable, Cloneable
    */
   public static synchronized Calendar getInstance(TimeZone zone, Locale locale)
   {
+    /*#if ULIBGCJ
+    return new GregorianCalendar(zone, locale);
+    #else*/
     Class calendarClass = (Class) cache.get(locale);
     Throwable exception = null;
 
@@ -558,6 +573,7 @@ public abstract class Calendar implements Serializable, Cloneable
 
     throw new RuntimeException("Error instantiating calendar for locale "
                                + locale, exception);
+    /*#endif*/
   }
 
   /**
@@ -565,11 +581,13 @@ public abstract class Calendar implements Serializable, Cloneable
    * @exception MissingResourceException if locale data couldn't be found.
    * @return the set of locales.
    */
+  /*#if not ULIBGCJ*/
   public static synchronized Locale[] getAvailableLocales()
   {
     ResourceBundle rb = getBundle(new Locale("", ""));
     return (Locale[]) rb.getObject("availableLocales");
   }
+  /*#endif*/
 
   /**
    * Converts the time field values (<code>fields</code>) to
@@ -1238,6 +1256,7 @@ public abstract class Calendar implements Serializable, Cloneable
     return sb.toString();
   }
 
+  /*#if not ULIBGCJ*/
   /**
    * Saves the state of the object to the stream.  Ideally we would
    * only write the time field, but we need to be compatible with
@@ -1274,4 +1293,5 @@ public abstract class Calendar implements Serializable, Cloneable
 	areFieldsSet = false;
       }
   }
+  /*#endif*/
 }

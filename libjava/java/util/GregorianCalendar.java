@@ -236,10 +236,18 @@ public class GregorianCalendar extends Calendar
   private GregorianCalendar(TimeZone zone, Locale locale, boolean unused)
   {
     super(zone, locale);
+    /*#if ULIBGCJ
+      gregorianCutover = new Date
+      ((24*60*60*1000L) *
+      (((1582*(365*4+1))/4 +
+      (java.util.Calendar.OCTOBER*(31+30+31+30+31) - 9) / 5 + 5) -
+      ((1970*(365*4+1))/4 + 1 - 13))).getTime();
+      #else*/
     ResourceBundle rb = ResourceBundle.getBundle(bundleName, locale,
                                                  ClassLoader
                                                  .getSystemClassLoader());
     gregorianCutover = ((Date) rb.getObject("gregorianCutOver")).getTime();
+    /*#endif*/
   }
 
   /**

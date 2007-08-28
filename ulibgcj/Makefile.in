@@ -402,13 +402,16 @@ java/util/AbstractSet.java \
 java/util/AbstractSequentialList.java \
 java/util/ArrayList.java \
 java/util/Arrays.java \
+java/util/Calendar.java \
 java/util/Collection.java \
 java/util/Collections.java \
 java/util/Comparator.java \
 java/util/ConcurrentModificationException.java \
+java/util/Date.java \
 java/util/Enumeration.java \
 java/util/EventListener.java \
 java/util/EventObject.java \
+java/util/GregorianCalendar.java \
 java/util/HashMap.java \
 java/util/HashSet.java \
 java/util/Hashtable.java \
@@ -424,8 +427,10 @@ java/util/Properties.java \
 java/util/PropertyResourceBundle.java \
 java/util/ResourceBundle.java \
 java/util/Set.java \
+java/util/SimpleTimeZone.java \
 java/util/SortedMap.java \
 java/util/SortedSet.java \
+java/util/TimeZone.java \
 java/util/TreeMap.java \
 java/util/TreeSet.java \
 java/util/Vector.java \

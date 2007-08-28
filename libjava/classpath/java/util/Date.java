@@ -37,12 +37,14 @@ exception statement from your version. */
 
 package java.util;
 
+/*#if not ULIBGCJ*/
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+/*#endif*/
 
 /**
  * <p>
@@ -108,7 +110,11 @@ import java.text.SimpleDateFormat;
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  */
 public class Date
+/*#if ULIBGCJ
+  implements Comparable<Date>
+  #else*/
     implements Cloneable, Comparable<Date>, Serializable
+/*#endif*/
 {
   /**
    * This is the serialization UID for this class
@@ -452,7 +458,11 @@ public class Date
    */
   public String toLocaleString()
   {
+    /*#if ULIBGCJ
+    return toString();
+    #else*/
     return java.text.DateFormat.getInstance().format(this);
+    /*#endif*/
   }
 
   /** 
@@ -504,9 +514,13 @@ public class Date
    */
   public String toGMTString()
   {
+    /*#if ULIBGCJ
+    return "TODO";
+    #else*/
     java.text.DateFormat format = java.text.DateFormat.getInstance();
     format.setTimeZone(TimeZone.getTimeZone("GMT"));
     return format.format(this);
+    /*#endif*/
   }
 
   /**
@@ -711,6 +725,9 @@ public class Date
    */
   public static long parse(String string)
   {
+    /*#if ULIBGCJ
+    throw new UnsupportedOperationException("Cannot parse date");
+    #else*/
     // Initialize date/time fields before parsing begins.
     int year = -1;
     int month = -1;
@@ -918,6 +935,7 @@ public class Date
 	cal.set(Calendar.DST_OFFSET, 0);
       }
     return cal.getTimeInMillis();
+    /*#endif*/
   }
 
   /**
@@ -1206,6 +1224,7 @@ public class Date
     time = cal.getTimeInMillis();
   }
 
+  /*#if not ULIBGCJ*/
   /**
    * Deserializes a <code>Date</code> object from an
    * input stream, setting the time (in milliseconds
@@ -1241,5 +1260,6 @@ public class Date
     output.defaultWriteObject();
     output.writeLong(time);
   }
+  /*#endif*/
 
 }

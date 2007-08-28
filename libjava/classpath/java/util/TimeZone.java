@@ -39,9 +39,11 @@ exception statement from your version. */
 
 package java.util;
 
+/*#if not ULIBGCJ*/
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.DateFormatSymbols;
+/*#endif*/
 
 /**
  * This class represents a time zone offset and handles daylight savings.
@@ -60,7 +62,10 @@ import java.text.DateFormatSymbols;
  * @see SimpleTimeZone
  * @author Jochen Hoenicke
  */
-public abstract class TimeZone implements java.io.Serializable, Cloneable
+public abstract class TimeZone
+  /*#if not ULIBGCJ*/
+implements java.io.Serializable, Cloneable
+  /*#endif*/
 {
 
   /**
@@ -94,6 +99,9 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
    */
   private static synchronized TimeZone defaultZone()
   {
+    /*#if ULIBGCJ
+    return (TimeZone) timezones().get("GMT");
+    #else*/
     /* Look up default timezone */
     if (defaultZone0 == null) 
       {
@@ -123,6 +131,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
       }
     
     return defaultZone0; 
+    /*#endif*/
   }
   
   private static final long serialVersionUID = 3581463369166924961L;
@@ -1275,6 +1284,9 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
    */
   public String getDisplayName(boolean dst, int style, Locale locale)
   {
+    /*#if ULIBGCJ
+    return "GMT";
+    #else*/
     DateFormatSymbols dfs;
     try
       {
@@ -1308,6 +1320,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
       }
 
     return getDefaultDisplayName(dst);
+    /*#endif*/
   }
 
   private String getDefaultDisplayName(boolean dst)
@@ -1378,6 +1391,9 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
   // FIXME: XXX: JCL indicates this and other methods are synchronized.
   public static TimeZone getTimeZone(String ID)
   {
+    /*#if ULIBGCJ
+    return defaultZone();
+    #else*/
     // First check timezones hash
     TimeZone tz = (TimeZone) timezones().get(ID);
     if (tz != null)
@@ -1454,6 +1470,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
 
     // Finally, return GMT per spec
     return getTimeZone("GMT");
+    /*#endif*/
   }
 
   /**
@@ -1508,7 +1525,11 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
    */
   public static TimeZone getDefault()
   {
+    /*#if ULIBGCJ
+    return defaultZone();
+    #else*/
     return (TimeZone) defaultZone().clone();
+    /*#endif*/
   }
 
   public static void setDefault(TimeZone zone)
@@ -1533,6 +1554,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
    * Returns a clone of this object.  I can't imagine, why this is
    * useful for a time zone.
    */
+  /*#if not ULIBGCJ*/
   public Object clone()
   {
     try
@@ -1544,4 +1566,5 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
 	return null;
       }
   }
+  /*#endif*/
 }

@@ -987,6 +987,7 @@ public class SimpleTimeZone extends TimeZone
               + ",endTimeMode=" + endTimeMode : "") + "]";
   }
 
+  /*#if not ULIBGCJ*/
   /**
    * Reads a serialized simple time zone from stream.
    * @see #writeObject
@@ -1075,4 +1076,5 @@ public class SimpleTimeZone extends TimeZone
     output.writeInt(byteArray.length);
     output.write(byteArray, 0, byteArray.length);
   }
+  /*#endif*/
 }
