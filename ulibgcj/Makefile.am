@@ -117,7 +117,9 @@ java/lang/Number.java \
 java/lang/NumberFormatException.java \
 java/lang/Object.java \
 java/lang/OutOfMemoryError.java \
+java/lang/Process.java \
 java/lang/Runnable.java \
+java/lang/Runtime.java \
 java/lang/RuntimeException.java \
 java/lang/SecurityException.java \
 java/lang/Short.java \

@@ -38,6 +38,20 @@ exception statement from your version. */
 
 package java.lang;
 
+/*#if ULIBGCJ
+import java.io.IOException;
+
+public class Runtime {
+  public static Runtime getRuntime() {
+    return new Runtime();
+  }
+  public Process exec(String args) throws IOException {
+    return null;
+  }
+}
+  #else*/
+
+
 import gnu.classpath.SystemProperties;
 
 import java.io.File;
@@ -745,3 +759,4 @@ public class Runtime
   native Process execInternal(String[] cmd, String[] env, File dir)
     throws IOException;
 } // class Runtime
+/*#endif*/

@@ -38,7 +38,10 @@ exception statement from your version. */
 
 
 package java.lang;
-
+/*#if ULIBGCJ
+public abstract class Process {
+}
+  #else*/
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -128,3 +131,4 @@ public abstract class Process
    */
   public abstract void destroy();
 } // class Process
+/*#endif*/
